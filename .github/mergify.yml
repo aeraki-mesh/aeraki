@@ -1,0 +1,16 @@
+---
+pull_request_rules:
+  - name: Automatic merge on CI success and review
+    conditions:
+      - approved-reviews-by=zhaohuabing
+    actions:
+      merge:
+        method: squash
+        strict: true
+  - name: ask the maintainer team to review PR
+    conditions:
+      - label!=invalid
+    actions:
+      request_reviews:
+        users:
+          - zhaohuabing
