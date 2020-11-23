@@ -11,7 +11,18 @@ import (
 	"istio.io/istio/pkg/config/host"
 )
 
-func Generate(service *networking.ServiceEntry) *networking.EnvoyFilter {
+type Generator interface {
+	Generate(service *networking.ServiceEntry) *networking.EnvoyFilter
+}
+
+type DubboGenerator struct {
+}
+
+func NewDubboGenerator() *DubboGenerator {
+	return &DubboGenerator{}
+}
+
+func (*DubboGenerator) Generate(service *networking.ServiceEntry) *networking.EnvoyFilter {
 	listenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
 	dubboProxy := buildDubboProxy(host.Name(service.Hosts[0]), int(service.Ports[0].Number))
 

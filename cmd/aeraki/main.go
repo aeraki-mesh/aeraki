@@ -6,12 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/mcp"
-	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/model"
 
 	"github.com/aeraki-framework/aeraki/pkg/config"
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"istio.io/pkg/log"
 )
 
@@ -36,15 +35,16 @@ func main() {
 		stopChan <- struct{}{}
 	}()
 
-	consulMcpServer := mcp.NewServer(*listeningAddress, *listeningAddress)
-	go consulMcpServer.Start()
-
 	configController := config.NewController(*istiodAddr)
+	consulMcpServer := mcp.NewServer(*listeningAddress, *listeningAddress, configController.Store, envoyfilter.NewDubboGenerator())
 	configController.RegisterEventHandler("dubbo", func(_, curr model.Config, event model.Event) {
 		log.Infof("ServiceEntry: %s", curr.Name)
-		filter := envoyfilter.Generate(curr.Spec.(*networking.ServiceEntry))
-		log.Infof("create fitler: ", filter)
+		//filter := envoyfilter.Generate(curr.Spec.(*networking.ServiceEntry))
+		//log.Infof("create fitler: ", filter)
+		consulMcpServer.ConfigUpdate(event)
 	})
+
+	go consulMcpServer.Start()
 	err := configController.Run(stopChan)
 	if err != nil {
 		log.Errorf("Failed to start configController: %v", err)

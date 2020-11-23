@@ -32,6 +32,6 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	google.golang.org/grpc v1.33.1
 	istio.io/api v0.0.0-20201019135039-64b3eaad773f
-	istio.io/istio v0.0.0-20201023210131-4ce531ff1823
+	istio.io/istio v0.0.0-20201118224433-c87a4c874df2
 	istio.io/pkg v0.0.0-20200831193257-fe7110296cbc
 )
