@@ -17,6 +17,8 @@ package config
 import (
 	"fmt"
 
+	"istio.io/istio/pkg/config/schema/collection"
+
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	meshconfig "istio.io/api/mesh/v1alpha1"
@@ -24,7 +26,6 @@ import (
 	"istio.io/istio/pilot/pkg/config/memory"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/adsc"
-	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
 )
@@ -34,6 +35,7 @@ var configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioN
 
 type Controller struct {
 	configServerAddr string
+	Store            istiomodel.ConfigStore
 	controller       istiomodel.ConfigStoreCache
 }
 
@@ -41,6 +43,7 @@ func NewController(configServerAddr string) *Controller {
 	store := memory.Make(configCollection)
 	return &Controller{
 		configServerAddr: configServerAddr,
+		Store:            store,
 		controller:       memory.NewController(store),
 	}
 }
@@ -51,7 +54,7 @@ func (c *Controller) Run(stop <-chan struct{}) error {
 	}, &adsc.Config{
 		Meta: istiomodel.NodeMetadata{
 			Generator: "api",
-			ClusterID: "Kubernetes",
+			//ClusterID: "Kubernetes",
 		}.ToStruct(),
 	})
 	xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
@@ -81,7 +84,7 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 	schemas := configCollection.All()
 	for _, schema := range schemas {
 		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), func(prev istiomodel.Config, curr istiomodel.Config, event istiomodel.Event) {
-			log.Infof("####Kind:%v, Name:%v", curr.GroupVersionKind.String(), curr.Name)
+			//log.Infof("####Kind:%v, Name:%v", curr.GroupVersionKind.String(), curr.Name)
 			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 				service, ok := curr.Spec.(*networking.ServiceEntry)
 				if !ok { // should never happen

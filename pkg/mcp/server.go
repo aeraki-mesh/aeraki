@@ -22,6 +22,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+
+	"istio.io/istio/pkg/config/schema/collections"
+
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/gogo/protobuf/types"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -31,13 +36,12 @@ import (
 	"google.golang.org/grpc/status"
 	"istio.io/api/mcp/v1alpha1"
 	mcp "istio.io/api/mcp/v1alpha1"
-	istio "istio.io/api/networking/v1alpha3"
+	networking "istio.io/api/networking/v1alpha3"
+	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/pkg/log"
 )
 
 const (
-	serviceEntriesType = "istio/networking/v1alpha3/serviceentries"
-
 	// debounceAfter is the delay added to events to wait after a registry event for debouncing.
 	// This will delay the push by at least this interval, plus the time getting subsequent events.
 	// If no change is detected the push will happen, otherwise we'll keep delaying until things settle.
@@ -52,6 +56,11 @@ var (
 	// Tracks connections, increment on each new connection.
 	connectionNumber = int64(0)
 )
+
+type EnvoyFilterWrapper struct {
+	service     *networking.ServiceEntry
+	envoyfilter *networking.EnvoyFilter
+}
 
 // Connection holds information about connected client.
 type Connection struct {
@@ -68,8 +77,7 @@ type Connection struct {
 	Connect time.Time
 
 	// Sending on this channel results in a push.
-	//pushChannel chan *Event
-	pushChannel chan *ChangeEvent
+	pushChannel chan istiomodel.Event
 
 	// MCP stream implement this interface
 	stream mcp.ResourceSource_EstablishResourceStreamServer
@@ -78,10 +86,7 @@ type Connection struct {
 	LastResponse map[string]string
 }
 
-type ChangeEvent struct {
-}
-
-type ConsulMcpServer struct {
+type Server struct {
 	listeningAddress string
 	consulAddress    string
 	grpcServer       *grpc.Server
@@ -90,20 +95,24 @@ type ConsulMcpServer struct {
 	mcpClients      map[string]*Connection
 	mcpClientsMutex sync.RWMutex
 	stopchan        chan struct{}
+	configStore     istiomodel.ConfigStore
+	generator       envoyfilter.Generator
 }
 
-func NewServer(listeningAddress string, consulAddress string) *ConsulMcpServer {
-	consulMcpServer := &ConsulMcpServer{
+func NewServer(listeningAddress string, consulAddress string, store istiomodel.ConfigStore, generator envoyfilter.Generator) *Server {
+	consulMcpServer := &Server{
 		listeningAddress: listeningAddress,
 		consulAddress:    consulAddress,
 		mcpClients:       make(map[string]*Connection),
 		stopchan:         make(chan struct{}),
+		configStore:      store,
+		generator:        generator,
 	}
 	return consulMcpServer
 }
 
 // Start the gRPC MCP server
-func (s *ConsulMcpServer) Start() error {
+func (s *Server) Start() error {
 
 	log.Infof("Listen on %v", s.listeningAddress)
 	if err := s.startGrpcServer(); err != nil {
@@ -114,12 +123,12 @@ func (s *ConsulMcpServer) Start() error {
 	return nil
 }
 
-func (s *ConsulMcpServer) Stop() {
+func (s *Server) Stop() {
 	s.stopchan <- struct{}{}
 	s.grpcServer.Stop()
 }
 
-func (s *ConsulMcpServer) startGrpcServer() error {
+func (s *Server) startGrpcServer() error {
 	grpcOptions := s.grpcServerOptions()
 	s.grpcServer = grpc.NewServer(grpcOptions...)
 	mcp.RegisterResourceSourceServer(s.grpcServer, s)
@@ -137,10 +146,9 @@ func (s *ConsulMcpServer) startGrpcServer() error {
 	return nil
 }
 
-func (s *ConsulMcpServer) EstablishResourceStream(stream mcp.ResourceSource_EstablishResourceStreamServer) error {
+func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishResourceStreamServer) error {
 	var timeChan <-chan time.Time
 	var startDebounce time.Time
-	var event *ChangeEvent
 	var lastResourceUpdateTime time.Time
 
 	pushCounter := 0
@@ -154,8 +162,6 @@ func (s *ConsulMcpServer) EstablishResourceStream(stream mcp.ResourceSource_Esta
 	for {
 		select {
 		case e := <-con.pushChannel:
-			// Incremental push is not supported, so just use the latest event to represent the merged event
-			event = e
 			log.Debugf("Receive event from push chanel : %v", e)
 			lastResourceUpdateTime = time.Now()
 			if debouncedEvents == 0 {
@@ -170,28 +176,47 @@ func (s *ConsulMcpServer) EstablishResourceStream(stream mcp.ResourceSource_Esta
 			quietTime := time.Since(lastResourceUpdateTime)
 			// it has been too long since the first debounced event or quiet enough since the last debounced event
 			if eventDelay >= debounceMax || quietTime >= debounceAfter {
-				if event != nil {
+				if debouncedEvents > 0 {
 					pushCounter++
 					log.Infof("Push debounce stable[%d] %d: %v since last change, %v since last push",
 						pushCounter, debouncedEvents,
 						quietTime, eventDelay)
-
-					serviceEntries := []*istio.ServiceEntry{}
-
-					resources, err := constructResoures(serviceEntries)
+					envoyFilters := make([]*EnvoyFilterWrapper, 0)
+					configs, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 					if err != nil {
-						log.Errorf("RESOURCE:%s: RESPONSE ERROR %s %v", serviceEntriesType, con.ConID, err)
+						log.Errorf("Failed to list configs: %v", err)
+						break
+					}
+					for _, config := range configs {
+						service, ok := config.Spec.(*networking.ServiceEntry)
+						if !ok { // should never happen
+							log.Errorf("Failed in getting a virtual service: %v", config.Labels)
+							break
+						}
+						for _, port := range service.Ports {
+							if protocol.GetLayer7ProtocolFromPortName(port.Name) == "dubbo" {
+								envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
+									service:     service,
+									envoyfilter: s.generator.Generate(service),
+								})
+								break
+							}
+						}
+					}
+					resources, err := constructResources(envoyFilters)
+					if err != nil {
+						log.Errorf("Failed to construct resources: v%", err)
+						break
 					}
 
 					response := &mcp.Resources{
-						Collection:  serviceEntriesType,
+						Collection:  collections.IstioNetworkingV1Alpha3Envoyfilters.Name().String(),
 						Resources:   resources,
 						Nonce:       time.Now().String(),
 						Incremental: false,
 					}
 					con.send(response)
 
-					event = nil
 					debouncedEvents = 0
 				}
 			} else {
@@ -201,17 +226,17 @@ func (s *ConsulMcpServer) EstablishResourceStream(stream mcp.ResourceSource_Esta
 	}
 }
 
-func constructResoures(serviceEntries []*istio.ServiceEntry) ([]mcp.Resource, error) {
+func constructResources(envoyFilters []*EnvoyFilterWrapper) ([]mcp.Resource, error) {
 	resources := make([]mcp.Resource, 0)
-	for _, serviceEntry := range serviceEntries {
-		seAny, err := types.MarshalAny(serviceEntry)
+	for _, wrapper := range envoyFilters {
+		seAny, err := types.MarshalAny(wrapper.envoyfilter)
 		if err != nil {
 			return resources, err
 		}
 		resources = append(resources, mcp.Resource{
 			Body: seAny,
 			Metadata: &v1alpha1.Metadata{
-				Name:    serviceEntry.Hosts[0],
+				Name:    wrapper.service.Hosts[0] + "_" + "aeraki" + "_" + "dubbo",
 				Version: "v1",
 			},
 		})
@@ -231,7 +256,7 @@ func (con *Connection) receive() {
 		}
 		if con.shouldResponse(req) {
 			// This MCP server only supports ServiceEntry
-			if req.Collection != serviceEntriesType {
+			if req.Collection != collections.IstioNetworkingV1Alpha3Envoyfilters.Name().String() {
 				response := &mcp.Resources{
 					Incremental: false,
 					Collection:  req.GetCollection(),
@@ -240,7 +265,7 @@ func (con *Connection) receive() {
 				con.send(response)
 			} else {
 				// Send a change event to the connection channel to trigger a push to the client
-				con.pushChannel <- &ChangeEvent{}
+				con.pushChannel <- istiomodel.EventAdd
 			}
 		}
 	}
@@ -314,7 +339,7 @@ func (con *Connection) shouldResponse(req *mcp.RequestResources) bool {
 	return false
 }
 
-func (s *ConsulMcpServer) grpcServerOptions() []grpc.ServerOption {
+func (s *Server) grpcServerOptions() []grpc.ServerOption {
 	interceptors := []grpc.UnaryServerInterceptor{
 		// setup server prometheus monitoring (as final interceptor in chain)
 		prometheus.UnaryServerInterceptor,
@@ -327,7 +352,7 @@ func (s *ConsulMcpServer) grpcServerOptions() []grpc.ServerOption {
 	return grpcOptions
 }
 
-func (s *ConsulMcpServer) newConnection(stream mcp.ResourceSource_EstablishResourceStreamServer) *Connection {
+func (s *Server) newConnection(stream mcp.ResourceSource_EstablishResourceStreamServer) *Connection {
 	ctx := stream.Context()
 	peerAddr := "0.0.0.0"
 	if peerInfo, ok := peer.FromContext(ctx); ok {
@@ -339,13 +364,13 @@ func (s *ConsulMcpServer) newConnection(stream mcp.ResourceSource_EstablishResou
 		PeerAddr:     peerAddr,
 		Connect:      time.Now(),
 		ConID:        conId,
-		pushChannel:  make(chan *ChangeEvent, 100),
+		pushChannel:  make(chan istiomodel.Event, 100),
 		stream:       stream,
 		LastResponse: make(map[string]string),
 	}
 }
 
-func (s *ConsulMcpServer) addConnection(con *Connection) {
+func (s *Server) addConnection(con *Connection) {
 	s.mcpClientsMutex.Lock()
 	defer s.mcpClientsMutex.Unlock()
 	s.mcpClients[con.ConID] = con
@@ -353,10 +378,19 @@ func (s *ConsulMcpServer) addConnection(con *Connection) {
 	log.Infof("Receive connection from client: %s", con.ConID)
 }
 
-func (s *ConsulMcpServer) removeConnection(con *Connection) {
+func (s *Server) removeConnection(con *Connection) {
 	s.mcpClientsMutex.Lock()
 	defer s.mcpClientsMutex.Unlock()
 	delete(s.mcpClients, con.ConID)
 
 	log.Infof("Remove connection from client: %s", con.ConID)
+}
+
+func (s *Server) ConfigUpdate(event istiomodel.Event) {
+	s.mcpClientsMutex.Lock()
+	defer s.mcpClientsMutex.Unlock()
+
+	for _, con := range s.mcpClients {
+		con.pushChannel <- event
+	}
 }
