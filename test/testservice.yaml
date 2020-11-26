@@ -7,7 +7,7 @@ spec:
   hosts:
   - test.dubbo.domain
   addresses:
-  - 194.194.194.194 # VIPs
+  - 194.194.194.194     # VIPs
   ports:
   - number: 27018
     name: tcp-dubbo
