@@ -23,6 +23,10 @@ import (
 	"istio.io/pkg/log"
 )
 
+var (
+	aerakiLog = log.RegisterScope("aeraki-server", "mcp debugging", 0)
+)
+
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
 	args             *AerakiArgs
@@ -48,19 +52,19 @@ func NewServer(args *AerakiArgs) *Server {
 // Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop channel.
 // This method won't block
 func (s *Server) Start(stop <-chan struct{}) {
-	log.Info("Staring Aeraki Server")
+	aerakiLog.Info("Staring Aeraki Server")
 
 	go func() {
-		log.Infof("Starting MCP service at %s", s.args.ListenAddr)
+		aerakiLog.Infof("Starting MCP service at %s", s.args.ListenAddr)
 		if err := s.mcpServer.Start(); err != nil {
-			log.Warna(err)
+			aerakiLog.Warn(err)
 		}
 	}()
 
 	go func() {
-		log.Infof("Watching xDS resource changes at %s", s.args.IstiodAddr)
+		aerakiLog.Infof("Watching xDS resource changes at %s", s.args.IstiodAddr)
 		if err := s.configController.Run(stop); err != nil {
-			log.Warna(err)
+			aerakiLog.Warn(err)
 		}
 	}()
 	s.waitForShutdown(stop)

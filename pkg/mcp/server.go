@@ -57,7 +57,7 @@ const (
 )
 
 var (
-	mcpLog = log.RegisterScope("mcp", "mcp debugging", 0)
+	mcpLog = log.RegisterScope("mcp-server", "mcp debugging", 0)
 
 	// Tracks connections, increment on each new connection.
 	connectionNumber = int64(0)

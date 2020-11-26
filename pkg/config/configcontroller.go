@@ -33,9 +33,12 @@ import (
 	"istio.io/pkg/log"
 )
 
-// We need serviceentry, virtualservice and destionationrule to generate the envoyfiters
-var configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
-	MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
+var (
+	controllerLog = log.RegisterScope("config-controller", "mcp debugging", 0)
+	// We need serviceentry, virtualservice and destionationrule to generate the envoyfiters
+	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
+				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
+)
 
 // Controller watches Istio config xDS server and notifies the listeners when config changes
 type Controller struct {
@@ -90,14 +93,14 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 	for _, schema := range schemas {
 		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
 			if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
-				log.Infof("Ignore this update because there is no change to the Spec: %v", curr)
+				controllerLog.Infof("Ignore this update because there is no change to the Spec: %s", curr.Name)
 				return
 			}
 			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 				service, ok := curr.Spec.(*networking.ServiceEntry)
 				if !ok {
 					// This should never happen
-					log.Errorf("Failed in getting a virtual service: %v", curr.Labels)
+					controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Labels)
 				}
 				for _, port := range service.Ports {
 					if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
