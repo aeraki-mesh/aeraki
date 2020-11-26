@@ -17,6 +17,7 @@ package bootstrap
 import (
 	"github.com/aeraki-framework/aeraki/pkg/mcp"
 	"istio.io/istio/pilot/pkg/model"
+	istioconfig "istio.io/istio/pkg/config"
 
 	"github.com/aeraki-framework/aeraki/pkg/config"
 	"istio.io/pkg/log"
@@ -33,7 +34,7 @@ type Server struct {
 func NewServer(args *AerakiArgs) *Server {
 	configController := config.NewController(args.IstiodAddr)
 	mcpServer := mcp.NewServer(args.ListenAddr, configController.Store, args.Generator, args.Protocol)
-	configController.RegisterEventHandler(args.Protocol, func(_, curr model.Config, event model.Event) {
+	configController.RegisterEventHandler(args.Protocol, func(_, curr istioconfig.Config, event model.Event) {
 		mcpServer.ConfigUpdate(event)
 	})
 

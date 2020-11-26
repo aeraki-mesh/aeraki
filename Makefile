@@ -10,10 +10,10 @@ GOBIN?=$(GOPATH)/bin
 # Build parameters
 OUT?=./out
 DOCKER_TMP?=$(OUT)/docker_temp/
-DOCKER_TAG?=aeraki/aeraki:latest
+DOCKER_TAG?=aeraki/aeraki-dubbo:latest
 BINARY_NAME?=$(OUT)/aeraki-dubbo
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
-MAIN_PATH_CONSUL_MCP=./cmd/aeraki-dubbo/main.go
+MAIN_PATH_CONSUL_MCP=./dubbo/cmd/aeraki-dubbo/main.go
 
 test: style-check
 	$(GOTEST) -race ./...	
@@ -24,7 +24,7 @@ build-mac: test
 docker-build: build
 	rm -rf $(DOCKER_TMP)
 	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
+	cp ./dubbo/docker/Dockerfile $(DOCKER_TMP)
 	cp $(BINARY_NAME) $(DOCKER_TMP)
 	docker build -t $(DOCKER_TAG) $(DOCKER_TMP)
 	rm -rf $(DOCKER_TMP)

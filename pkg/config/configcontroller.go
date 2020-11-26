@@ -24,18 +24,20 @@ import (
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
-	meshconfig "istio.io/api/mesh/v1alpha1"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/config/memory"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/adsc"
+	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
 )
 
+// We need serviceentry, virtualservice and destionationrule to generate the envoyfiters
 var configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
 	MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
 
+// Controller watches Istio config xDS server and notifies the listeners when config changes
 type Controller struct {
 	configServerAddr string
 	Store            istiomodel.ConfigStore
@@ -53,21 +55,20 @@ func NewController(configServerAddr string) *Controller {
 
 // Run until a signal is received, this function won't block
 func (c *Controller) Run(stop <-chan struct{}) error {
-	xdsMCP, err := adsc.New(&meshconfig.ProxyConfig{
-		DiscoveryAddress: c.configServerAddr,
-	}, &adsc.Config{
+	xdsMCP, err := adsc.New(c.configServerAddr, &adsc.Config{
 		Meta: istiomodel.NodeMetadata{
 			Generator: "api",
-			ClusterID: "Kubernetes",
 		}.ToStruct(),
-		BackoffPolicy: backoff.NewConstantBackOff(time.Second),
+		InitialDiscoveryRequests: c.configInitialRequests(),
+		BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
 	})
-	xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
-
 	if err != nil {
 		return fmt.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
 	}
-	xdsMCP.WatchConfig()
+	xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
+	if err = xdsMCP.Run(); err != nil {
+		return fmt.Errorf("MCP: failed running %v", err)
+	}
 	c.controller.Run(stop)
 	return nil
 }
@@ -84,10 +85,10 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 }
 
 // RegisterEventHandler adds a handler to receive config update events for a configuration type
-func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler func(istiomodel.Config, istiomodel.Config, istiomodel.Event)) {
+func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
 	schemas := configCollection.All()
 	for _, schema := range schemas {
-		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), func(prev istiomodel.Config, curr istiomodel.Config, event istiomodel.Event) {
+		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
 			if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
 				log.Infof("Ignore this update because there is no change to the Spec: %v", curr)
 				return
