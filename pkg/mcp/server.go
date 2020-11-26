@@ -1,4 +1,4 @@
-// Copyright Istio Authors
+// Copyright Aeraki Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package mcp
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"strconv"
@@ -50,9 +51,14 @@ const (
 	// debounceMax is the maximum time to wait for events while debouncing.
 	// Defaults to 10 seconds. If events keep showing up with no break for this time, we'll trigger a push.
 	debounceMax = 10 * time.Second
+
+	// configRootNS is the root config root namespace
+	configRootNS = "istio-system"
 )
 
 var (
+	mcpLog = log.RegisterScope("mcp", "mcp debugging", 0)
+
 	// Tracks connections, increment on each new connection.
 	connectionNumber = int64(0)
 )
@@ -88,43 +94,36 @@ type Connection struct {
 
 type Server struct {
 	listeningAddress string
-	consulAddress    string
 	grpcServer       *grpc.Server
 	GRPCListener     net.Listener
-	// mcpClients are the connected MCP sink.
-	mcpClients      map[string]*Connection
-	mcpClientsMutex sync.RWMutex
-	stopchan        chan struct{}
-	configStore     istiomodel.ConfigStore
-	generator       envoyfilter.Generator
+	mcpClients       map[string]*Connection
+	mcpClientsMutex  sync.RWMutex
+	configStore      istiomodel.ConfigStore
+	generator        envoyfilter.Generator
+	instance         protocol.Instance
 }
 
-func NewServer(listeningAddress string, consulAddress string, store istiomodel.ConfigStore, generator envoyfilter.Generator) *Server {
-	consulMcpServer := &Server{
+func NewServer(listeningAddress string, store istiomodel.ConfigStore, generator envoyfilter.Generator, instance protocol.Instance) *Server {
+	mcpServer := &Server{
 		listeningAddress: listeningAddress,
-		consulAddress:    consulAddress,
 		mcpClients:       make(map[string]*Connection),
-		stopchan:         make(chan struct{}),
 		configStore:      store,
 		generator:        generator,
+		instance:         instance,
 	}
-	return consulMcpServer
+	return mcpServer
 }
 
 // Start the gRPC MCP server
 func (s *Server) Start() error {
-
-	log.Infof("Listen on %v", s.listeningAddress)
 	if err := s.startGrpcServer(); err != nil {
-		log.Fatala(err)
+		mcpLog.Fatala(err)
 		return err
 	}
-
 	return nil
 }
 
 func (s *Server) Stop() {
-	s.stopchan <- struct{}{}
 	s.grpcServer.Stop()
 }
 
@@ -139,7 +138,7 @@ func (s *Server) startGrpcServer() error {
 	}
 
 	if err := s.grpcServer.Serve(listener); err != nil {
-		log.Fatala(err)
+		mcpLog.Fatala(err)
 		return err
 	}
 
@@ -162,61 +161,29 @@ func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishReso
 	for {
 		select {
 		case e := <-con.pushChannel:
-			log.Debugf("Receive event from push chanel : %v", e)
+			mcpLog.Debugf("Receive event from push chanel : %v", e)
 			lastResourceUpdateTime = time.Now()
 			if debouncedEvents == 0 {
-				log.Debugf("This is the first debounced event")
+				mcpLog.Debugf("This is the first debounced event")
 				startDebounce = lastResourceUpdateTime
 			}
 			timeChan = time.After(debounceAfter)
 			debouncedEvents++
 		case <-timeChan:
-			log.Debugf("Receive event from time chanel")
+			mcpLog.Debugf("Receive event from time chanel")
 			eventDelay := time.Since(startDebounce)
 			quietTime := time.Since(lastResourceUpdateTime)
 			// it has been too long since the first debounced event or quiet enough since the last debounced event
 			if eventDelay >= debounceMax || quietTime >= debounceAfter {
 				if debouncedEvents > 0 {
 					pushCounter++
-					log.Infof("Push debounce stable[%d] %d: %v since last change, %v since last push",
+					mcpLog.Infof("Push debounce stable[%d] %d: %v since last change, %v since last push",
 						pushCounter, debouncedEvents,
 						quietTime, eventDelay)
-					envoyFilters := make([]*EnvoyFilterWrapper, 0)
-					configs, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+					err := s.pushEnvoyFilters(con)
 					if err != nil {
-						log.Errorf("Failed to list configs: %v", err)
-						break
+						mcpLog.Errorf("Failed to push EnvoyFilters to Istio: %v", err)
 					}
-					for _, config := range configs {
-						service, ok := config.Spec.(*networking.ServiceEntry)
-						if !ok { // should never happen
-							log.Errorf("Failed in getting a virtual service: %v", config.Labels)
-							break
-						}
-						for _, port := range service.Ports {
-							if protocol.GetLayer7ProtocolFromPortName(port.Name) == "dubbo" {
-								envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
-									service:     service,
-									envoyfilter: s.generator.Generate(service),
-								})
-								break
-							}
-						}
-					}
-					resources, err := constructResources(envoyFilters)
-					if err != nil {
-						log.Errorf("Failed to construct resources: v%", err)
-						break
-					}
-
-					response := &mcp.Resources{
-						Collection:  collections.IstioNetworkingV1Alpha3Envoyfilters.Name().String(),
-						Resources:   resources,
-						Nonce:       time.Now().String(),
-						Incremental: false,
-					}
-					con.send(response)
-
 					debouncedEvents = 0
 				}
 			} else {
@@ -226,7 +193,48 @@ func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishReso
 	}
 }
 
-func constructResources(envoyFilters []*EnvoyFilterWrapper) ([]mcp.Resource, error) {
+func (s *Server) pushEnvoyFilters(con *Connection) error {
+	envoyFilters := make([]*EnvoyFilterWrapper, 0)
+	configs, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	if err != nil {
+		return fmt.Errorf("failed to list configs: %v", err)
+	}
+	for _, config := range configs {
+		service, ok := config.Spec.(*networking.ServiceEntry)
+		if !ok { // should never happen
+			return fmt.Errorf("failed in getting a virtual service: %s: %v", config.Labels, err)
+		}
+		for _, port := range service.Ports {
+			if protocol.GetLayer7ProtocolFromPortName(port.Name) == s.instance {
+				envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
+					service:     service,
+					envoyfilter: s.generator.Generate(service),
+				})
+				break
+			}
+		}
+	}
+	resources, err := constructResources(envoyFilters, s.instance)
+	if err != nil {
+		return fmt.Errorf("failed to construct resources: %v", err)
+	}
+
+	response := &mcp.Resources{
+		Collection:  collections.IstioNetworkingV1Alpha3Envoyfilters.Name().String(),
+		Resources:   resources,
+		Nonce:       time.Now().String(),
+		Incremental: false,
+	}
+	err = con.send(response)
+	if err != nil {
+		return fmt.Errorf("failed to send response: %v", err)
+	} else {
+		mcpLog.Infof("Pushed %v EnvoyFilters to Istio: %v", len(envoyFilters), response)
+	}
+	return nil
+}
+
+func constructResources(envoyFilters []*EnvoyFilterWrapper, instance protocol.Instance) ([]mcp.Resource, error) {
 	resources := make([]mcp.Resource, 0)
 	for _, wrapper := range envoyFilters {
 		seAny, err := types.MarshalAny(wrapper.envoyfilter)
@@ -236,7 +244,7 @@ func constructResources(envoyFilters []*EnvoyFilterWrapper) ([]mcp.Resource, err
 		resources = append(resources, mcp.Resource{
 			Body: seAny,
 			Metadata: &v1alpha1.Metadata{
-				Name:    wrapper.service.Hosts[0] + "_" + "aeraki" + "_" + "dubbo",
+				Name:    configRootNS + "/" + wrapper.service.Hosts[0] + "_" + "aeraki" + "_" + instance.String(),
 				Version: "v1",
 			},
 		})
@@ -249,13 +257,13 @@ func (con *Connection) receive() {
 		req, err := con.stream.Recv()
 		if err != nil {
 			if isExpectedGRPCError(err) {
-				log.Infof("%s terminated %v", con.ConID, err)
+				mcpLog.Infof("%s terminated %v", con.ConID, err)
 			}
-			log.Errorf("%s terminated with error: %v", con.ConID, err)
+			mcpLog.Errorf("%s terminated with error: %v", con.ConID, err)
 			return
 		}
 		if con.shouldResponse(req) {
-			// This MCP server only supports ServiceEntry
+			// This MCP server only supports EnvoyFilter
 			if req.Collection != collections.IstioNetworkingV1Alpha3Envoyfilters.Name().String() {
 				response := &mcp.Resources{
 					Incremental: false,
@@ -288,23 +296,18 @@ func isExpectedGRPCError(err error) bool {
 	return false
 }
 
-func (con *Connection) send(response *mcp.Resources) {
+func (con *Connection) send(response *mcp.Resources) error {
 	con.Lock()
+	defer con.Unlock()
 	err := con.stream.Send(response)
 	con.LastResponse[response.Collection] = response.Nonce
-	con.Unlock()
-
-	if err != nil {
-		log.Errorf("RESOURCE:%s: RESPONSE ERROR %s %v", response.Collection, con.ConID, err)
-	} else {
-		log.Infof("RESOURCE:%s: RESPONSE SUCCESS", response.Collection)
-	}
+	return err
 }
 
 func (con *Connection) shouldResponse(req *mcp.RequestResources) bool {
 	// This is the first request, we should response.
 	if req.ResponseNonce == "" {
-		log.Infof("RESOURCE:%s: REQ %s initial request", req.Collection, con.ConID)
+		mcpLog.Debugf("RESOURCE:%s: REQ %s initial request", req.Collection, con.ConID)
 		return true
 	}
 
@@ -313,7 +316,7 @@ func (con *Connection) shouldResponse(req *mcp.RequestResources) bool {
 	// in that case.
 	if req.ErrorDetail != nil {
 		errCode := codes.Code(req.ErrorDetail.Code)
-		log.Errorf("RESOURCE:%s: ACK ERROR %s %s:%s", req.Collection, con.ConID, errCode.String(), req.ErrorDetail.GetMessage())
+		mcpLog.Errorf("RESOURCE:%s: ACK ERROR %s %s:%s", req.Collection, con.ConID, errCode.String(), req.ErrorDetail.GetMessage())
 		return false
 	}
 
@@ -322,20 +325,20 @@ func (con *Connection) shouldResponse(req *mcp.RequestResources) bool {
 	// because MCP Server is restarted or MCP Sink client disconnects and reconnects.
 	// We should always respond with the current resource.
 	if !ok {
-		log.Warnf("RESOURCE:%s: RECONNECT %s %s", req.Collection, con.ConID, req.ResponseNonce)
+		mcpLog.Warnf("RESOURCE:%s: RECONNECT %s %s", req.Collection, con.ConID, req.ResponseNonce)
 		return true
 	}
 
 	// If there is mismatch in the nonce, that is a case of expired/stale nonce.
 	// A nonce becomes stale following a newer nonce being sent to Envoy.
 	if req.ResponseNonce != previousRespone {
-		log.Warnf("RESOURCE:%s: REQ %s Expired nonce received %s, sent %s", req.Collection,
+		mcpLog.Warnf("RESOURCE:%s: REQ %s Expired nonce received %s, sent %s", req.Collection,
 			con.ConID, req.ResponseNonce, previousRespone)
 		return false
 	}
 
 	// If it comes here, that means nonce match. This an ACK. we should not response unless there is a change in MCP Server side.
-	log.Infof("RESOURCE:%s: ACK %s %s", req.Collection, con.ConID, req.ResponseNonce)
+	mcpLog.Debugf("RESOURCE:%s: ACK %s %s", req.Collection, con.ConID, req.ResponseNonce)
 	return false
 }
 
@@ -375,7 +378,7 @@ func (s *Server) addConnection(con *Connection) {
 	defer s.mcpClientsMutex.Unlock()
 	s.mcpClients[con.ConID] = con
 
-	log.Infof("Receive connection from client: %s", con.ConID)
+	mcpLog.Infof("Receive connection from client: %s", con.ConID)
 }
 
 func (s *Server) removeConnection(con *Connection) {
@@ -383,7 +386,7 @@ func (s *Server) removeConnection(con *Connection) {
 	defer s.mcpClientsMutex.Unlock()
 	delete(s.mcpClients, con.ConID)
 
-	log.Infof("Remove connection from client: %s", con.ConID)
+	mcpLog.Infof("Remove connection from client: %s", con.ConID)
 }
 
 func (s *Server) ConfigUpdate(event istiomodel.Event) {

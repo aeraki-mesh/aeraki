@@ -1,6 +1,7 @@
 # Go parameters
 GOCMD?=go
 GOBUILD?=$(GOCMD) build
+GOTEST?=$(GOCMD) test
 GOCLEAN?=$(GOCMD) clean
 GOTEST?=$(GOCMD) test
 GOGET?=$(GOCMD) get
@@ -10,13 +11,15 @@ GOBIN?=$(GOPATH)/bin
 OUT?=./out
 DOCKER_TMP?=$(OUT)/docker_temp/
 DOCKER_TAG?=aeraki/aeraki:latest
-BINARY_NAME?=$(OUT)/aeraki
+BINARY_NAME?=$(OUT)/aeraki-dubbo
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
-MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
+MAIN_PATH_CONSUL_MCP=./cmd/aeraki-dubbo/main.go
 
-build:
+test: style-check
+	$(GOTEST) -race ./...	
+build: test
 	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_CONSUL_MCP)
-build-mac:
+build-mac: test
 	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_CONSUL_MCP)
 docker-build: build
 	rm -rf $(DOCKER_TMP)

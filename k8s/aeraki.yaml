@@ -22,9 +22,9 @@ spec:
           image: aeraki/aeraki
           imagePullPolicy: Always
           env:
-            - name: istiodaddr
+            - name: istiodAddr
               value: "istiod.istio-system:15010"
-            - name: listeningAddress
+            - name: listeningAddr
               value: ":1109"
           ports:
             - containerPort: 1109
