@@ -24,10 +24,8 @@ replace istio.io/istio => github.com/zhaohuabing/istio v0.0.0-20201118224433-c87
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/elastic/go-licenser v0.3.1 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.8-0.20201019204000-12785f608982
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/addlicense v0.0.0-20200906110928-a0294312aa76 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	google.golang.org/grpc v1.33.1
