@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dubbo
+package generator
 
 import (
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
@@ -28,22 +28,7 @@ var (
 	regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 )
 
-type DubboProxyNetworkFilter struct {
-	TypeUrl string `json:"@type"`
-	*dubbo.DubboProxy
-}
-
-type DubboProxyTypedConfig struct {
-	TypeUrl string `json:"@type"`
-}
-
-func buildDubboProxyTypedConfig(hostname host.Name, port int) *DubboProxyTypedConfig {
-
-	return &DubboProxyTypedConfig{
-		TypeUrl: "type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy",
-	}
-}
-func buildDubboProxy(hostname host.Name, port int) *dubbo.DubboProxy {
+func buildProxy(hostname host.Name, port int) *dubbo.DubboProxy {
 	clusterName := model.BuildSubsetKey(model.TrafficDirectionOutbound, "", hostname, port)
 
 	//clusterName := model.BuildSubsetKey(model.TrafficDirectionInbound, hostname, port)
@@ -53,22 +38,22 @@ func buildDubboProxy(hostname host.Name, port int) *dubbo.DubboProxy {
 		ProtocolType:      dubbo.ProtocolType_Dubbo,
 		SerializationType: dubbo.SerializationType_Hessian2,
 		RouteConfig: []*dubbo.RouteConfiguration{
-			buildSidecarDubboRouteConfig(clusterName, string(hostname)),
+			buildRouteConfig(clusterName, string(hostname)),
 		},
 	}
 }
 
-func buildSidecarDubboRouteConfig(clusterName string, interfaceName string) *dubbo.RouteConfiguration {
+func buildRouteConfig(clusterName string, interfaceName string) *dubbo.RouteConfiguration {
 	return &dubbo.RouteConfiguration{
 		Name:      clusterName,
 		Interface: interfaceName, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
 		Routes: []*dubbo.Route{
-			defaultDubboRoute(clusterName),
+			defaultRoute(clusterName),
 		},
 	}
 }
 
-func defaultDubboRoute(clusterName string) *dubbo.Route {
+func defaultRoute(clusterName string) *dubbo.Route {
 	return &dubbo.Route{
 		Match: &dubbo.RouteMatch{
 			Method: &dubbo.MethodMatch{

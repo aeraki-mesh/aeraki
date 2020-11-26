@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: test-dubbo-service
+spec:
+  hosts:
+  - test.dubbo.domain
+  addresses:
+  - 194.194.194.194 # VIPs
+  ports:
+  - number: 27018
+    name: tcp-dubbo
+    protocol: TCP

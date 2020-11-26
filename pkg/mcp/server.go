@@ -95,7 +95,7 @@ type Connection struct {
 type Server struct {
 	listeningAddress string
 	grpcServer       *grpc.Server
-	GRPCListener     net.Listener
+	gRPCListener     net.Listener
 	mcpClients       map[string]*Connection
 	mcpClientsMutex  sync.RWMutex
 	configStore      istiomodel.ConfigStore

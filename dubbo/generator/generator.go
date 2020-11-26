@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dubbo
+package generator
 
 import (
 	"bytes"
@@ -25,16 +25,16 @@ import (
 	"istio.io/istio/pkg/config/host"
 )
 
-type DubboGenerator struct {
+type Generator struct {
 }
 
-func NewDubboGenerator() *DubboGenerator {
-	return &DubboGenerator{}
+func NewGenerator() *Generator {
+	return &Generator{}
 }
 
-func (*DubboGenerator) Generate(service *networking.ServiceEntry) *networking.EnvoyFilter {
+func (*Generator) Generate(service *networking.ServiceEntry) *networking.EnvoyFilter {
 	listenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
-	dubboProxy := buildDubboProxy(host.Name(service.Hosts[0]), int(service.Ports[0].Number))
+	dubboProxy := buildProxy(host.Name(service.Hosts[0]), int(service.Ports[0].Number))
 
 	buf := &bytes.Buffer{}
 	_ = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy)
@@ -74,7 +74,7 @@ func (*DubboGenerator) Generate(service *networking.ServiceEntry) *networking.En
 					},
 				},
 				Patch: &networking.EnvoyFilter_Patch{
-					Operation: networking.EnvoyFilter_Patch_REMOVE,
+					Operation: networking.EnvoyFilter_Patch_REPLACE,
 					Value:     Value,
 				},
 			},
