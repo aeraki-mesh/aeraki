@@ -1,4 +1,4 @@
-// Copyright Istio Authors
+// Copyright Aeraki Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@ package config
 
 import (
 	"fmt"
+	"reflect"
+	"time"
 
 	"istio.io/istio/pkg/config/schema/collection"
 
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	meshconfig "istio.io/api/mesh/v1alpha1"
 	networking "istio.io/api/networking/v1alpha3"
@@ -48,21 +51,22 @@ func NewController(configServerAddr string) *Controller {
 	}
 }
 
+// Run until a signal is received, this function won't block
 func (c *Controller) Run(stop <-chan struct{}) error {
 	xdsMCP, err := adsc.New(&meshconfig.ProxyConfig{
 		DiscoveryAddress: c.configServerAddr,
 	}, &adsc.Config{
 		Meta: istiomodel.NodeMetadata{
 			Generator: "api",
-			//ClusterID: "Kubernetes",
+			ClusterID: "Kubernetes",
 		}.ToStruct(),
+		BackoffPolicy: backoff.NewConstantBackOff(time.Second),
 	})
 	xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
 
 	if err != nil {
 		return fmt.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
 	}
-	log.Infof("Start watching xDS MCP server at %s", c.configServerAddr)
 	xdsMCP.WatchConfig()
 	c.controller.Run(stop)
 	return nil
@@ -84,10 +88,14 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 	schemas := configCollection.All()
 	for _, schema := range schemas {
 		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), func(prev istiomodel.Config, curr istiomodel.Config, event istiomodel.Event) {
-			//log.Infof("####Kind:%v, Name:%v", curr.GroupVersionKind.String(), curr.Name)
+			if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
+				log.Infof("Ignore this update because there is no change to the Spec: %v", curr)
+				return
+			}
 			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 				service, ok := curr.Spec.(*networking.ServiceEntry)
-				if !ok { // should never happen
+				if !ok {
+					// This should never happen
 					log.Errorf("Failed in getting a virtual service: %v", curr.Labels)
 				}
 				for _, port := range service.Ports {
@@ -96,7 +104,6 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 					}
 				}
 			}
-
 		})
 	}
 }

@@ -12,12 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package envoyfilter
+package bootstrap
 
 import (
-	networking "istio.io/api/networking/v1alpha3"
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 )
 
-type Generator interface {
-	Generate(service *networking.ServiceEntry) *networking.EnvoyFilter
+// AerakiArgs provides all of the configuration parameters for the Aeraki service.
+type AerakiArgs struct {
+	IstiodAddr string
+	ListenAddr string
+	Protocol   protocol.Instance
+	Generator  envoyfilter.Generator
+}
+
+func NewAerakiArgs() *AerakiArgs {
+	return &AerakiArgs{}
 }
