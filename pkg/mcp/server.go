@@ -95,7 +95,6 @@ type Connection struct {
 type Server struct {
 	listeningAddress string
 	grpcServer       *grpc.Server
-	gRPCListener     net.Listener
 	mcpClients       map[string]*Connection
 	mcpClientsMutex  sync.RWMutex
 	configStore      istiomodel.ConfigStore
@@ -225,12 +224,10 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 		Nonce:       time.Now().String(),
 		Incremental: false,
 	}
-	err = con.send(response)
-	if err != nil {
+	if err = con.send(response); err != nil {
 		return fmt.Errorf("failed to send response: %v", err)
-	} else {
-		mcpLog.Infof("Pushed %v EnvoyFilters to Istio: %v", len(envoyFilters), response)
 	}
+	mcpLog.Infof("Pushed %v EnvoyFilters to Istio: %v", len(envoyFilters), response)
 	return nil
 }
 
@@ -270,7 +267,9 @@ func (con *Connection) receive() {
 					Collection:  req.GetCollection(),
 					Nonce:       time.Now().String(),
 				}
-				con.send(response)
+				if err = con.send(response); err != nil {
+					mcpLog.Errorf("failed to send response: %v", err)
+				}
 			} else {
 				// Send a change event to the connection channel to trigger a push to the client
 				con.pushChannel <- istiomodel.EventAdd

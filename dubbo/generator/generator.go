@@ -23,6 +23,7 @@ import (
 	"github.com/gogo/protobuf/types"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pkg/config/host"
+	"istio.io/pkg/log"
 )
 
 type Generator struct {
@@ -39,7 +40,11 @@ func (*Generator) Generate(service *networking.ServiceEntry) *networking.EnvoyFi
 	buf := &bytes.Buffer{}
 	_ = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy)
 	var out = &types.Struct{}
-	(&jsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(buf, out)
+	if err := (&jsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(buf, out); err != nil {
+		//This should not happen
+		log.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
+		return nil
+	}
 	out.Fields["@type"] = &types.Value{Kind: &types.Value_StringValue{
 		StringValue: "type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy",
 	}}
