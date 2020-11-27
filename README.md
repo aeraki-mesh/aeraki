@@ -7,7 +7,9 @@ Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microse
 ## Architecture
 ![ Aeraki ](docs/aeraki.png)
 
-## Problems to solve:
+## Problems to solve
+
+We face some challenges in Istio traffic management:
 * Istio has limited build-in support to layer 7 protocols other than HTTP and gRPC.
 * It's not feasible to add these protocols directly into Istio codes because it will make the Istio code base too complex to maintain.
 
