@@ -20,11 +20,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/aeraki-framework/aeraki/dubbo/generator"
-
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
-
 	"github.com/aeraki-framework/aeraki/pkg/bootstrap"
+	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-framework/aeraki/plugin/dubbo/generator"
 )
 
 const (
