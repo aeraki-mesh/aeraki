@@ -2,24 +2,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aeraki-dubbo
+  name: aeraki
   labels:
-    app: aeraki-dubbo
+    app: aeraki
 spec:
   selector:
     matchLabels:
-      app: aeraki-dubbo
+      app: aeraki
   replicas: 1
   template:
     metadata:
       labels:
-        app: aeraki-dubbo
+        app: aeraki
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
       containers:
-        - name: aeraki-dubbo
-          image: aeraki/aeraki-dubbo
+        - name: aeraki
+          image: aeraki/aeraki
           imagePullPolicy: Always
           env:
             - name: istiodAddr
@@ -33,10 +33,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: aeraki-dubbo
+  name: aeraki
 spec:
   selector:
-    app: aeraki-dubbo
+    app: aeraki
   ports:
     - name: tcp-mcp
       port: 1109
