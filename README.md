@@ -1,11 +1,14 @@
 # Aeraki
 
+![ Aeraki ](docs/aeraki.png)
+---
+
 A framework to help you build a service mesh that can understand any layer 7 protocols.
 
 Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC.
 
 ## Architecture
-![ Aeraki ](docs/aeraki.png)
+![ Aeraki ](docs/aeraki-architecture.png)
 
 ## Problems to solve
 
