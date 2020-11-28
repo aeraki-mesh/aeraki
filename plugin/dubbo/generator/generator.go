@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"strconv"
 
+	"github.com/aeraki-framework/aeraki/pkg/model"
+
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
@@ -33,9 +35,18 @@ func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-func (*Generator) Generate(service *networking.ServiceEntry) *networking.EnvoyFilter {
-	listenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
-	dubboProxy := buildProxy(host.Name(service.Hosts[0]), int(service.Ports[0].Number))
+func (*Generator) Generate(serviceEntry *model.ServiceEntryWrapper) *networking.EnvoyFilter {
+	var serviceInterface string
+	var exist bool
+
+	// dubbo service interface should be passed in via serviceentry annotation
+	if serviceInterface, exist = serviceEntry.Annotations["interface"]; !exist {
+		log.Errorf("Failed to generate Dubbo EnvoyFilter: can't find interface annotation: %v", serviceEntry)
+		return nil
+	}
+
+	service := serviceEntry.Spec
+	dubboProxy := buildProxy(host.Name(service.Hosts[0]), serviceInterface, int(service.Ports[0].Number))
 
 	buf := &bytes.Buffer{}
 	_ = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy)
@@ -61,6 +72,8 @@ func (*Generator) Generate(service *networking.ServiceEntry) *networking.EnvoyFi
 			},
 		},
 	}
+
+	listenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
 
 	return &networking.EnvoyFilter{
 		ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{

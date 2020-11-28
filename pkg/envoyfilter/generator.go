@@ -15,9 +15,10 @@
 package envoyfilter
 
 import (
+	"github.com/aeraki-framework/aeraki/pkg/model"
 	networking "istio.io/api/networking/v1alpha3"
 )
 
 type Generator interface {
-	Generate(service *networking.ServiceEntry) *networking.EnvoyFilter
+	Generate(serviceEntry *model.ServiceEntryWrapper) *networking.EnvoyFilter
 }
