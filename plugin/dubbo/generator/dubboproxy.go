@@ -28,7 +28,7 @@ var (
 	regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 )
 
-func buildProxy(hostname host.Name, port int) *dubbo.DubboProxy {
+func buildProxy(hostname host.Name, ServiceInterface string, port int) *dubbo.DubboProxy {
 	clusterName := model.BuildSubsetKey(model.TrafficDirectionOutbound, "", hostname, port)
 
 	//clusterName := model.BuildSubsetKey(model.TrafficDirectionInbound, hostname, port)
@@ -38,7 +38,7 @@ func buildProxy(hostname host.Name, port int) *dubbo.DubboProxy {
 		ProtocolType:      dubbo.ProtocolType_Dubbo,
 		SerializationType: dubbo.SerializationType_Hessian2,
 		RouteConfig: []*dubbo.RouteConfiguration{
-			buildRouteConfig(clusterName, string(hostname)),
+			buildRouteConfig(clusterName, ServiceInterface),
 		},
 	}
 }

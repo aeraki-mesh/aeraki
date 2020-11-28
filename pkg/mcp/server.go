@@ -28,6 +28,7 @@ import (
 	"istio.io/istio/pkg/config/schema/collections"
 
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/gogo/protobuf/types"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -200,6 +201,10 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 	}
 	for _, config := range configs {
 		service, ok := config.Spec.(*networking.ServiceEntry)
+		wrapper := &model.ServiceEntryWrapper{
+			Meta: config.Meta,
+			Spec: service,
+		}
 		if !ok { // should never happen
 			return fmt.Errorf("failed in getting a virtual service: %s: %v", config.Labels, err)
 		}
@@ -207,7 +212,7 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 			if protocol.GetLayer7ProtocolFromPortName(port.Name) == s.instance {
 				envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
 					service:     service,
-					envoyfilter: s.generator.Generate(service),
+					envoyfilter: s.generator.Generate(wrapper),
 				})
 				break
 			}
