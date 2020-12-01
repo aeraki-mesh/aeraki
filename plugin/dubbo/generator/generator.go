@@ -18,10 +18,12 @@ import (
 	"bytes"
 	"strconv"
 
+	"github.com/golang/protobuf/jsonpb"
+
 	"github.com/aeraki-framework/aeraki/pkg/model"
 
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	"github.com/gogo/protobuf/jsonpb"
+	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/pkg/log"
@@ -37,20 +39,25 @@ func NewGenerator() *Generator {
 }
 
 func (*Generator) Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter {
-
 	serviceEntry := context.ServiceEntry
-
 	service := serviceEntry.Spec
 	dubboProxy := buildProxy(context)
-
 	buf := &bytes.Buffer{}
-	_ = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy)
-	var out = &types.Struct{}
-	if err := (&jsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(buf, out); err != nil {
+	var err error
+
+	if err = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy); err != nil {
 		//This should not happen
 		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
 		return nil
 	}
+
+	var out = &types.Struct{}
+	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(buf, out); err != nil {
+		//This should not happen
+		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
+		return nil
+	}
+
 	out.Fields["@type"] = &types.Value{Kind: &types.Value_StringValue{
 		StringValue: "type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy",
 	}}
