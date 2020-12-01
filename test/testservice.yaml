@@ -3,12 +3,18 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: test-dubbo-service
+  annotations:
+    interface: org.apache.dubbo.samples.basic.api.DemoService
 spec:
   hosts:
-  - test.dubbo.domain
+    - org.apache.dubbo.samples.basic.api.demoservice
   addresses:
-  - 194.194.194.194     # VIPs
+    - 193.193.192.192
   ports:
-  - number: 27018
-    name: tcp-dubbo
-    protocol: TCP
+    - number: 20880
+      name: tcp-dubbo
+      protocol: TCP
+  workloadSelector:
+    labels:
+      app: dubbo-sample-provider
+  resolution: STATIC

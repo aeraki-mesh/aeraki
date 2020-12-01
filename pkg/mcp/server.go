@@ -138,7 +138,7 @@ func (s *Server) startGrpcServer() error {
 	}
 
 	if err := s.grpcServer.Serve(listener); err != nil {
-		mcpLog.Fatala(err)
+		mcpLog.Fatal(err)
 		return err
 	}
 
@@ -195,24 +195,41 @@ func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishReso
 
 func (s *Server) pushEnvoyFilters(con *Connection) error {
 	envoyFilters := make([]*EnvoyFilterWrapper, 0)
-	configs, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	serviceEntries, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return fmt.Errorf("failed to list configs: %v", err)
 	}
-	for _, config := range configs {
+
+	for _, config := range serviceEntries {
 		service, ok := config.Spec.(*networking.ServiceEntry)
-		wrapper := &model.ServiceEntryWrapper{
-			Meta: config.Meta,
-			Spec: service,
-		}
 		if !ok { // should never happen
-			return fmt.Errorf("failed in getting a virtual service: %s: %v", config.Labels, err)
+			return fmt.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
 		}
+
+		if len(service.Hosts) == 0 {
+			return fmt.Errorf("host should not be empty: %s", config.Name)
+		}
+		if len(service.Hosts) > 1 {
+			mcpLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", config.Name)
+		}
+
+		relatedVs, err := s.findRelatedVirtualService(service)
+		if err != nil {
+			return fmt.Errorf("failed in finding the related virtual service : %s: %v", config.Name, err)
+		}
+		context := &model.EnvoyFilterContext{
+			ServiceEntry: &model.ServiceEntryWrapper{
+				Meta: config.Meta,
+				Spec: service,
+			},
+			VirtualService: relatedVs,
+		}
+
 		for _, port := range service.Ports {
 			if protocol.GetLayer7ProtocolFromPortName(port.Name) == s.instance {
 				envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
 					service:     service,
-					envoyfilter: s.generator.Generate(wrapper),
+					envoyfilter: s.generator.Generate(context),
 				})
 				break
 			}
@@ -234,6 +251,31 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 	}
 	mcpLog.Infof("Pushed %v EnvoyFilters to Istio: %v", len(envoyFilters), response)
 	return nil
+}
+
+func (s *Server) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
+	virtualServices, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind(), "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list configs: %v", err)
+	}
+
+	for _, vsConfig := range virtualServices {
+		vs, ok := vsConfig.Spec.(*networking.VirtualService)
+		if !ok { // should never happen
+			return nil, fmt.Errorf("failed in getting a virtual service: %s: %v", vsConfig.Name, err)
+		}
+
+		//Todo: we may need to deal with delegate Virtual services
+		for _, host := range vs.Hosts {
+			if host == service.Hosts[0] {
+				return &model.VirtualServiceWrapper{
+					Meta: vsConfig.Meta,
+					Spec: vs,
+				}, nil
+			}
+		}
+	}
+	return nil, nil
 }
 
 func constructResources(envoyFilters []*EnvoyFilterWrapper, instance protocol.Instance) ([]mcp.Resource, error) {

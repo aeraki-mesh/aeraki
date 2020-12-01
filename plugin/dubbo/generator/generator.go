@@ -24,9 +24,10 @@ import (
 	"github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
 	networking "istio.io/api/networking/v1alpha3"
-	"istio.io/istio/pkg/config/host"
 	"istio.io/pkg/log"
 )
+
+var generatorLog = log.RegisterScope("dubbo-generator", "mcp debugging", 0)
 
 type Generator struct {
 }
@@ -35,25 +36,19 @@ func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-func (*Generator) Generate(serviceEntry *model.ServiceEntryWrapper) *networking.EnvoyFilter {
-	var serviceInterface string
-	var exist bool
+func (*Generator) Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter {
 
-	// dubbo service interface should be passed in via serviceentry annotation
-	if serviceInterface, exist = serviceEntry.Annotations["interface"]; !exist {
-		log.Errorf("Failed to generate Dubbo EnvoyFilter: can't find interface annotation: %v", serviceEntry)
-		return nil
-	}
+	serviceEntry := context.ServiceEntry
 
 	service := serviceEntry.Spec
-	dubboProxy := buildProxy(host.Name(service.Hosts[0]), serviceInterface, int(service.Ports[0].Number))
+	dubboProxy := buildProxy(context)
 
 	buf := &bytes.Buffer{}
 	_ = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy)
 	var out = &types.Struct{}
 	if err := (&jsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(buf, out); err != nil {
 		//This should not happen
-		log.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
+		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
 		return nil
 	}
 	out.Fields["@type"] = &types.Value{Kind: &types.Value_StringValue{

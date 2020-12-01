@@ -96,15 +96,43 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 				controllerLog.Infof("Ignore this update because there is no change to the Spec: %s", curr.Name)
 				return
 			}
+
 			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 				service, ok := curr.Spec.(*networking.ServiceEntry)
 				if !ok {
 					// This should never happen
-					controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Labels)
+					controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
 				}
 				for _, port := range service.Ports {
 					if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
 						handler(prev, curr, event)
+					}
+				}
+			} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
+				vs, ok := curr.Spec.(*networking.VirtualService)
+				if !ok {
+					// This should never happen
+					controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
+				}
+				serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+				if err != nil {
+					controllerLog.Errorf("failed to list configs: %v", err)
+				}
+				for _, config := range serviceEntries {
+					service, ok := config.Spec.(*networking.ServiceEntry)
+					if !ok { // should never happen
+						controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
+					}
+					if len(service.Hosts) > 0 {
+						for _, host := range service.Hosts {
+							if host == vs.Hosts[0] {
+								for _, port := range service.Ports {
+									if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
+										handler(prev, curr, event)
+									}
+								}
+							}
+						}
 					}
 				}
 			}
