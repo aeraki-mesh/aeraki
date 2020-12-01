@@ -12,3 +12,8 @@ spec:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice
             subset: v1
+          weight: 5 
+        - destination:
+            host: org.apache.dubbo.samples.basic.api.demoservice
+            subset: v2
+          weight: 95 
