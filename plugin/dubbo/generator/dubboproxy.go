@@ -15,62 +15,30 @@
 package generator
 
 import (
+	"github.com/aeraki-framework/aeraki/pkg/model"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
-	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
-	"istio.io/istio/pilot/pkg/model"
+	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/config/host"
 )
 
-var (
-	// TODO: In the current version of Envoy, MaxProgramSize has been deprecated. However even if we do not send
-	// MaxProgramSize, Envoy is enforcing max size of 100 via runtime.
-	// See https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/regex.proto.html#type-matcher-v3-regexmatcher-googlere2.
-	regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
-)
-
-func buildProxy(hostname host.Name, ServiceInterface string, port int) *dubbo.DubboProxy {
-	clusterName := model.BuildSubsetKey(model.TrafficDirectionOutbound, "", hostname, port)
-
-	//clusterName := model.BuildSubsetKey(model.TrafficDirectionInbound, hostname, port)
+func buildProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
+	route, err := buildRouteConfig(context)
+	if err != nil {
+		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v, %v", context.ServiceEntry, err)
+		return nil
+	}
 
 	return &dubbo.DubboProxy{
-		StatPrefix:        clusterName,
+		StatPrefix: istiomodel.BuildSubsetKey(
+			istiomodel.TrafficDirectionOutbound, "",
+			host.Name(context.ServiceEntry.Spec.Hosts[0]),
+			int(context.ServiceEntry.Spec.Ports[0].Number)),
 		ProtocolType:      dubbo.ProtocolType_Dubbo,
 		SerializationType: dubbo.SerializationType_Hessian2,
+		// we only support one to one mapping of interface and service. If there're multiple interfaces in one process,
+		// these interfaces can be defined in separated services, one service for one interface.
 		RouteConfig: []*dubbo.RouteConfiguration{
-			buildRouteConfig(clusterName, ServiceInterface),
-		},
-	}
-}
-
-func buildRouteConfig(clusterName string, interfaceName string) *dubbo.RouteConfiguration {
-	return &dubbo.RouteConfiguration{
-		Name:      clusterName,
-		Interface: interfaceName, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
-		Routes: []*dubbo.Route{
-			defaultRoute(clusterName),
-		},
-	}
-}
-
-func defaultRoute(clusterName string) *dubbo.Route {
-	return &dubbo.Route{
-		Match: &dubbo.RouteMatch{
-			Method: &dubbo.MethodMatch{
-				Name: &matcher.StringMatcher{
-					MatchPattern: &matcher.StringMatcher_SafeRegex{
-						SafeRegex: &matcher.RegexMatcher{
-							EngineType: regexEngine,
-							Regex:      ".*",
-						},
-					},
-				},
-			},
-		},
-		Route: &dubbo.RouteAction{
-			ClusterSpecifier: &dubbo.RouteAction_Cluster{
-				Cluster: clusterName,
-			},
+			route,
 		},
 	}
 }

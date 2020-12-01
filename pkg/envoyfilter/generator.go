@@ -20,5 +20,5 @@ import (
 )
 
 type Generator interface {
-	Generate(serviceEntry *model.ServiceEntryWrapper) *networking.EnvoyFilter
+	Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter
 }
