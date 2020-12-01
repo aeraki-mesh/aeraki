@@ -18,13 +18,11 @@ import (
 	"bytes"
 	"strconv"
 
-	"github.com/golang/protobuf/jsonpb"
-
 	"github.com/aeraki-framework/aeraki/pkg/model"
-
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
+	"google.golang.org/protobuf/encoding/protojson"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/pkg/log"
 )
@@ -42,17 +40,17 @@ func (*Generator) Generate(context *model.EnvoyFilterContext) *networking.EnvoyF
 	serviceEntry := context.ServiceEntry
 	service := serviceEntry.Spec
 	dubboProxy := buildProxy(context)
-	buf := &bytes.Buffer{}
+	var buf []byte
 	var err error
 
-	if err = (&jsonpb.Marshaler{OrigName: true}).Marshal(buf, dubboProxy); err != nil {
+	if buf, err = protojson.Marshal(dubboProxy); err != nil {
 		//This should not happen
 		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
 		return nil
 	}
 
 	var out = &types.Struct{}
-	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(buf, out); err != nil {
+	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
 		//This should not happen
 		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v", err)
 		return nil

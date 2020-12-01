@@ -30,6 +30,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	google.golang.org/grpc v1.33.1
+	google.golang.org/protobuf v1.25.0
 	istio.io/api v0.0.0-20201112235759-fa4ee46c5dc2
 	istio.io/istio v0.0.0-20201118224433-c87a4c874df2
 	istio.io/pkg v0.0.0-20201112235759-c861803834b2
