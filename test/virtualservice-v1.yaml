@@ -1,0 +1,14 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: test-dubbo-route
+spec:
+  hosts:
+    - org.apache.dubbo.samples.basic.api.demoservice
+  http:
+    - name: "reviews-v1-routes"
+      route:
+        - destination:
+            host: org.apache.dubbo.samples.basic.api.demoservice
+            subset: v1
