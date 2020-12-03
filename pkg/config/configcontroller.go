@@ -35,7 +35,7 @@ import (
 
 var (
 	controllerLog = log.RegisterScope("config-controller", "mcp debugging", 0)
-	// We need serviceentry, virtualservice and destionationrule to generate the envoyfiters
+	// We need serviceentry and virtualservice to generate the envoyfiters
 	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
 				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
 )
@@ -89,53 +89,60 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 
 // RegisterEventHandler adds a handler to receive config update events for a configuration type
 func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
-	schemas := configCollection.All()
-	for _, schema := range schemas {
-		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
-			if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
-				controllerLog.Infof("Ignore this update because there is no change to the Spec: %s", curr.Name)
+	handlerWrapper := func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
+		if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
+			return
+		}
+		// Now we only care about ServiceEntry and VirtualService
+		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
+			controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
+			service, ok := curr.Spec.(*networking.ServiceEntry)
+			if !ok {
+				// This should never happen
+				controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
 				return
 			}
-
-			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
-				service, ok := curr.Spec.(*networking.ServiceEntry)
-				if !ok {
-					// This should never happen
-					controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
+			for _, port := range service.Ports {
+				if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
+					handler(prev, curr, event)
 				}
-				for _, port := range service.Ports {
-					if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
-						handler(prev, curr, event)
-					}
+			}
+		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
+			controllerLog.Infof("Virtual Service changed: %s %s", event.String(), curr.Name)
+			vs, ok := curr.Spec.(*networking.VirtualService)
+			if !ok {
+				// This should never happen
+				controllerLog.Errorf("Failed in getting a virtual service: %v", event.String(), curr.Name)
+				return
+			}
+			serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+			if err != nil {
+				controllerLog.Errorf("Failed to list configs: %v", err)
+				return
+			}
+			for _, config := range serviceEntries {
+				service, ok := config.Spec.(*networking.ServiceEntry)
+				if !ok { // should never happen
+					controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
+					return
 				}
-			} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
-				vs, ok := curr.Spec.(*networking.VirtualService)
-				if !ok {
-					// This should never happen
-					controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
-				}
-				serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
-				if err != nil {
-					controllerLog.Errorf("failed to list configs: %v", err)
-				}
-				for _, config := range serviceEntries {
-					service, ok := config.Spec.(*networking.ServiceEntry)
-					if !ok { // should never happen
-						controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
-					}
-					if len(service.Hosts) > 0 {
-						for _, host := range service.Hosts {
-							if host == vs.Hosts[0] {
-								for _, port := range service.Ports {
-									if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
-										handler(prev, curr, event)
-									}
+				if len(service.Hosts) > 0 {
+					for _, host := range service.Hosts {
+						if host == vs.Hosts[0] {
+							for _, port := range service.Ports {
+								if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
+									handler(prev, curr, event)
 								}
 							}
 						}
 					}
 				}
 			}
-		})
+		}
+	}
+
+	schemas := configCollection.All()
+	for _, schema := range schemas {
+		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
 	}
 }
