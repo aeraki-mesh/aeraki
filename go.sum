@@ -942,8 +942,8 @@ github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-github.com/zhaohuabing/istio v0.0.0-20201126073354-c3d313b335ea h1:q2T2Ax05bCev1CJ9iQr71wH7xH92fo2PSbFVtasaKu4=
-github.com/zhaohuabing/istio v0.0.0-20201126073354-c3d313b335ea/go.mod h1:vcU9h1zFLTLBL6d/Qo+w9nk6WocnGvQ5Rbkw4CjY8q8=
+github.com/zhaohuabing/istio v0.0.0-20201201123742-0738ca6370f3 h1:4MR97Z9e3CnQwfRGWBmxyPedb8MVOhUuDP+cEc/81j4=
+github.com/zhaohuabing/istio v0.0.0-20201201123742-0738ca6370f3/go.mod h1:vcU9h1zFLTLBL6d/Qo+w9nk6WocnGvQ5Rbkw4CjY8q8=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.5/go.mod h1:G5EMThwa9y8QZGBClrRx5EY+Yw9kAhnjy3bSjsnlVTQ=
@@ -1449,6 +1449,8 @@ istio.io/api v0.0.0-20190515205759-982e5c3888c6/go.mod h1:hhLFQmpHia8zgaM37vb2ml
 istio.io/api v0.0.0-20200812202721-24be265d41c3/go.mod h1:88HN3o1fSD1jo+Z1WTLlJfMm9biopur6Ct9BFKjiB64=
 istio.io/api v0.0.0-20201112235759-fa4ee46c5dc2 h1:tqbH+pnDd5U+j767XNtijNHvxu1Lc6sWOQ884PwRFE8=
 istio.io/api v0.0.0-20201112235759-fa4ee46c5dc2/go.mod h1:88HN3o1fSD1jo+Z1WTLlJfMm9biopur6Ct9BFKjiB64=
+istio.io/api v0.0.0-20201125194658-3cee6a1d3ab4 h1:gtas5WZQND0rh27+pLHh2rf9HoYVvvBOFY/sQhrtEbk=
+istio.io/api v0.0.0-20201125194658-3cee6a1d3ab4/go.mod h1:88HN3o1fSD1jo+Z1WTLlJfMm9biopur6Ct9BFKjiB64=
 istio.io/client-go v0.0.0-20200908160912-f99162621a1a h1:clPn0fz+rXq5Ytj6Ppb1ygUKeU0RImT4ZbT1oMd1G04=
 istio.io/client-go v0.0.0-20200908160912-f99162621a1a/go.mod h1:SO65MWt7I45dvUwuDowoiB0SVcGpfWZfUTlopvYpbZc=
 istio.io/gogo-genproto v0.0.0-20190930162913-45029607206a/go.mod h1:OzpAts7jljZceG4Vqi5/zXy/pOg1b209T3jb7Nv5wIs=
