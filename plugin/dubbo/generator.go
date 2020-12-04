@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package generator
+package dubbo
 
 import (
 	"bytes"
@@ -27,7 +27,7 @@ import (
 	"istio.io/pkg/log"
 )
 
-var generatorLog = log.RegisterScope("dubbo-generator", "mcp debugging", 0)
+var generatorLog = log.RegisterScope("dubbo-generator", "dubbo generator", 0)
 
 type Generator struct {
 }

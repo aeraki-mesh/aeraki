@@ -22,7 +22,7 @@ import (
 
 	"github.com/aeraki-framework/aeraki/pkg/bootstrap"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
-	"github.com/aeraki-framework/aeraki/plugin/dubbo/generator"
+	"github.com/aeraki-framework/aeraki/plugin/dubbo"
 )
 
 const (
@@ -36,7 +36,7 @@ func main() {
 	args.ListenAddr = *flag.String("listeningAddr", defaultListeningAddr, "MCP listening Address")
 	flag.Parse()
 	args.Protocol = protocol.Parse("dubbo")
-	args.Generator = generator.NewGenerator()
+	args.Generator = dubbo.NewGenerator()
 	server := bootstrap.NewServer(args)
 
 	// Create the stop channel for all of the servers.

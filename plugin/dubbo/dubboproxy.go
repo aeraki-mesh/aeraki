@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package generator
+package dubbo
 
 import (
 	"github.com/aeraki-framework/aeraki/pkg/model"
