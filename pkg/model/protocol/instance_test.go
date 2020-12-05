@@ -26,9 +26,9 @@ func Test_getLayer7ProtocolFromPortName(t *testing.T) {
 		portName string
 		want     protocol.Instance
 	}{
-		{testName: "tcp-dubbo", portName: "tcp-dubbo", want: "dubbo"},
-		{testName: "tcp-Dubbo", portName: "tcp-Dubbo", want: "dubbo"},
-		{testName: "tcp-Dubbo-28001", portName: "tcp-Dubbo-28001", want: "dubbo"},
+		{testName: "tcp-dubbo", portName: "tcp-dubbo", want: protocol.Dubbo},
+		{testName: "tcp-Dubbo", portName: "tcp-Dubbo", want: protocol.Dubbo},
+		{testName: "tcp-Dubbo-28001", portName: "tcp-Dubbo-28001", want: protocol.Dubbo},
 		{testName: "Dubbo", portName: "Dubbo", want: protocol.Unsupported},
 	}
 	for _, tt := range tests {
@@ -37,5 +37,14 @@ func Test_getLayer7ProtocolFromPortName(t *testing.T) {
 				t.Errorf("getLayer7ProtocolFromPortName() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestIsDubbo(t *testing.T) {
+	if !protocol.Dubbo.IsDubbo() {
+		t.Errorf("Dubbo should be Dubbo")
+	}
+	if protocol.Dubbo.IsThrift() {
+		t.Errorf("Dubbo is not Thrift")
 	}
 }

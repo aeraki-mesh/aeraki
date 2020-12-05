@@ -37,8 +37,8 @@ type Server struct {
 // NewServer creates a new Server instance based on the provided arguments.
 func NewServer(args *AerakiArgs) *Server {
 	configController := config.NewController(args.IstiodAddr)
-	mcpServer := mcp.NewServer(args.ListenAddr, configController.Store, args.Generator, args.Protocol)
-	configController.RegisterEventHandler(args.Protocol, func(_, curr istioconfig.Config, event model.Event) {
+	mcpServer := mcp.NewServer(args.ListenAddr, configController.Store, args.Protocols)
+	configController.RegisterEventHandler(args.Protocols, func(_, curr istioconfig.Config, event model.Event) {
 		mcpServer.ConfigUpdate(event)
 	})
 

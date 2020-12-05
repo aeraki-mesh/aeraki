@@ -14,24 +14,72 @@
 
 package protocol
 
-import "strings"
+import (
+	"strings"
+)
 
-var cache map[string]Instance = make(map[string]Instance)
-
+// Instance defines network protocols for ports
 type Instance string
 
-// Unsupported - value to signify that the protocol is unsupported.
-const Unsupported Instance = "UnsupportedProtocol"
+const (
+	// DUBBO declares that the port carries dubbo traffic.
+	Dubbo Instance = "Dubbo"
+	// Thrift declares that the port carries Thrift traffic.
+	Thrift Instance = "Thrift"
+	// Mongo declares that the port carries MongoDB traffic.
+	Mongo Instance = "Mongo"
+	// Redis declares that the port carries Redis traffic.
+	Redis Instance = "Redis"
+	// MySQL declares that the port carries MySQL traffic.
+	MySQL Instance = "MySQL"
+	// Unsupported - value to signify that the protocol is unsupported.
+	Unsupported Instance = "UnsupportedProtocol"
+)
 
+// Parse from string ignoring case
 func Parse(s string) Instance {
-	name := strings.ToLower(s)
-	if protocol, ok := cache[name]; ok {
-		return protocol
+	switch strings.ToLower(s) {
+	case "dubbo":
+		return Dubbo
+	case "thrift":
+		return Thrift
+	case "mongo":
+		return Mongo
+	case "redis":
+		return Redis
+	case "mysql":
+		return MySQL
 	}
 
-	var protocol Instance = Instance(name)
-	cache[name] = protocol
-	return protocol
+	return Unsupported
+}
+
+// IsDubbo is true for protocols that use Dubbo as transport protocol
+func (i Instance) IsDubbo() bool {
+	switch i {
+	case Dubbo:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsThrift is true for protocols that use Thrift as transport protocol
+func (i Instance) IsThrift() bool {
+	switch i {
+	case Thrift:
+		return true
+	default:
+		return false
+	}
+}
+
+func (i Instance) IsUnsupported() bool {
+	return i == Unsupported
+}
+
+func (i Instance) ToString() string {
+	return string(i)
 }
 
 func GetLayer7ProtocolFromPortName(name string) Instance {
@@ -42,6 +90,6 @@ func GetLayer7ProtocolFromPortName(name string) Instance {
 	return Unsupported
 }
 
-func (i Instance) String() string {
+/*func (i Instance) String() string {
 	return string(i)
-}
+}*/

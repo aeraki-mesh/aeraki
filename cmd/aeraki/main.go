@@ -20,9 +20,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-framework/aeraki/plugin/dubbo"
+	"github.com/aeraki-framework/aeraki/plugin/thrift"
+
 	"github.com/aeraki-framework/aeraki/pkg/bootstrap"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
-	"github.com/aeraki-framework/aeraki/plugin/dubbo"
 )
 
 const (
@@ -33,18 +36,24 @@ const (
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	args.IstiodAddr = *flag.String("istiodaddr", defaultIstiodAddr, "Istiod xds server address")
-	args.ListenAddr = *flag.String("listeningAddr", defaultListeningAddr, "MCP listening Address")
+	args.ListenAddr = *flag.String("listeningAddr", defaultListeningAddr, "MCP listening address")
 	flag.Parse()
-	args.Protocol = protocol.Parse("dubbo")
-	args.Generator = dubbo.NewGenerator()
-	server := bootstrap.NewServer(args)
 
 	// Create the stop channel for all of the servers.
 	stopChan := make(chan struct{}, 1)
+	args.Protocols = initGenerators()
+	server := bootstrap.NewServer(args)
 	server.Start(stopChan)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 	stopChan <- struct{}{}
+}
+
+func initGenerators() map[protocol.Instance]envoyfilter.Generator {
+	return map[protocol.Instance]envoyfilter.Generator{
+		protocol.Dubbo:  dubbo.NewGenerator(),
+		protocol.Thrift: thrift.NewGenerator(),
+	}
 }

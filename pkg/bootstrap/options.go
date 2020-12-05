@@ -23,8 +23,7 @@ import (
 type AerakiArgs struct {
 	IstiodAddr string
 	ListenAddr string
-	Protocol   protocol.Instance
-	Generator  envoyfilter.Generator
+	Protocols  map[protocol.Instance]envoyfilter.Generator
 }
 
 func NewAerakiArgs() *AerakiArgs {

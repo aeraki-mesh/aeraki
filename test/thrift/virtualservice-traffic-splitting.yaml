@@ -1,0 +1,19 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: test-thrift-route
+spec:
+  hosts:
+    - thrift-sample-server.thrift.svc.cluster.local
+  http:
+    - name: "thrift-traffic-splitting"
+      route:
+        - destination:
+            host: thrift-sample-server.thrift.svc.cluster.local
+            subset: v1
+          weight: 30
+        - destination:
+            host: thrift-sample-server.thrift.svc.cluster.local
+            subset: v2
+          weight: 70
