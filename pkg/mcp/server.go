@@ -23,12 +23,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
-
-	"istio.io/istio/pkg/config/schema/collections"
-
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	"github.com/gogo/protobuf/types"
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -40,6 +37,7 @@ import (
 	mcp "istio.io/api/mcp/v1alpha1"
 	networking "istio.io/api/networking/v1alpha3"
 	istiomodel "istio.io/istio/pilot/pkg/model"
+	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
 )
 
@@ -67,6 +65,7 @@ var (
 type EnvoyFilterWrapper struct {
 	service     *networking.ServiceEntry
 	envoyfilter *networking.EnvoyFilter
+	instance    protocol.Instance
 }
 
 // Connection holds information about connected client.
@@ -99,17 +98,15 @@ type Server struct {
 	mcpClients       map[string]*Connection
 	mcpClientsMutex  sync.RWMutex
 	configStore      istiomodel.ConfigStore
-	generator        envoyfilter.Generator
-	instance         protocol.Instance
+	generators       map[protocol.Instance]envoyfilter.Generator
 }
 
-func NewServer(listeningAddress string, store istiomodel.ConfigStore, generator envoyfilter.Generator, instance protocol.Instance) *Server {
+func NewServer(listeningAddress string, store istiomodel.ConfigStore, generators map[protocol.Instance]envoyfilter.Generator) *Server {
 	mcpServer := &Server{
 		listeningAddress: listeningAddress,
 		mcpClients:       make(map[string]*Connection),
 		configStore:      store,
-		generator:        generator,
-		instance:         instance,
+		generators:       generators,
 	}
 	return mcpServer
 }
@@ -117,7 +114,7 @@ func NewServer(listeningAddress string, store istiomodel.ConfigStore, generator 
 // Start the gRPC MCP server
 func (s *Server) Start() error {
 	if err := s.startGrpcServer(); err != nil {
-		mcpLog.Fatala(err)
+		mcpLog.Fatal(err)
 		return err
 	}
 	return nil
@@ -226,16 +223,18 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 		}
 
 		for _, port := range service.Ports {
-			if protocol.GetLayer7ProtocolFromPortName(port.Name) == s.instance {
+			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
+			if generator, ok := s.generators[instance]; ok {
 				envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
 					service:     service,
-					envoyfilter: s.generator.Generate(context),
+					envoyfilter: generator.Generate(context),
+					instance:    instance,
 				})
 				break
 			}
 		}
 	}
-	resources, err := constructResources(envoyFilters, s.instance)
+	resources, err := constructResources(envoyFilters)
 	if err != nil {
 		return fmt.Errorf("failed to construct resources: %v", err)
 	}
@@ -278,7 +277,7 @@ func (s *Server) findRelatedVirtualService(service *networking.ServiceEntry) (*m
 	return nil, nil
 }
 
-func constructResources(envoyFilters []*EnvoyFilterWrapper, instance protocol.Instance) ([]mcp.Resource, error) {
+func constructResources(envoyFilters []*EnvoyFilterWrapper) ([]mcp.Resource, error) {
 	resources := make([]mcp.Resource, 0)
 	for _, wrapper := range envoyFilters {
 		seAny, err := types.MarshalAny(wrapper.envoyfilter)
@@ -288,7 +287,7 @@ func constructResources(envoyFilters []*EnvoyFilterWrapper, instance protocol.In
 		resources = append(resources, mcp.Resource{
 			Body: seAny,
 			Metadata: &v1alpha1.Metadata{
-				Name:    configRootNS + "/" + wrapper.service.Hosts[0] + "_" + "aeraki" + "_" + instance.String(),
+				Name:    configRootNS + "/" + wrapper.service.Hosts[0] + "_" + "aeraki" + "_" + wrapper.instance.ToString(),
 				Version: "v1",
 			},
 		})

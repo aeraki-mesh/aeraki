@@ -19,8 +19,7 @@ import (
 	"reflect"
 	"time"
 
-	"istio.io/istio/pkg/config/schema/collection"
-
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
@@ -29,6 +28,7 @@ import (
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/adsc"
 	istioconfig "istio.io/istio/pkg/config"
+	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
 )
@@ -88,7 +88,7 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 }
 
 // RegisterEventHandler adds a handler to receive config update events for a configuration type
-func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
+func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyfilter.Generator, handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
 	handlerWrapper := func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
 		if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
 			return
@@ -103,7 +103,7 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 				return
 			}
 			for _, port := range service.Ports {
-				if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
+				if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
 					handler(prev, curr, event)
 				}
 			}
@@ -130,7 +130,7 @@ func (c *Controller) RegisterEventHandler(instance protocol.Instance, handler fu
 					for _, host := range service.Hosts {
 						if host == vs.Hosts[0] {
 							for _, port := range service.Ports {
-								if protocol.GetLayer7ProtocolFromPortName(port.Name) == instance {
+								if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
 									handler(prev, curr, event)
 								}
 							}
