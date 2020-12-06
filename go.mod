@@ -29,6 +29,7 @@ require (
 	github.com/envoyproxy/go-control-plane v0.9.8-0.20201019204000-12785f608982
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.3
+	github.com/golangci/govet v0.0.0-20180818181408-44ddbe260190 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	google.golang.org/grpc v1.33.1

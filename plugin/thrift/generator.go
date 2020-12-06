@@ -23,13 +23,16 @@ import (
 
 var generatorLog = log.RegisterScope("thrift-generator", "thrift generator", 0)
 
+// Generator defines a Thrift envoyfilter Generator
 type Generator struct {
 }
 
+// NewGenerator creates an new Dubbo Generator instance
 func NewGenerator() *Generator {
 	return &Generator{}
 }
 
+// Generate create EnvoyFilters for Dubbo services
 func (*Generator) Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter {
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry.Spec,

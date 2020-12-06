@@ -26,6 +26,7 @@ type AerakiArgs struct {
 	Protocols  map[protocol.Instance]envoyfilter.Generator
 }
 
+// NewAerakiArgs constructs AerakiArgs with default value.
 func NewAerakiArgs() *AerakiArgs {
 	return &AerakiArgs{}
 }

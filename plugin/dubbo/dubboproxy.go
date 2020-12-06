@@ -17,8 +17,6 @@ package dubbo
 import (
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
-	istiomodel "istio.io/istio/pilot/pkg/model"
-	"istio.io/istio/pkg/config/host"
 )
 
 func buildProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
@@ -29,9 +27,9 @@ func buildProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
 	}
 
 	return &dubbo.DubboProxy{
-		StatPrefix: istiomodel.BuildSubsetKey(
-			istiomodel.TrafficDirectionOutbound, "",
-			host.Name(context.ServiceEntry.Spec.Hosts[0]),
+		StatPrefix: model.BuildClusterName(
+			model.TrafficDirectionOutbound, "",
+			context.ServiceEntry.Spec.Hosts[0],
 			int(context.ServiceEntry.Spec.Ports[0].Number)),
 		ProtocolType:      dubbo.ProtocolType_Dubbo,
 		SerializationType: dubbo.SerializationType_Hessian2,

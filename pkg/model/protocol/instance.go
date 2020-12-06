@@ -22,7 +22,7 @@ import (
 type Instance string
 
 const (
-	// DUBBO declares that the port carries dubbo traffic.
+	// Dubbo declares that the port carries dubbo traffic.
 	Dubbo Instance = "Dubbo"
 	// Thrift declares that the port carries Thrift traffic.
 	Thrift Instance = "Thrift"
@@ -74,14 +74,17 @@ func (i Instance) IsThrift() bool {
 	}
 }
 
+// IsUnsupported is true for protocols that are not supported
 func (i Instance) IsUnsupported() bool {
 	return i == Unsupported
 }
 
+// ToString converts an Instance to a string
 func (i Instance) ToString() string {
 	return string(i)
 }
 
+// GetLayer7ProtocolFromPortName extracts the layer-7 protocol name from the port name of a service
 func GetLayer7ProtocolFromPortName(name string) Instance {
 	s := strings.Split(name, "-")
 	if len(s) > 1 {
@@ -89,7 +92,3 @@ func GetLayer7ProtocolFromPortName(name string) Instance {
 	}
 	return Unsupported
 }
-
-/*func (i Instance) String() string {
-	return string(i)
-}*/

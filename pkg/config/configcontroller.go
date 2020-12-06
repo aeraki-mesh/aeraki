@@ -40,13 +40,14 @@ var (
 				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
 )
 
-// Controller watches Istio config xDS server and notifies the listeners when config changes
+// Controller watches Istio config xDS server and notifies the listeners when config changes.
 type Controller struct {
 	configServerAddr string
 	Store            istiomodel.ConfigStore
 	controller       istiomodel.ConfigStoreCache
 }
 
+// NewController creates a new Controller instance based on the provided arguments.
 func NewController(configServerAddr string) *Controller {
 	store := memory.Make(configCollection)
 	return &Controller{

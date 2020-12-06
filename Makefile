@@ -35,5 +35,7 @@ clean:
 style-check:
 	gofmt -l -d ./
 	goimports -l -d ./
+lint:
+	golint ./...
 
-.PHONY: build docker-build docker-push clean
+.PHONY: build docker-build docker-push clean style-check lint
