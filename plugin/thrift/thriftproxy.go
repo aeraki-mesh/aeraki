@@ -17,8 +17,6 @@ package thrift
 import (
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	thrift "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/thrift_proxy/v3"
-	istiomodel "istio.io/istio/pilot/pkg/model"
-	"istio.io/istio/pkg/config/host"
 )
 
 func buildProxy(context *model.EnvoyFilterContext) *thrift.ThriftProxy {
@@ -29,9 +27,9 @@ func buildProxy(context *model.EnvoyFilterContext) *thrift.ThriftProxy {
 	}
 
 	return &thrift.ThriftProxy{
-		StatPrefix: istiomodel.BuildSubsetKey(
-			istiomodel.TrafficDirectionOutbound, "",
-			host.Name(context.ServiceEntry.Spec.Hosts[0]),
+		StatPrefix: model.BuildClusterName(
+			model.TrafficDirectionOutbound, "",
+			context.ServiceEntry.Spec.Hosts[0],
 			int(context.ServiceEntry.Spec.Ports[0].Number)),
 		Transport:   thrift.TransportType_AUTO_TRANSPORT,
 		Protocol:    thrift.ProtocolType_AUTO_PROTOCOL,

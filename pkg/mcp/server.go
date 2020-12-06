@@ -62,7 +62,7 @@ var (
 	connectionNumber = int64(0)
 )
 
-type EnvoyFilterWrapper struct {
+type envoyFilterWrapper struct {
 	service     *networking.ServiceEntry
 	envoyfilter *networking.EnvoyFilter
 	instance    protocol.Instance
@@ -79,19 +79,20 @@ type Connection struct {
 	// PeerAddr is the address of the client, from network layer.
 	PeerAddr string
 
-	// Time of connection, for debugging
+	// Time of connection, for debugging.
 	Connect time.Time
 
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 
-	// MCP stream implement this interface
+	// MCP stream implement this interface.
 	stream mcp.ResourceSource_EstablishResourceStreamServer
 
-	// LastResponse stores the last response nonce to each sink
+	// LastResponse stores the last response nonce to each sink.
 	LastResponse map[string]string
 }
 
+// Server contains the runtime configuration for a MCP source service.
 type Server struct {
 	listeningAddress string
 	grpcServer       *grpc.Server
@@ -101,6 +102,7 @@ type Server struct {
 	generators       map[protocol.Instance]envoyfilter.Generator
 }
 
+// NewServer creates a new Server instance based on the provided arguments.
 func NewServer(listeningAddress string, store istiomodel.ConfigStore, generators map[protocol.Instance]envoyfilter.Generator) *Server {
 	mcpServer := &Server{
 		listeningAddress: listeningAddress,
@@ -120,6 +122,7 @@ func (s *Server) Start() error {
 	return nil
 }
 
+// Stop stops the Server
 func (s *Server) Stop() {
 	s.grpcServer.Stop()
 }
@@ -142,6 +145,7 @@ func (s *Server) startGrpcServer() error {
 	return nil
 }
 
+// EstablishResourceStream implements the mcp gRPC interface
 func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishResourceStreamServer) error {
 	var timeChan <-chan time.Time
 	var startDebounce time.Time
@@ -191,7 +195,7 @@ func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishReso
 }
 
 func (s *Server) pushEnvoyFilters(con *Connection) error {
-	envoyFilters := make([]*EnvoyFilterWrapper, 0)
+	envoyFilters := make([]*envoyFilterWrapper, 0)
 	serviceEntries, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return fmt.Errorf("failed to list configs: %v", err)
@@ -225,7 +229,7 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := s.generators[instance]; ok {
-				envoyFilters = append(envoyFilters, &EnvoyFilterWrapper{
+				envoyFilters = append(envoyFilters, &envoyFilterWrapper{
 					service:     service,
 					envoyfilter: generator.Generate(context),
 					instance:    instance,
@@ -277,7 +281,7 @@ func (s *Server) findRelatedVirtualService(service *networking.ServiceEntry) (*m
 	return nil, nil
 }
 
-func constructResources(envoyFilters []*EnvoyFilterWrapper) ([]mcp.Resource, error) {
+func constructResources(envoyFilters []*envoyFilterWrapper) ([]mcp.Resource, error) {
 	resources := make([]mcp.Resource, 0)
 	for _, wrapper := range envoyFilters {
 		seAny, err := types.MarshalAny(wrapper.envoyfilter)
@@ -407,11 +411,11 @@ func (s *Server) newConnection(stream mcp.ResourceSource_EstablishResourceStream
 		peerAddr = peerInfo.Addr.String()
 	}
 	id := atomic.AddInt64(&connectionNumber, 1)
-	conId := peerAddr + "-" + strconv.FormatInt(id, 10)
+	conID := peerAddr + "-" + strconv.FormatInt(id, 10)
 	return &Connection{
 		PeerAddr:     peerAddr,
 		Connect:      time.Now(),
-		ConID:        conId,
+		ConID:        conID,
 		pushChannel:  make(chan istiomodel.Event, 100),
 		stream:       stream,
 		LastResponse: make(map[string]string),
@@ -434,6 +438,7 @@ func (s *Server) removeConnection(con *Connection) {
 	mcpLog.Infof("Remove connection from client: %s", con.ConID)
 }
 
+// ConfigUpdate sends a config change event to the pushChannel of connections
 func (s *Server) ConfigUpdate(event istiomodel.Event) {
 	s.mcpClientsMutex.Lock()
 	defer s.mcpClientsMutex.Unlock()

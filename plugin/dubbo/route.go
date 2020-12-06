@@ -3,16 +3,12 @@ package dubbo
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
-
-	networking "istio.io/api/networking/v1alpha3"
-	istiomodel "istio.io/istio/pilot/pkg/model"
-	"istio.io/istio/pkg/config/host"
-
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	envoy "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	"github.com/golang/protobuf/ptypes/wrappers"
+	networking "istio.io/api/networking/v1alpha3"
 )
 
 var (
@@ -32,7 +28,7 @@ func buildRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfigurat
 	}
 
 	var route []*dubbo.Route
-	clusterName := istiomodel.BuildSubsetKey(istiomodel.TrafficDirectionOutbound, "", host.Name(context.ServiceEntry.Spec.Hosts[0]), int(context.ServiceEntry.Spec.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "", context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
 
 	if context.VirtualService == nil {
 		route = []*dubbo.Route{defaultRoute(clusterName)}
@@ -104,7 +100,7 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 }
 
 func buildSingleCluster(http *networking.HTTPRoute, service *networking.ServiceEntry) *dubbo.RouteAction {
-	clusterName := istiomodel.BuildSubsetKey(istiomodel.TrafficDirectionOutbound, http.Route[0].Destination.Subset, host.Name(service.Hosts[0]), int(service.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, http.Route[0].Destination.Subset, service.Hosts[0], int(service.Ports[0].Number))
 	return &dubbo.RouteAction{
 		ClusterSpecifier: &dubbo.RouteAction_Cluster{
 			Cluster: clusterName,
@@ -117,7 +113,7 @@ func buildWeightedCluster(http *networking.HTTPRoute, service *networking.Servic
 	var totalWeight uint32
 
 	for _, route := range http.Route {
-		clusterName := istiomodel.BuildSubsetKey(istiomodel.TrafficDirectionOutbound, route.Destination.Subset, host.Name(service.Hosts[0]), int(service.Ports[0].Number))
+		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, route.Destination.Subset, service.Hosts[0], int(service.Ports[0].Number))
 		clusterWeight := &envoy.WeightedCluster_ClusterWeight{
 			Name:   clusterName,
 			Weight: &wrappers.UInt32Value{Value: uint32(route.Weight)},

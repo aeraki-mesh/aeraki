@@ -19,17 +19,11 @@ import (
 	thrift "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/thrift_proxy/v3"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"
-	istiomodel "istio.io/istio/pilot/pkg/model"
-	"istio.io/istio/pkg/config/host"
 )
 
 func buildRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
 	var route []*thrift.Route
-	clusterName := istiomodel.BuildSubsetKey(
-		istiomodel.TrafficDirectionOutbound,
-		"",
-		host.Name(context.ServiceEntry.Spec.Hosts[0]),
-		int(context.ServiceEntry.Spec.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "", context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
 
 	if context.VirtualService == nil {
 		route = []*thrift.Route{defaultRoute(clusterName)}
@@ -86,7 +80,7 @@ func buildRoute(context *model.EnvoyFilterContext) []*thrift.Route {
 }
 
 func buildSingleCluster(http *networking.HTTPRoute, service *networking.ServiceEntry) *thrift.RouteAction {
-	clusterName := istiomodel.BuildSubsetKey(istiomodel.TrafficDirectionOutbound, http.Route[0].Destination.Subset, host.Name(service.Hosts[0]), int(service.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, http.Route[0].Destination.Subset, service.Hosts[0], int(service.Ports[0].Number))
 	return &thrift.RouteAction{
 		ClusterSpecifier: &thrift.RouteAction_Cluster{
 			Cluster: clusterName,
@@ -99,7 +93,7 @@ func buildWeightedCluster(http *networking.HTTPRoute, service *networking.Servic
 	var totalWeight uint32
 
 	for _, route := range http.Route {
-		clusterName := istiomodel.BuildSubsetKey(istiomodel.TrafficDirectionOutbound, route.Destination.Subset, host.Name(service.Hosts[0]), int(service.Ports[0].Number))
+		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, route.Destination.Subset, service.Hosts[0], int(service.Ports[0].Number))
 		clusterWeight := &thrift.WeightedCluster_ClusterWeight{
 			Name:   clusterName,
 			Weight: &wrappers.UInt32Value{Value: uint32(route.Weight)},
