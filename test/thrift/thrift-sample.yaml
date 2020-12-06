@@ -1,0 +1,101 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrift-sample-server-v1
+  labels:
+    app: thrift-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: thrift-sample-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: thrift-sample-server
+        version: v1
+    spec:
+      containers:
+        - name: thrift-sample-server
+          image: aeraki/thrift-sample-server
+          ports:
+            - containerPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrift-sample-server-v2
+  labels:
+    app: thrift-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: thrift-sample-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: thrift-sample-server
+        version: v2
+    spec:
+      containers:
+        - name: thrift-sample-server
+          image: aeraki/thrift-sample-server
+          ports:
+            - containerPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrift-sample-client
+  labels:
+    app: thrift-sample-client
+spec:
+  selector:
+    matchLabels:
+      app: thrift-sample-client
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: thrift-sample-client
+    spec:
+      containers:
+        - name: thrift-sample-client
+          image: aeraki/thrift-sample-client
+          env:
+            - name: helloServer
+              value: "thrift-sample-server"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thrift-sample-server
+spec:
+  selector:
+    app: thrift-sample-server
+  ports:
+    - name: tcp-thrift-hello-server
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+---
+# network-tool is used for debugging purpose
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-tool
+spec:
+  selector:
+    matchLabels:
+      app: network-tool
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: network-tool
+    spec:
+      containers:
+        - name: network-tool
+          image: praqma/network-multitool

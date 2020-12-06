@@ -25,7 +25,11 @@ import (
 
 func buildRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
 	var route []*thrift.Route
-	clusterName := istiomodel.BuildSubsetKey(istiomodel.TrafficDirectionOutbound, "", host.Name(context.ServiceEntry.Spec.Hosts[0]), int(context.ServiceEntry.Spec.Ports[0].Number))
+	clusterName := istiomodel.BuildSubsetKey(
+		istiomodel.TrafficDirectionOutbound,
+		"",
+		host.Name(context.ServiceEntry.Spec.Hosts[0]),
+		int(context.ServiceEntry.Spec.Ports[0].Number))
 
 	if context.VirtualService == nil {
 		route = []*thrift.Route{defaultRoute(clusterName)}
