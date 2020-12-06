@@ -27,21 +27,29 @@ Even though Aeraki is a standalone component, it does depend on Istio xds-mcp AP
 
 ## Feature list:
 * Dubbo
-  * Default routing          [Done]    
-  * Version-based routing    [Done]
-  * Traffic splitting        [Done]
-  * Header based routing     [Todo]
+  * [Done] Default routing
+  * [Done] Version-based routing
+  * [Done] Traffic splitting
+  * [Todo] Header based routing
 * Thrift
-  * Default routing          [Done]    
-  * Version-based routing    [Done]
-  * Traffic splitting        [Done]
-  * Header based routing     [Todo]
-  * Rate limit               [Todo]
+  * [Done] Default routing
+  * [Done] Version-based routing
+  * [Done] Traffic splitting
+  * [Todo] Header based routing
+  * [Todo] Rate limit
 * Redis
-  * Sharding                 [Todo]
-  * Traffic mirroring        [Todo]
-* TARS                       [Todo]
+  * [Todo] Sharding
+  * [Todo] Traffic mirroring
+* [Todo] MySql
+* [Todo] MongoDB
+* [Todo] Postgres
+* [Todo] RocketMQ
+* [Todo] ZooKeeper
 * ...
+
+## Thrift and Dubbo traffic management demo
+
+[![Thrift and Dubbo traffic management demo](http://i3.ytimg.com/vi/vrjp-Yg3Leg/maxresdefault.jpg)](https://www.youtube.com/watch?v=vrjp-Yg3Leg)
 
 ## Contact
 If you're interested in contributing this project, please reach out to zhaohuabing@gmail.com
