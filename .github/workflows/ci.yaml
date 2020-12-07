@@ -34,12 +34,16 @@ jobs:
         run: go build -race  ./...
       - name: Test
         run: go test -race ./...
-  golangci-lint:
-    name: golangci-lint
+  go-lint:
+    name: go-lint
     runs-on: ubuntu-latest
     steps:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
+      - name: golint
+        uses: Jerome1337/golint-action@v1.0.2
+        with:
+          golint-path: './...'
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
