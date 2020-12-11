@@ -1,0 +1,56 @@
+---
+
+name: e2e
+
+on:
+  pull_request:
+    paths:
+      - '**'
+      - '!**.md'
+  push:
+    branches:
+      - '*'
+
+env:
+  ISTIO_VERSION: 1.8.0
+  TAG: ${{ github.sha }}
+  SCRIPTS_DIR: test/e2e/scripts
+  COMMON_DIR: test/e2e/common
+
+jobs:
+  test:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: e2e-test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.4
+      - name: Install dependencies
+        run: |
+          go version
+          go get golang.org/x/tools/cmd/goimports
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: build docker
+        run: make docker-build-e2e
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Create namespace
+        run: kubectl create ns istio-system
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+      - name: test
+        run: make e2e
