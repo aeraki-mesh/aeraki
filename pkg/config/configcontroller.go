@@ -15,7 +15,6 @@
 package config
 
 import (
-	"fmt"
 	"reflect"
 	"time"
 
@@ -58,23 +57,31 @@ func NewController(configServerAddr string) *Controller {
 }
 
 // Run until a signal is received, this function won't block
-func (c *Controller) Run(stop <-chan struct{}) error {
-	xdsMCP, err := adsc.New(c.configServerAddr, &adsc.Config{
-		Meta: istiomodel.NodeMetadata{
-			Generator: "api",
-		}.ToStruct(),
-		InitialDiscoveryRequests: c.configInitialRequests(),
-		BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
-	}
-	xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
-	if err = xdsMCP.Run(); err != nil {
-		return fmt.Errorf("MCP: failed running %v", err)
-	}
-	c.controller.Run(stop)
-	return nil
+func (c *Controller) Run(stop <-chan struct{}) {
+	go func() {
+		for {
+			xdsMCP, err := adsc.New(c.configServerAddr, &adsc.Config{
+				Meta: istiomodel.NodeMetadata{
+					Generator: "api",
+				}.ToStruct(),
+				InitialDiscoveryRequests: c.configInitialRequests(),
+				BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
+			})
+			if err != nil {
+				controllerLog.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
+				time.Sleep(5 * time.Second)
+				continue
+			}
+			xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
+			if err = xdsMCP.Run(); err != nil {
+				controllerLog.Errorf("adsc: failed running %v", err)
+				time.Sleep(5 * time.Second)
+				continue
+			}
+			c.controller.Run(stop)
+			return
+		}
+	}()
 }
 
 func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {

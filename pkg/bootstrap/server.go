@@ -63,9 +63,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 
 	go func() {
 		aerakiLog.Infof("Watching xDS resource changes at %s", s.args.IstiodAddr)
-		if err := s.configController.Run(stop); err != nil {
-			aerakiLog.Warn(err)
-		}
+		s.configController.Run(stop)
 	}()
 	s.waitForShutdown(stop)
 }
