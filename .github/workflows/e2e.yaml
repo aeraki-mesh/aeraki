@@ -13,7 +13,6 @@ on:
 
 env:
   ISTIO_VERSION: 1.8.0
-  TAG: ${{ github.sha }}
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
 
@@ -46,8 +45,6 @@ jobs:
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
-      - name: Create namespace
-        run: kubectl create ns istio-system
       - name: Install aeraki
         run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: Install Istio

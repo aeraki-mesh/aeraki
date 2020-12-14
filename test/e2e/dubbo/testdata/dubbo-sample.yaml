@@ -64,6 +64,8 @@ spec:
       containers:
         - name: dubbo-sample-consumer
           image: aeraki/dubbo-sample-consumer
+          ports:
+            - containerPort: 9009
 ---
 # network-tool is used for debugging purpose
 apiVersion: apps/v1
