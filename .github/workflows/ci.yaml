@@ -13,13 +13,6 @@ jobs:
         with:
           config_file: .ci/yamllint.yml
           strict: true
-  shellcheck:
-    name: shellcheck
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: shellcheck
-        uses: fkautz/shell-linter@v1.0.1
   build-and-test:
     name: build and test
     runs-on: ubuntu-latest
