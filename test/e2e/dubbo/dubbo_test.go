@@ -68,7 +68,7 @@ func TestVersionRouting(t *testing.T) {
 func testVersion(version string, t *testing.T) {
 	util.KubeApply("dubbo", "testdata/virtualservice-"+version+".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
 		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl 127.0.0.1:9009/hello", false, "")
@@ -84,7 +84,7 @@ func TestPercentageRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
 	util.KubeApply("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	v1 := 0
 	for i := 0; i < 20; i++ {
