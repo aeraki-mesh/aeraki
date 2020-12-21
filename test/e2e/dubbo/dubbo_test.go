@@ -100,3 +100,23 @@ func TestPercentageRouting(t *testing.T) {
 		t.Errorf("percentage traffic routing failed, want: %v got:%v ", 3, v1)
 	}
 }
+
+func TestMethodRouting(t *testing.T) {
+	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
+	testMethod(t)
+}
+
+func testMethod(t *testing.T) {
+	util.KubeApply("dubbo", "testdata/virtualservice-route-by-method.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
+	for i := 0; i < 5; i++ {
+		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl 127.0.0.1:9009/hello", false, "")
+		want := "response from dubbo-sample-provider-v2"
+		log.Info(dubboResponse)
+		if !strings.Contains(dubboResponse, want) {
+			t.Error("")
+		}
+	}
+}
