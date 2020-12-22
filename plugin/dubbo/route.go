@@ -79,22 +79,72 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 			routeAction = buildSingleCluster(http, service)
 		}
 
-		routes = append(routes, &dubbo.Route{
-			//todo: convert virtual service HTTP Route Match to Dubbo Route Match
-			Match: &dubbo.RouteMatch{
-				Method: &dubbo.MethodMatch{
-					Name: &matcher.StringMatcher{
-						MatchPattern: &matcher.StringMatcher_SafeRegex{
-							SafeRegex: &matcher.RegexMatcher{
-								EngineType: regexEngine,
-								Regex:      ".*",
+		for _, m := range http.Match {
+			method := m.Method
+			dubboRoute := new(dubbo.Route)
+			if method != nil {
+				switch method.MatchType.(type) {
+				case *networking.StringMatch_Exact:
+					dubboRoute = &dubbo.Route{
+						Match: &dubbo.RouteMatch{
+							Method: &dubbo.MethodMatch{
+								Name: &matcher.StringMatcher{
+									MatchPattern: &matcher.StringMatcher_Exact{
+										Exact: method.GetExact(),
+									},
+								},
+							},
+						},
+						Route: routeAction,
+					}
+				case *networking.StringMatch_Prefix:
+					dubboRoute = &dubbo.Route{
+						Match: &dubbo.RouteMatch{
+							Method: &dubbo.MethodMatch{
+								Name: &matcher.StringMatcher{
+									MatchPattern: &matcher.StringMatcher_Prefix{
+										Prefix: method.GetPrefix(),
+									},
+								},
+							},
+						},
+						Route: routeAction,
+					}
+				case *networking.StringMatch_Regex:
+					dubboRoute = &dubbo.Route{
+						Match: &dubbo.RouteMatch{
+							Method: &dubbo.MethodMatch{
+								Name: &matcher.StringMatcher{
+									MatchPattern: &matcher.StringMatcher_SafeRegex{
+										SafeRegex: &matcher.RegexMatcher{Regex: method.GetRegex()},
+									},
+								},
+							},
+						},
+						Route: routeAction,
+					}
+				}
+			} else {
+				dubboRoute = &dubbo.Route{
+					// todo: convert virtual service HTTP Route Match to Dubbo Route Match
+					Match: &dubbo.RouteMatch{
+						Method: &dubbo.MethodMatch{
+							Name: &matcher.StringMatcher{
+								MatchPattern: &matcher.StringMatcher_SafeRegex{
+									SafeRegex: &matcher.RegexMatcher{
+										EngineType: regexEngine,
+										Regex:      ".*",
+									},
+								},
 							},
 						},
 					},
-				},
-			},
-			Route: routeAction,
-		})
+					Route: routeAction,
+				}
+			}
+
+			routes = append(routes, dubboRoute)
+		}
 	}
 	return routes
 }
