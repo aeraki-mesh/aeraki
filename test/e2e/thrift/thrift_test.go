@@ -39,9 +39,10 @@ func setup() {
 }
 
 func shutdown() {
-	util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
+	// leave the created application for debugging purpose
+	/*util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
 	util.KubeDelete("thrift", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("thrift", "")
+	util.DeleteNamespace("thrift", "")*/
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -65,6 +66,8 @@ func TestVersionRouting(t *testing.T) {
 
 func testVersion(version string, t *testing.T) {
 	util.KubeApply("thrift", "testdata/virtualservice-"+version+".yaml", "")
+	defer util.KubeDelete("thrift", "testdata/virtualservice-"+version+".yaml", "")
+
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
@@ -81,6 +84,8 @@ func testVersion(version string, t *testing.T) {
 func TestPercentageRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("thrift", 10*time.Minute, "")
 	util.KubeApply("thrift", "testdata/virtualservice-traffic-splitting.yaml", "")
+	defer util.KubeDelete("thrift", "testdata/virtualservice-traffic-splitting.yaml", "")
+
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
