@@ -40,10 +40,11 @@ func setup() {
 }
 
 func shutdown() {
-	util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
+	// leave the created application for debugging purpose
+	/*util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
 	util.KubeDelete("dubbo", "testdata/serviceentry.yaml", "")
 	util.KubeDelete("dubbo", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("dubbo", "")
+	util.DeleteNamespace("dubbo", "")*/
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -67,6 +68,8 @@ func TestVersionRouting(t *testing.T) {
 
 func testVersion(version string, t *testing.T) {
 	util.KubeApply("dubbo", "testdata/virtualservice-"+version+".yaml", "")
+	defer util.KubeDelete("dubbo", "testdata/virtualservice-"+version+".yaml", "")
+
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
@@ -83,6 +86,8 @@ func testVersion(version string, t *testing.T) {
 func TestPercentageRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
 	util.KubeApply("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
+	defer util.KubeDelete("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
+
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
