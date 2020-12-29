@@ -58,6 +58,19 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	}
 }
 
+func TestSidecarInboundConfig(t *testing.T) {
+	util.WaitForDeploymentsReady("thrift", 10*time.Minute, "")
+	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-server", "")
+	config, _ := util.PodExec("thrift", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", false, "")
+	config = strings.Join(strings.Fields(config), "")
+	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"stat_prefix\":\"inbound|9090||\",\n\"route_config\":{\n\"name\":\"inbound|9090||\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"inbound|9090||\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
+	want = strings.Join(strings.Fields(want), "")
+	log.Info(config)
+	if !strings.Contains(config, want) {
+		t.Error("cant't find thrift proxy in the inbound listener of the envoy sidecar")
+	}
+}
+
 func TestVersionRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("thrift", 10*time.Minute, "")
 	testVersion("v1", t)
