@@ -21,7 +21,7 @@ import (
 	networking "istio.io/api/networking/v1alpha3"
 )
 
-func buildRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
+func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
 	var route []*thrift.Route
 	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "", context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
 
@@ -34,6 +34,17 @@ func buildRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfigura
 	return &thrift.RouteConfiguration{
 		Name:   clusterName,
 		Routes: route,
+	}, nil
+}
+
+func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
+	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
+
+	return &thrift.RouteConfiguration{
+		Name: clusterName,
+		Routes: []*thrift.Route{
+			defaultRoute(clusterName),
+		},
 	}, nil
 }
 
