@@ -20,9 +20,12 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 replace github.com/evanphx/json-patch => github.com/evanphx/json-patch v0.0.0-20190815234213-e83c0a1c26c8
 
 // There are some bugs in the Istio 1.8.0
-// https://github.com/istio/istio/pull/29209/files
+// https://github.com/istio/istio/pull/29209
 // https://github.com/istio/istio/pull/29296
 replace istio.io/istio => github.com/zhaohuabing/istio v0.0.0-20201201123742-0738ca6370f3
+
+// https://github.com/istio/api/pull/1774 add destination port support for envoyfilter
+replace istio.io/api => github.com/istio/api v0.0.0-20201217155105-21c3bd1ba1d3
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible

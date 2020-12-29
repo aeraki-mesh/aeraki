@@ -229,11 +229,14 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := s.generators[instance]; ok {
-				envoyFilters = append(envoyFilters, &envoyFilterWrapper{
-					service:     service,
-					envoyfilter: generator.Generate(context),
-					instance:    instance,
-				})
+				ef := generator.Generate(context)
+				if ef != nil {
+					envoyFilters = append(envoyFilters, &envoyFilterWrapper{
+						service:     service,
+						envoyfilter: ef,
+						instance:    instance,
+					})
+				}
 				break
 			}
 		}

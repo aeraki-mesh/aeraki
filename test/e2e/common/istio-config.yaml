@@ -8,3 +8,7 @@ spec:
     configSources:
     - address: "aeraki.istio-system.svc:1109"
     - address: "k8s://"
+  components:
+    pilot:
+      hub: aeraki
+      tag: 1.8.0-aeraki
