@@ -104,7 +104,7 @@ func TestPercentageRouting(t *testing.T) {
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	v1 := 0
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 40; i++ {
 		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl -s 127.0.0.1:9009/hello", false, "")
 		responseV1 := "response from dubbo-sample-provider-v1"
 		log.Info(dubboResponse)
@@ -112,8 +112,10 @@ func TestPercentageRouting(t *testing.T) {
 			v1++
 		}
 	}
-	// The most accurate number should be 6, but the number may fall into a range around 6 since the sample is not big enough
-	if v1 > 8 || v1 < 4 {
-		t.Errorf("percentage traffic routing failed, want: %s got:%v ", "between 4 and 8", v1)
+	// The most accurate number should be 8, but the number may fall into a range around 8 since the sample is not big enough
+	if v1 > 12 || v1 < 4 {
+		t.Errorf("percentage traffic routing failed, want: %s got:%v ", "between 4 and 12", v1)
+	} else {
+		t.Logf("%v requests have been sent to v1", v1)
 	}
 }
