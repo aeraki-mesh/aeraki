@@ -79,9 +79,9 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 			routeAction = buildSingleCluster(http, service)
 		}
 
+		dubboRoute := new(dubbo.Route)
 		for _, m := range http.Match {
 			method := m.Method
-			dubboRoute := new(dubbo.Route)
 			if method != nil {
 				switch method.MatchType.(type) {
 				case *networking.StringMatch_Exact:
@@ -124,23 +124,25 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 						Route: routeAction,
 					}
 				}
-			} else {
-				dubboRoute = &dubbo.Route{
-					// todo: convert virtual service HTTP Route Match to Dubbo Route Match
-					Match: &dubbo.RouteMatch{
-						Method: &dubbo.MethodMatch{
-							Name: &matcher.StringMatcher{
-								MatchPattern: &matcher.StringMatcher_SafeRegex{
-									SafeRegex: &matcher.RegexMatcher{
-										EngineType: regexEngine,
-										Regex:      ".*",
-									},
+			}
+			routes = append(routes, dubboRoute)
+		}
+
+		if dubboRoute.GetMatch() == nil {
+			dubboRoute = &dubbo.Route{
+				Match: &dubbo.RouteMatch{
+					Method: &dubbo.MethodMatch{
+						Name: &matcher.StringMatcher{
+							MatchPattern: &matcher.StringMatcher_SafeRegex{
+								SafeRegex: &matcher.RegexMatcher{
+									EngineType: regexEngine,
+									Regex:      ".*",
 								},
 							},
 						},
 					},
-					Route: routeAction,
-				}
+				},
+				Route: routeAction,
 			}
 			routes = append(routes, dubboRoute)
 		}
