@@ -108,8 +108,8 @@ func TestPercentageRouting(t *testing.T) {
 
 func TestMethodRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
-	// testMethodMatch("exact", t)
-	// testMethodMatch("prefix", t)
+	testMethodMatch("exact", t)
+	testMethodMatch("prefix", t)
 	testMethodMatch("regex", t)
 }
 
