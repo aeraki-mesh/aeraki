@@ -8,6 +8,14 @@ spec:
     configSources:
     - address: "aeraki.istio-system.svc:1109"
     - address: "k8s://"
+    defaultConfig:
+      proxyStatsMatcher:
+        inclusionPrefixes:
+          - thrift
+          - dubbo
+        inclusionRegexps:
+          - .*dubbo.*
+          - .*thrift.*
   components:
     pilot:
       hub: aeraki
