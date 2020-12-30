@@ -120,7 +120,7 @@ func testMethodMatch(matchPattern string, t *testing.T) {
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
 		time.Sleep(3 * time.Second)
-		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl 127.0.0.1:9009/hello", false, "")
+		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl -s 127.0.0.1:9009/hello", false, "")
 		want := "response from dubbo-sample-provider-v2"
 		log.Info(dubboResponse)
 		if !strings.Contains(dubboResponse, want) {
