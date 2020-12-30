@@ -18,7 +18,7 @@ spec:
     - name: "reviews-v2-routes"
       match:
         - method:
-            prefix: say
+            exact: sayHello
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice

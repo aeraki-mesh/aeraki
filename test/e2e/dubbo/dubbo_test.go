@@ -108,11 +108,18 @@ func TestPercentageRouting(t *testing.T) {
 
 func TestMethodRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
-	util.KubeApply("dubbo", "testdata/virtualservice-route-by-method.yaml", "")
+	// testMethodMatch("exact", t)
+	// testMethodMatch("prefix", t)
+	testMethodMatch("regex", t)
+}
+
+func testMethodMatch(matchPattern string, t *testing.T) {
+	util.KubeApply("dubbo", "testdata/virtualservice-method-" + matchPattern + ".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
+		time.Sleep(3 * time.Second)
 		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl 127.0.0.1:9009/hello", false, "")
 		want := "response from dubbo-sample-provider-v2"
 		log.Info(dubboResponse)
