@@ -1,0 +1,51 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: istio-ingressgateway
+    install.operator.istio.io/owning-resource: unknown
+    install.operator.istio.io/owning-resource-namespace: istio-system
+    istio: ingressgateway
+    istio.io/rev: default
+    operator.istio.io/component: IngressGateways
+    operator.istio.io/managed: Reconcile
+    operator.istio.io/version: 1.8.0
+    release: istio
+  name: istio-ingressgateway
+  namespace: istio-system
+spec:
+  ports:
+  - name: status-port
+    port: 15021
+    protocol: TCP
+    targetPort: 15021
+  - name: http2
+    port: 80
+    protocol: TCP
+    targetPort: 8080
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  - name: tcp-istiod
+    port: 15012
+    protocol: TCP
+    targetPort: 15012
+  - name: tls
+    port: 15443
+    protocol: TCP
+    targetPort: 15443
+  - name: tcp-kaili
+    port: 20001
+    protocol: TCP
+  - name: tcp-grafna
+    port: 3000
+    protocol: TCP
+  - name: tcp-prometheus
+    port: 9090
+    protocol: TCP
+  selector:
+    app: istio-ingressgateway
+    istio: ingressgateway
+  type: LoadBalancer
