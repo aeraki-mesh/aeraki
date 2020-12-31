@@ -114,7 +114,7 @@ func TestMethodRouting(t *testing.T) {
 }
 
 func testMethodMatch(matchPattern string, t *testing.T) {
-	util.KubeApply("dubbo", "testdata/virtualservice-method-" + matchPattern + ".yaml", "")
+	util.KubeApply("dubbo", "testdata/virtualservice-method-"+matchPattern+".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
