@@ -1,0 +1,59 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: aeraki-demo-ingress-gw
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+      - "*"
+    port:
+      number: 20001
+      name: tcp-kaili
+      protocol: tcp
+  - hosts:
+      - "*"
+    port:
+      number: 3000
+      name: tcp-grafana
+      protocol: tcp
+  - hosts:
+      - "*"
+    port:
+      number: 9090
+      name: tcp-prometheus
+      protocol: tcp
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: aeraki-demo-ingress-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - aeraki-demo-ingress-gw
+  tcp:
+  - match:
+    - port: 20001
+    route:
+    - destination:
+        host: kiali.istio-system.svc.cluster.local
+        port:
+          number: 20001
+  - match:
+    - port: 3000
+    route:
+    - destination:
+        host: grafana.istio-system.svc.cluster.local
+        port:
+          number: 3000
+  - match:
+    - port: 9090
+    route:
+    - destination:
+        host: prometheus.istio-system.svc.cluster.local
+        port:
+          number: 9090
