@@ -31,16 +31,21 @@ Even though Aeraki is a standalone component, it does depend on Istio xds-mcp AP
   * [Done] Default routing
   * [Done] Version-based routing
   * [Done] Traffic splitting
+  * [Done] Metrics
+  * [Working] Method based routing
   * [Todo] Header based routing
 * Thrift
   * [Done] Default routing
   * [Done] Version-based routing
   * [Done] Traffic splitting
+  * [Done] Metrics
   * [Todo] Header based routing
   * [Todo] Rate limit
 * Redis
-  * [Todo] Sharding
-  * [Todo] Traffic mirroring
+  * [Working] Redis Cluster 
+  * [Working] Sharding
+  * [Working] Traffic mirroring
+* [Planning] TARS 
 * [Todo] MySql
 * [Todo] MongoDB
 * [Todo] Postgres
