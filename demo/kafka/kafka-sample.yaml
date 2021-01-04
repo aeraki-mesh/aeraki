@@ -1,0 +1,40 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-cat-producer
+spec:
+  selector:
+    matchLabels:
+      app: kafka-cat-producer
+  template:
+    metadata:
+      labels:
+        app: kafka-cat-producer
+    spec:
+      containers:
+        - name: kafka-cat-producer
+          image: confluentinc/cp-kafkacat
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh"]
+          args: ["-c", "while true; do  echo -e 'send kafka message '`date`'\r\n'|kafkacat -P  -b my-release-kafka:9092 -t test; echo 'send message to kafka'; sleep $((1 + RANDOM % 11)); done"]
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: kafka-cat-consumer
+spec:
+  selector:
+    matchLabels:
+      app: kafka-cat-consumer
+  template:
+    metadata:
+      labels:
+        app: kafka-cat-consumer
+    spec:
+      containers:
+        - name: kafka-cat-consumer
+          image: confluentinc/cp-kafkacat
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh"]
+          args: ["-c", "while true; do kafkacat -C -b my-release-kafka:9092 -t test ; sleep 5; done"]

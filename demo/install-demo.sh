@@ -28,3 +28,5 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.8/sampl
 
 kubectl apply -f $BASEDIR/demo/gateway/demo-ingress.yaml -n istio-system
 kubectl apply -f $BASEDIR/demo/gateway/istio-ingressgateway.yaml -n istio-system
+
+bash ${BASEDIR}/demo/kafka/install.sh

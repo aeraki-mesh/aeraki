@@ -844,6 +844,30 @@ func WaitForDeploymentsReady(ns string, timeout time.Duration, kubeconfig string
 	return err
 }
 
+// WaitForStatefulsetReady wait up to 'timeout' duration
+// return an error if statefulsets are not ready
+func WaitForStatefulsetReady(ns string, timeout time.Duration, kubeconfig string) error {
+	retry := Retrier{
+		BaseDelay:   10 * time.Second,
+		MaxDelay:    10 * time.Second,
+		MaxDuration: timeout,
+		Retries:     20,
+	}
+
+	_, err := retry.Retry(context.Background(), func(_ context.Context, _ int) error {
+		nr, err := CheckStatefulsetReady(ns, kubeconfig)
+		if err != nil {
+			return &Break{err}
+		}
+
+		if nr == 0 { // done
+			return nil
+		}
+		return fmt.Errorf("%d statefulset not ready", nr)
+	})
+	return err
+}
+
 // CheckDeploymentsReady checks if deployment resources are ready.
 // get podsReady() sometimes gets pods created by the "Job" resource which never reach the "Running" steady state.
 func CheckDeploymentsReady(ns string, kubeconfig string) (int, error) {
@@ -868,6 +892,34 @@ func CheckDeploymentsReady(ns string, kubeconfig string) (int, error) {
 
 	if notReady == 0 {
 		log.Infof("All deployments are ready")
+	}
+	return notReady, nil
+}
+
+// CheckStatefulsetReady checks if statefulset resources are ready.
+// get podsReady() sometimes gets pods created by the "Job" resource which never reach the "Running" steady state.
+func CheckStatefulsetReady(ns string, kubeconfig string) (int, error) {
+	CMD := "kubectl -n %s get statefulset -o jsonpath='{range .items[*]}{@.metadata.name}{\" \"}" +
+		"{@.status.readyReplicas}{\"\\n\"}{end}' --kubeconfig=%s"
+	out, err := Shell(fmt.Sprintf(CMD, ns, kubeconfig))
+
+	if err != nil {
+		return 0, fmt.Errorf("could not list statefulsets in namespace %q: %v", ns, err)
+	}
+
+	notReady := 0
+	for _, line := range strings.Split(out, "\n") {
+		flds := strings.Fields(line)
+		if len(flds) < 1 {
+			continue
+		}
+		if len(flds) == 1 || flds[1] == "0" { // no replicas ready
+			notReady++
+		}
+	}
+
+	if notReady == 0 {
+		log.Infof("All statefulsets are ready")
 	}
 	return notReady, nil
 }

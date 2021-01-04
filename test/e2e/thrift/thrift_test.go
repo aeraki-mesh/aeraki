@@ -39,10 +39,9 @@ func setup() {
 }
 
 func shutdown() {
-	// leave the created application for debugging purpose
-	/*util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
+	util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
 	util.KubeDelete("thrift", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("thrift", "")*/
+	util.DeleteNamespace("thrift", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -52,9 +51,8 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"stat_prefix\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"route_config\":{\n\"name\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
-	log.Info(config)
 	if !strings.Contains(config, want) {
-		t.Error("cant't find thrift proxy in the outbound listener of the envoy sidecar")
+		t.Errorf("cant't find thrift proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -65,9 +63,8 @@ func TestSidecarInboundConfig(t *testing.T) {
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"stat_prefix\":\"inbound|9090||\",\n\"route_config\":{\n\"name\":\"inbound|9090||\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"inbound|9090||\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
-	log.Info(config)
 	if !strings.Contains(config, want) {
-		t.Error("cant't find thrift proxy in the inbound listener of the envoy sidecar")
+		t.Errorf("cant't find thrift proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -82,7 +79,7 @@ func testVersion(version string, t *testing.T) {
 	defer util.KubeDelete("thrift", "testdata/virtualservice-"+version+".yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(2 * time.Minute)
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
 	for i := 0; i < 5; i++ {
 		thriftResponse, _ := util.PodExec("thrift", consumerPod, "thrift-sample-client", "curl -s 127.0.0.1:9009/hello", false, "")
@@ -100,7 +97,7 @@ func TestPercentageRouting(t *testing.T) {
 	defer util.KubeDelete("thrift", "testdata/virtualservice-traffic-splitting.yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(2 * time.Minute)
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
 	v1 := 0
 	for i := 0; i < 40; i++ {

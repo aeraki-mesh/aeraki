@@ -40,11 +40,10 @@ func setup() {
 }
 
 func shutdown() {
-	// leave the created application for debugging purpose
-	/*util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
+	util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
 	util.KubeDelete("dubbo", "testdata/serviceentry.yaml", "")
 	util.KubeDelete("dubbo", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("dubbo", "")*/
+	util.DeleteNamespace("dubbo", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -54,9 +53,8 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.dubbo_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy\",\n\"stat_prefix\":\"outbound|20880||org.apache.dubbo.samples.basic.api.demoservice\",\n\"route_config\":[\n{\n\"name\":\"outbound|20880||org.apache.dubbo.samples.basic.api.demoservice\",\n\"interface\":\"org.apache.dubbo.samples.basic.api.DemoService\",\n\"routes\":[\n{\n\"match\":{\n\"method\":{\n\"name\":{\n\"safe_regex\":{\n\"google_re2\":{},\n\"regex\":\".*\"\n}\n}\n}\n},\n\"route\":{\n\"cluster\":\"outbound|20880||org.apache.dubbo.samples.basic.api.demoservice\"\n}\n}\n]\n}\n]\n}\n}\n]\n}"
 	want = strings.Join(strings.Fields(want), "")
-	log.Info(config)
 	if !strings.Contains(config, want) {
-		t.Error("cant't find dubbo proxy in the outbound listener of the envoy sidecar")
+		t.Errorf("cant't find dubbo proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -68,7 +66,7 @@ func TestSidecarInboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.dubbo_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy\",\n\"stat_prefix\":\"inbound|20880||\",\n\"route_config\":[\n{\n\"name\":\"inbound|20880||\",\n\"interface\":\"org.apache.dubbo.samples.basic.api.DemoService\",\n\"routes\":[\n{\n\"match\":{\n\"method\":{\n\"name\":{\n\"safe_regex\":{\n\"google_re2\":{},\n\"regex\":\".*\"\n}\n}\n}\n},\n\"route\":{\n\"cluster\":\"inbound|20880||\"\n}\n}\n]\n}\n]\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Error("cant't find dubbo proxy in the inbound listener of the envoy sidecar")
+		t.Errorf("cant't find dubbo proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -83,7 +81,7 @@ func testVersion(version string, t *testing.T) {
 	defer util.KubeDelete("dubbo", "testdata/virtualservice-"+version+".yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(2 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
 		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl -s 127.0.0.1:9009/hello", false, "")
@@ -101,7 +99,7 @@ func TestPercentageRouting(t *testing.T) {
 	defer util.KubeDelete("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(1 * time.Minute)
+	time.Sleep(2 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	v1 := 0
 	for i := 0; i < 40; i++ {
