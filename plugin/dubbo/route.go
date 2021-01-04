@@ -125,7 +125,6 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 					}
 				}
 			}
-			routes = append(routes, dubboRoute)
 		}
 
 		if dubboRoute.GetMatch() == nil {
@@ -144,8 +143,8 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 				},
 				Route: routeAction,
 			}
-			routes = append(routes, dubboRoute)
 		}
+		routes = append(routes, dubboRoute)
 	}
 	return routes
 }
