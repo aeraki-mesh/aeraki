@@ -80,8 +80,10 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 		}
 
 		dubboRoute := new(dubbo.Route)
-		if httpMatchRequest := http.Match[0]; httpMatchRequest != nil {
-			method := httpMatchRequest.Method
+		fmt.Println("http.Match: ", http.Match)
+
+		if len(http.Match) > 0 {
+			method := http.Match[0].Method
 			if method != nil {
 				switch method.MatchType.(type) {
 				case *networking.StringMatch_Exact:
@@ -128,6 +130,7 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 		}
 
 		if dubboRoute.GetMatch() == nil {
+			fmt.Println("dubboRoute.GetMatch(): ", dubboRoute.GetMatch())
 			dubboRoute = &dubbo.Route{
 				Match: &dubbo.RouteMatch{
 					Method: &dubbo.MethodMatch{
