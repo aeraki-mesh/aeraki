@@ -32,6 +32,10 @@ const (
 	Redis Instance = "Redis"
 	// MySQL declares that the port carries MySQL traffic.
 	MySQL Instance = "MySQL"
+	// Kafka declares that the port carries Kafka traffic.
+	Kafka Instance = "Kafka"
+	// Zookeeper declares that the port carries Zookeeper traffic.
+	Zookeeper Instance = "Zookeeper"
 	// Unsupported - value to signify that the protocol is unsupported.
 	Unsupported Instance = "UnsupportedProtocol"
 )
@@ -49,6 +53,10 @@ func Parse(s string) Instance {
 		return Redis
 	case "mysql":
 		return MySQL
+	case "kafka":
+		return Kafka
+	case "zookeeper":
+		return Zookeeper
 	}
 
 	return Unsupported

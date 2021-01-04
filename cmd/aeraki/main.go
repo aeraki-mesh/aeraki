@@ -20,6 +20,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/aeraki-framework/aeraki/plugin/kafka"
+	"github.com/aeraki-framework/aeraki/plugin/zookeeper"
+
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/plugin/dubbo"
 	"github.com/aeraki-framework/aeraki/plugin/thrift"
@@ -53,7 +56,9 @@ func main() {
 
 func initGenerators() map[protocol.Instance]envoyfilter.Generator {
 	return map[protocol.Instance]envoyfilter.Generator{
-		protocol.Dubbo:  dubbo.NewGenerator(),
-		protocol.Thrift: thrift.NewGenerator(),
+		protocol.Dubbo:     dubbo.NewGenerator(),
+		protocol.Thrift:    thrift.NewGenerator(),
+		protocol.Kafka:     kafka.NewGenerator(),
+		protocol.Zookeeper: zookeeper.NewGenerator(),
 	}
 }

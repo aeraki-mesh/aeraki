@@ -13,9 +13,12 @@ spec:
         inclusionPrefixes:
           - thrift
           - dubbo
+          - kafka
         inclusionRegexps:
           - .*dubbo.*
           - .*thrift.*
+          - .*kafka.*
+          - .*zookeeper.*
   components:
     pilot:
       hub: aeraki
