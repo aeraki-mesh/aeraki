@@ -80,8 +80,8 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 		}
 
 		dubboRoute := new(dubbo.Route)
-		for _, m := range http.Match {
-			method := m.Method
+		if httpMatchRequest := http.Match[0]; httpMatchRequest != nil {
+			method := httpMatchRequest.Method
 			if method != nil {
 				switch method.MatchType.(type) {
 				case *networking.StringMatch_Exact:
