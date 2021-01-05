@@ -7,13 +7,8 @@ spec:
   hosts:
     - thrift-sample-server.thrift.svc.cluster.local
   http:
-    - name: "thrift-traffic-splitting"
+    - name: "thrift-v1-routes"
       route:
         - destination:
             host: thrift-sample-server.thrift.svc.cluster.local
             subset: v1
-          weight: 20
-        - destination:
-            host: thrift-sample-server.thrift.svc.cluster.local
-            subset: v2
-          weight: 80

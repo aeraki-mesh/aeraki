@@ -18,7 +18,7 @@ var (
 	regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 )
 
-func buildRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfiguration, error) {
+func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfiguration, error) {
 	// dubbo service interface should be passed in via serviceentry annotation
 	var serviceInterface string
 	var exist bool
@@ -36,6 +36,23 @@ func buildRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfigurat
 		route = buildRoute(context)
 	}
 
+	return &dubbo.RouteConfiguration{
+		Name:      clusterName,
+		Interface: serviceInterface, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
+		Routes:    route,
+	}, nil
+}
+
+func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfiguration, error) {
+	// dubbo service interface should be passed in via serviceentry annotation
+	var serviceInterface string
+	var exist bool
+	if serviceInterface, exist = context.ServiceEntry.Annotations["interface"]; !exist {
+		err := fmt.Errorf("no interface annotation")
+		return nil, err
+	}
+	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
+	route := []*dubbo.Route{defaultRoute(clusterName)}
 	return &dubbo.RouteConfiguration{
 		Name:      clusterName,
 		Interface: serviceInterface, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service

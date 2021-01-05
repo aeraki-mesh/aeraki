@@ -27,7 +27,7 @@ var generatorLog = log.RegisterScope("thrift-generator", "thrift generator", 0)
 type Generator struct {
 }
 
-// NewGenerator creates an new Dubbo Generator instance
+// NewGenerator creates an new Thrift Generator instance
 func NewGenerator() *Generator {
 	return &Generator{}
 }
@@ -36,7 +36,8 @@ func NewGenerator() *Generator {
 func (*Generator) Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter {
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry.Spec,
-		buildProxy(context),
+		buildOutboundProxy(context),
+		buildInboundProxy(context),
 		"envoy.filters.network.thrift_proxy",
 		"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy")
 }

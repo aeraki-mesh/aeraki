@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-provider-v1
+  labels:
+    app: dubbo-sample-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-provider
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-sample-provider
+        version: v1
+    spec:
+      containers:
+        - name: dubbo-sample-provider
+          image: aeraki/dubbo-sample-provider
+          ports:
+            - containerPort: 20880
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-provider-v2
+  labels:
+    app: dubbo-sample-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-provider
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-sample-provider
+        version: v2
+    spec:
+      containers:
+        - name: dubbo-sample-provider
+          image: aeraki/dubbo-sample-provider
+          ports:
+            - containerPort: 20880
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-consumer
+  labels:
+    app: dubbo-sample-consumer
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-consumer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dubbo-sample-consumer
+    spec:
+      containers:
+        - name: dubbo-sample-consumer
+          image: aeraki/dubbo-sample-consumer
+          env:
+            - name: mode
+              value: demo
+          ports:
+            - containerPort: 9009
+
+---
+# network-tool is used for debugging purpose
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#  name: network-tool
+# spec:
+#  selector:
+#    matchLabels:
+#      app: network-tool
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        app: network-tool
+#    spec:
+#      containers:
+#        - name: network-tool
+#          image: praqma/network-multitool
