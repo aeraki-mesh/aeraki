@@ -49,7 +49,7 @@ func TestKafkaSidecarOutboundConfig(t *testing.T) {
 	util.WaitForStatefulsetReady("kafka", 20*time.Minute, "")
 	util.WaitForDeploymentsReady("kafka", 20*time.Minute, "")
 	consumerPod, _ := util.GetPodName("kafka", "app.kubernetes.io/name=kafka", "")
-	config, _ := util.PodExec("kafka", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", false, "")
+	config, _ := util.PodExec("kafka", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.kafka_broker\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker\",\n\"stat_prefix\":\"outbound|9092||my-release-kafka.kafka.svc.cluster.local\"\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
@@ -62,7 +62,7 @@ func TestKafkaSidecarInboundConfig(t *testing.T) {
 	util.WaitForStatefulsetReady("kafka", 20*time.Minute, "")
 	util.WaitForDeploymentsReady("kafka", 20*time.Minute, "")
 	kafkaPod, _ := util.GetPodName("kafka", "app.kubernetes.io/name=kafka", "")
-	config, _ := util.PodExec("kafka", kafkaPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", false, "")
+	config, _ := util.PodExec("kafka", kafkaPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.kafka_broker\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker\",\n\"stat_prefix\":\"inbound|9092||\"\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
@@ -74,7 +74,7 @@ func TestKafkaSidecarInboundConfig(t *testing.T) {
 func TestZookeeperSidecarOutboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("kafka", 20*time.Minute, "")
 	kafkaPod, _ := util.GetPodName("kafka", "app.kubernetes.io/name=kafka", "")
-	config, _ := util.PodExec("kafka", kafkaPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", false, "")
+	config, _ := util.PodExec("kafka", kafkaPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.zookeeper_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy\",\n\"stat_prefix\":\"outbound|2181||my-release-zookeeper.kafka.svc.cluster.local\"\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
@@ -86,7 +86,7 @@ func TestZookeeperSidecarOutboundConfig(t *testing.T) {
 func TestZookeeperSidecarInboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("kafka", 20*time.Minute, "")
 	zookeeperPod, _ := util.GetPodName("kafka", "app.kubernetes.io/name=zookeeper", "")
-	config, _ := util.PodExec("kafka", zookeeperPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", false, "")
+	config, _ := util.PodExec("kafka", zookeeperPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
 	want := "{\n\"name\":\"envoy.filters.network.zookeeper_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy\",\n\"stat_prefix\":\"inbound|2181||\"\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
