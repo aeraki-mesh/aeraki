@@ -92,6 +92,7 @@ aeraki/demo/install-demo.sh
 * Kaili http://{istio-ingressgateway_external_ip}:20001
 * Grafana http://{istio-ingressgateway_external_ip}:3000
 * Prometheus http://{istio-ingressgateway_external_ip}:9090
+You can import Aeraika demo dashboard from file demo/aeraki-demo.json into the Grafana.
 
 ## Contact
 If you're interested in contributing this project, please reach out to zhaohuabing@gmail.com
