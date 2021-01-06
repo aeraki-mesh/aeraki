@@ -1,4 +1,46 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "gauge",
+      "name": "Gauge",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "7.2.1"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -15,236 +57,550 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 8,
+  "id": null,
   "links": [],
   "panels": [
     {
-      "datasource": null,
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
+          "custom": {}
         },
         "overrides": []
       },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
         "y": 0
       },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
+      "hiddenSeries": false,
+      "id": 12,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
       },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
       "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1\" ,app=\"dubbo-sample-consumer\"} / ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 1 ms",
-          "refId": "A"
-        },
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10\" ,app=\"dubbo-sample-consumer\"} / ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Letss than 10 ms",
-          "refId": "B"
-        },
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"100\" ,app=\"dubbo-sample-consumer\"} / ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Letss than 100 ms",
-          "refId": "C"
-        },
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1000\" ,app=\"dubbo-sample-consumer\"} / ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Letss than 1000 ms",
-          "refId": "D"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Dubbo Ruquest Time",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "id": 7,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1\" ,app=\"thrift-sample-client\"} / ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 1 ms",
-          "refId": "B"
-        },
-        {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"10\" ,app=\"thrift-sample-client\"} / ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 10 ms",
-          "refId": "A"
-        },
-        {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"100\" ,app=\"thrift-sample-client\"} / ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 100 ms",
-          "refId": "C"
-        },
-        {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1000\" ,app=\"thrift-sample-client\"} / ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 1000 ms",
-          "refId": "D"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Thfit Ruquest Time",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 4,
-      "options": {
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_response[5m]))/sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))*100",
-          "format": "time_series",
+          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
-      "title": "Dubbo Call Success Rate",
-      "type": "gauge"
+      "title": "Dubbo Request Per Second",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
-      "datasource": null,
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 14,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Thrift Request Per Second",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 2,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket[5m])) by (le))",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Dubbo Request Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 5,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket[5m])) by (le))",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Thrift  Request Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
           "custom": {
             "align": null,
             "filterable": false
           },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 4,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 10 ms",
+          "refId": "A"
+        },
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"100\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 100 ms",
+          "refId": "B"
+        },
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 1 s",
+          "refId": "C"
+        },
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 10 s",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Dubbo Request Less than 100 ms Distribution",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 6,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 1 ms",
+          "refId": "A"
+        },
+        {
+          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"10\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 10 ms",
+          "refId": "B"
+        },
+        {
+          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"100\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 100 ms",
+          "refId": "C"
+        },
+        {
+          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1000\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 1 s",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Thrift Request Latency Distribution",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -266,8 +622,8 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 12,
-        "y": 8
+        "x": 0,
+        "y": 25
       },
       "id": 8,
       "options": {
@@ -284,8 +640,7 @@
       "pluginVersion": "7.2.1",
       "targets": [
         {
-          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))*100",
-          "format": "time_series",
+          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_response_success[5m]))/sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))*100",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -293,202 +648,29 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Thrift Call Success Rate",
+      "title": "Dubbo Call Success Rate",
       "type": "gauge"
     },
     {
-      "datasource": null,
+      "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 16
-      },
-      "id": 2,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Dubbo Request Per Second",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "id": 9,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Thrift Request Per Second",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 25
-      },
-      "id": 20,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "sum(envoy_kafka_outbound_9092__my_release_kafka_kafka_svc_cluster_local_request_unknown)",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Kafka Unknow Request",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -498,11 +680,8 @@
         "x": 12,
         "y": 25
       },
-      "id": 22,
+      "id": 10,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -511,12 +690,13 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "pluginVersion": "7.2.1",
       "targets": [
         {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_no_healthy_upstream",
+          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))*100",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -524,224 +704,219 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Thrift No Healthy Upstream",
-      "type": "stat"
+      "title": "Thrift Request Success Rate",
+      "type": "gauge"
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "description": "",
+      "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
+          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "red",
+                "color": "green",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 0,
         "y": 33
       },
-      "hiddenSeries": false,
-      "id": 11,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
+      "id": 16,
       "options": {
-        "alertThreshold": true
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
       },
-      "percentage": false,
       "pluginVersion": "7.2.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_request_bytes) ",
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"1\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Less than 1 ms",
           "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Zookeeper Request Bytes",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
         },
         {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 33
-      },
-      "hiddenSeries": false,
-      "id": 13,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.2.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_setdata_rq)",
-          "format": "time_series",
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"10\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
           "interval": "",
-          "legendFormat": "setdata",
+          "legendFormat": "Less than 10 ms",
           "refId": "B"
         },
         {
-          "expr": "sum(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_rq)",
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"100\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
           "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "getdata",
-          "refId": "A"
-        },
-        {
-          "expr": "sum(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_rq)",
-          "interval": "",
-          "legendFormat": "create",
+          "legendFormat": "Less than 100 ms",
           "refId": "C"
         },
         {
-          "expr": "sum(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_exists_rq)",
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"1000\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
           "interval": "",
-          "legendFormat": "stat",
+          "legendFormat": "Less than 1 m",
           "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Zookeeper GetData Latency",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "id": 17,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"1\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
+          "interval": "",
+          "legendFormat": "Less than 1 ms",
+          "refId": "A"
         },
         {
-          "expr": "remov",
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"10\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
+          "interval": "",
+          "legendFormat": "Less than 10 ms",
+          "refId": "B"
+        },
+        {
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"100\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
+          "interval": "",
+          "legendFormat": "Less than 100 ms",
+          "refId": "C"
+        },
+        {
+          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"1000\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
+          "interval": "",
+          "legendFormat": "Less than 1 m",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Zookeeper Create Latency",
+      "type": "bargauge"
+    },
+    {
+      "aliasColors": {
+        "Value": "green"
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "hiddenSeries": false,
+      "id": 19,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_ping_response_latency_bucket[5m])) by (le))",
           "interval": "",
           "legendFormat": "",
-          "refId": "E"
+          "refId": "A"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Zookeeper Data Request",
+      "title": "Zookeeper Ping Latency ",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -757,8 +932,7 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:734",
-          "format": "short",
+          "format": "ms",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -766,7 +940,6 @@
           "show": true
         },
         {
-          "$$hashKey": "object:735",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -781,155 +954,102 @@
       }
     },
     {
-      "datasource": null,
-      "description": "",
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
+          "custom": {}
         },
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 41
-      },
-      "id": 15,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"1\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\",instance=\"172.16.0.56:15020\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
-          "interval": "",
-          "legendFormat": "Less than 1 ms",
-          "refId": "A"
-        },
-        {
-          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"5\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\",instance=\"172.16.0.56:15020\"}  / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
-          "interval": "",
-          "legendFormat": "Less than 5 ms",
-          "refId": "B"
-        },
-        {
-          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"10\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\",instance=\"172.16.0.56:15020\"}  / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
-          "interval": "",
-          "legendFormat": "Less than 10 ms",
-          "refId": "C"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Zookeeper Getdata Latency",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
         "y": 41
       },
-      "id": 18,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
+      "hiddenSeries": false,
+      "id": 21,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
       },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
       "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
-          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"1\",instance=\"172.16.0.56:15020\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
+          "expr": "sum(rate(envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_ping_resp[5m]))",
           "interval": "",
-          "legendFormat": "Less than 1 ms",
+          "legendFormat": "",
           "refId": "A"
-        },
-        {
-          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"5\",instance=\"172.16.0.56:15020\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
-          "interval": "",
-          "legendFormat": "Less than 5 ms",
-          "refId": "B"
-        },
-        {
-          "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"10\",instance=\"172.16.0.56:15020\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
-          "interval": "",
-          "legendFormat": "Less than 10 ms",
-          "refId": "C"
         }
       ],
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
-      "title": "Zookeeper CreateData Latency",
-      "type": "stat"
+      "title": "Zookeeper Ping Per Second",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
-  "refresh": false,
+  "refresh": "10s",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -937,12 +1057,12 @@
     "list": []
   },
   "time": {
-    "from": "2021-01-05T09:44:45.153Z",
-    "to": "2021-01-05T09:55:51.691Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Aeraki Demo",
-  "uid": "hxSYMqbMz",
-  "version": 31
+  "uid": "pgz7wp-Gz",
+  "version": 20
 }
