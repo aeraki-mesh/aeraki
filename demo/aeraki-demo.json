@@ -474,83 +474,6 @@
         "x": 0,
         "y": 17
       },
-      "id": 4,
-      "options": {
-        "displayMode": "gradient",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true
-      },
-      "pluginVersion": "7.2.1",
-      "targets": [
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 10 ms",
-          "refId": "A"
-        },
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"100\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 100 ms",
-          "refId": "B"
-        },
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 1 s",
-          "refId": "C"
-        },
-        {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
-          "interval": "",
-          "legendFormat": "Less than 10 s",
-          "refId": "D"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Dubbo Request Distribution",
-      "type": "bargauge"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 17
-      },
       "id": 6,
       "options": {
         "displayMode": "gradient",
@@ -594,6 +517,83 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Thrift Request Latency Distribution",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null,
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 4,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.1",
+      "targets": [
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 10 ms",
+          "refId": "A"
+        },
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"100\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 100 ms",
+          "refId": "B"
+        },
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 1 s",
+          "refId": "C"
+        },
+        {
+          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "interval": "",
+          "legendFormat": "Less than 10 s",
+          "refId": "D"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Dubbo Request Distribution",
       "type": "bargauge"
     },
     {
@@ -1064,5 +1064,5 @@
   "timezone": "",
   "title": "Aeraki Demo",
   "uid": "pgz7wp-Gz",
-  "version": 22
+  "version": 23
 }
