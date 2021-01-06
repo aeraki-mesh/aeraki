@@ -1,7 +1,7 @@
 # Aeraki
 
 [![CI Tests](https://github.com/aeraki-framework/aeraki/workflows/ci/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22ci%22)
-[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e%22)
+[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-dubbo/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e%22)
 
 # Manage any layer-7 traffic in an Istio service mesh!
 ![ Aeraki ](docs/aeraki&istio.png)
