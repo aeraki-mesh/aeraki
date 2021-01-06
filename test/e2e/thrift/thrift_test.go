@@ -79,7 +79,7 @@ func testVersion(version string, t *testing.T) {
 	defer util.KubeDelete("thrift", "testdata/virtualservice-"+version+".yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
 	for i := 0; i < 5; i++ {
 		thriftResponse, _ := util.PodExec("thrift", consumerPod, "thrift-sample-client", "curl -s 127.0.0.1:9009/hello", true, "")
@@ -97,7 +97,7 @@ func TestPercentageRouting(t *testing.T) {
 	defer util.KubeDelete("thrift", "testdata/virtualservice-traffic-splitting.yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
 	v1 := 0
 	for i := 0; i < 40; i++ {
