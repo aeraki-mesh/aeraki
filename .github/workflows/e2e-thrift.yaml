@@ -1,13 +1,16 @@
 ---
 
-name: e2e
+name: e2e-thrift
 
 on:
   pull_request_target:
-    paths:
-      - '**'
-      - '!**.md'
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   push:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
     branches:
       - '*'
 
@@ -53,4 +56,4 @@ jobs:
       - name: Install Istio
         run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
       - name: test
-        run: make e2e
+        run: make e2e-thrift

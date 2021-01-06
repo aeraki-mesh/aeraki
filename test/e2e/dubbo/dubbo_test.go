@@ -81,7 +81,7 @@ func testVersion(version string, t *testing.T) {
 	defer util.KubeDelete("dubbo", "testdata/virtualservice-"+version+".yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
 		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl -s 127.0.0.1:9009/hello", true, "")
@@ -99,7 +99,7 @@ func TestPercentageRouting(t *testing.T) {
 	defer util.KubeDelete("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(2 * time.Minute)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	v1 := 0
 	for i := 0; i < 40; i++ {
@@ -128,7 +128,7 @@ func TestMethodRouting(t *testing.T) {
 func testMethodMatch(matchPattern string, t *testing.T) {
 	util.KubeApply("dubbo", "testdata/virtualservice-method-"+matchPattern+".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(1*time.Minute + 30*time.Second)
+	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
 		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer", "curl -s 127.0.0.1:9009/hello", true, "")
