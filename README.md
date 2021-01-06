@@ -71,5 +71,27 @@ Recored Demo: Dubbo and Thrift Traffic Management
 
 [![Thrift and Dubbo traffic management demo](http://i3.ytimg.com/vi/vrjp-Yg3Leg/maxresdefault.jpg)](https://www.youtube.com/watch?v=vrjp-Yg3Leg)
 
+## Install
+
+### Pre-requirements:
+* Create a kubernetes cluster, it can be either a cluster in the cloud, or a local cluster created with minikube
+* Kubectl installed, and the ~/.kube/conf points to the cluster you created in the first step
+* Helm installed, which will be used to install some components in the demo
+
+### Download Aeraki from the Github
+```bash
+git clone https://github.com/aeraki-framework/aeraki.git
+```
+
+### Install Aeraki and demo applications
+```bash
+aeraki/demo/install-demo.sh
+```
+
+### Open the following URLs in your browser to play with Aeraki and view service metrics
+* Kaili http://{istio-ingressgateway_external_ip}:20001
+* Grafana http://{istio-ingressgateway_external_ip}:3000
+* Prometheus http://{istio-ingressgateway_external_ip}:9090
+
 ## Contact
 If you're interested in contributing this project, please reach out to zhaohuabing@gmail.com
