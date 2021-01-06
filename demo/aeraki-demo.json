@@ -81,101 +81,6 @@
         "y": 0
       },
       "hiddenSeries": false,
-      "id": 12,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.2.1",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Dubbo Request Per Second",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
-      "hiddenSeries": false,
       "id": 14,
       "legend": {
         "avg": false,
@@ -258,21 +163,20 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
-          "unit": "ms"
+          "custom": {}
         },
         "overrides": []
       },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 8
+        "x": 12,
+        "y": 0
       },
       "hiddenSeries": false,
-      "id": 2,
+      "id": 12,
       "legend": {
         "avg": false,
         "current": false,
@@ -299,7 +203,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket[5m])) by (le))",
+          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -309,7 +213,103 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Dubbo Request Latency",
+      "title": "Dubbo Request Per Second",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 5,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket[5m])) by (le))",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Thrift  Request Latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -368,7 +368,7 @@
         "y": 8
       },
       "hiddenSeries": false,
-      "id": 5,
+      "id": 2,
       "legend": {
         "avg": false,
         "current": false,
@@ -395,7 +395,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket[5m])) by (le))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -405,7 +405,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Thrift  Request Latency",
+      "title": "Dubbo Request Latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -516,7 +516,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Dubbo Request Less than 100 ms Distribution",
+      "title": "Dubbo Request Distribution",
       "type": "bargauge"
     },
     {
@@ -625,8 +625,9 @@
         "x": 0,
         "y": 25
       },
-      "id": 8,
+      "id": 10,
       "options": {
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "mean"
@@ -640,7 +641,7 @@
       "pluginVersion": "7.2.1",
       "targets": [
         {
-          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_response_success[5m]))/sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))*100",
+          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))*100",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -648,7 +649,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Dubbo Call Success Rate",
+      "title": "Thrift Request Success Rate",
       "type": "gauge"
     },
     {
@@ -680,9 +681,8 @@
         "x": 12,
         "y": 25
       },
-      "id": 10,
+      "id": 8,
       "options": {
-        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "mean"
@@ -696,7 +696,7 @@
       "pluginVersion": "7.2.1",
       "targets": [
         {
-          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))*100",
+          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_response_success[5m]))/sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))*100",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -704,7 +704,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Thrift Request Success Rate",
+      "title": "Dubbo Call Success Rate",
       "type": "gauge"
     },
     {
@@ -1064,5 +1064,5 @@
   "timezone": "",
   "title": "Aeraki Demo",
   "uid": "pgz7wp-Gz",
-  "version": 20
+  "version": 22
 }
