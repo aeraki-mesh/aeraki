@@ -16,6 +16,7 @@ package config
 
 import (
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
@@ -36,7 +37,7 @@ var (
 	controllerLog = log.RegisterScope("config-controller", "mcp debugging", 0)
 	// We need serviceentry and virtualservice to generate the envoyfiters
 	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
-				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
+		MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
 )
 
 // Controller watches Istio config xDS server and notifies the listeners when config changes.
@@ -103,7 +104,7 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 		}
 		// Now we only care about ServiceEntry and VirtualService
 		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
-			controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
+			//controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
 			service, ok := curr.Spec.(*networking.ServiceEntry)
 			if !ok {
 				// This should never happen
@@ -111,7 +112,11 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 				return
 			}
 			for _, port := range service.Ports {
+				if !strings.HasPrefix(port.Name, "tcp") {
+					continue
+				}
 				if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
+					controllerLog.Infof("Matched protocol :%s %s %s", protocol.GetLayer7ProtocolFromPortName(port.Name), event.String(), curr.Name)
 					handler(prev, curr, event)
 				}
 			}

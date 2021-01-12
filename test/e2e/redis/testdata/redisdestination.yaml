@@ -1,0 +1,24 @@
+---
+apiVersion: redis.aeraki.io/v1alpha1
+kind: RedisDestination
+metadata:
+  name: redis-cluster
+spec:
+  host: redis-cluster.redis.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      redis:
+        mode: CLUSTER
+---
+apiVersion: redis.aeraki.io/v1alpha1
+kind: RedisDestination
+metadata:
+  name: redis-single
+spec:
+  host: redis-single.redis.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      redis:
+        auth:
+          plain:
+            password: testredis

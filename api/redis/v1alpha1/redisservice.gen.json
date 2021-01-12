@@ -1,0 +1,306 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Istio Redis Service Extension.",
+    "version": "v1alpha1"
+  },
+  "components": {
+    "schemas": {
+      "redis.aeraki.io.v1alpha1.Percent": {
+        "description": "Percent specifies a percentage in the range of [0.0, 100.0].",
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.Auth": {
+        "description": "Auth provide a way to get redis auth token.",
+        "type": "object",
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "secret"
+                  ],
+                  "properties": {
+                    "secret": {
+                      "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.SecretReference"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "plain"
+                  ],
+                  "properties": {
+                    "plain": {
+                      "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.PlainAuth"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "secret"
+            ],
+            "properties": {
+              "secret": {
+                "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.SecretReference"
+              }
+            }
+          },
+          {
+            "required": [
+              "plain"
+            ],
+            "properties": {
+              "plain": {
+                "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.PlainAuth"
+              }
+            }
+          }
+        ]
+      },
+      "redis.aeraki.io.v1alpha1.SecretReference": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "format": "string"
+          },
+          "passwordField": {
+            "type": "string",
+            "format": "string"
+          },
+          "usernameField": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.PlainAuth": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "format": "string"
+          },
+          "username": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisService": {
+        "description": "RedisService provide a way to config redis service in service mesh.",
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "redis": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.Route"
+            }
+          },
+          "settings": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.Settings"
+          },
+          "faults": {
+            "description": "List of faults to inject. Faults currently come in two flavors: - Delay, which delays a request. - Error, which responds to a request with an error. Errors can also have delays attached.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.Fault"
+            }
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.Settings": {
+        "type": "object",
+        "properties": {
+          "auth": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.Auth"
+          },
+          "caseInsensitive": {
+            "description": "Indicates that prefix matching should be case insensitive.",
+            "type": "boolean"
+          },
+          "opTimeout": {
+            "description": "Per-operation timeout in milliseconds. The timer starts when the first command of a pipeline is written to the backend connection. Each response received from Redis resets the timer since it signifies that the next command is being processed by the backend. The only exception to this behavior is when a connection to a backend is not yet established. In that case, the connect timeout on the cluster will govern the timeout until the connection is ready.",
+            "type": "string"
+          },
+          "enableCommandStats": {
+            "description": "Enable per-command statistics per upstream cluster, in addition to the filter level aggregate count",
+            "type": "boolean"
+          },
+          "maxBufferSizeBeforeFlush": {
+            "description": "Maximum size of encoded request buffer before flush is triggered and encoded requests are sent upstream. If this is unset, the buffer flushes whenever it receives data and performs no batching. This feature makes it possible for multiple clients to send requests to Envoy and have them batched- for example if one is running several worker processes, each with its own Redis connection. There is no benefit to using this with a single downstream process. Recommended size (if enabled) is 1024 bytes.",
+            "type": "integer"
+          },
+          "bufferFlushTimeout": {
+            "description": "The encoded request buffer is flushed N milliseconds after the first request has been encoded, unless the buffer size has already exceeded `max_buffer_size_before_flush`. If `max_buffer_size_before_flush` is not set, this flush timer is not used. Otherwise, the timer should be set according to the number of clients, overall request rate and desired maximum latency for a single command. For example, if there are many requests being batched together at a high rate, the buffer will likely be filled before the timer fires. Alternatively, if the request rate is lower the buffer will not be filled as often before the timer fires. If `max_buffer_size_before_flush` is set, but `buffer_flush_timeout` is not, the latter defaults to 3ms.",
+            "type": "string"
+          },
+          "maxUpstreamUnknownConnections": {
+            "description": "`max_upstream_unknown_connections` controls how many upstream connections to unknown hosts can be created at any given time by any given worker thread (see `enable_redirection` for more details). If the host is unknown and a connection cannot be created due to enforcing this limit, then redirection will fail and the original redirection error will be passed downstream unchanged. This limit defaults to 100.",
+            "type": "integer",
+            "nullable": true
+          },
+          "enableHashtagging": {
+            "description": "Use hash tagging on every redis key to guarantee that keys with the same hash tag will be forwarded to the same upstream. The hash key used for determining the upstream in a consistent hash ring configuration will be computed from the hash tagged key instead of the whole key. The algorithm used to compute the hash tag is identical to the `redis-cluster implementation \u003chttps://redis.io/topics/cluster-spec#keys-hash-tags\u003e`_.",
+            "type": "boolean"
+          },
+          "enableRedirection": {
+            "description": "Accept `moved and ask redirection \u003chttps://redis.io/topics/cluster-spec#redirection-and-resharding\u003e`_ errors from upstream redis servers, and retry commands to the specified target server. The target server does not need to be known to the cluster manager. If the command cannot be redirected, then the original error is passed downstream unchanged. By default, this support is not enabled.",
+            "type": "boolean"
+          },
+          "readPolicy": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.ReadPolicy"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.Route": {
+        "type": "object",
+        "properties": {
+          "match": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.RouteMatch"
+          },
+          "route": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.Destination"
+          },
+          "mirror": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.Mirror"
+            }
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.Fault": {
+        "description": "Fault defines redis faults used for fault injection.",
+        "type": "object",
+        "properties": {
+          "delay": {
+            "description": "Delay for all faults. If not set, defaults to zero",
+            "type": "string"
+          },
+          "percentage": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.Percent"
+          },
+          "type": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.Fault.Type"
+          },
+          "commands": {
+            "description": "Commands fault is restricted to, if any. If not set, fault applies to all commands other than auth and ping (due to special handling of those commands in Envoy).",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.ReadPolicy": {
+        "type": "string",
+        "enum": [
+          "MASTER",
+          "PREFER_MASTER",
+          "REPLICA",
+          "PREFER_REPLICA",
+          "ANY"
+        ]
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.KeyMatch": {
+        "description": "KeyMatch match the redis key prefix;",
+        "type": "object",
+        "properties": {
+          "prefix": {
+            "description": "String prefix that must match the beginning of the keys. Envoy will always favor the longest match.",
+            "type": "string",
+            "format": "string"
+          },
+          "removePrefix": {
+            "description": "Indicates if the prefix needs to be removed from the key when forwarded.",
+            "type": "boolean"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.RouteMatch": {
+        "type": "object",
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "key"
+                  ],
+                  "properties": {
+                    "key": {
+                      "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.KeyMatch"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "key"
+            ],
+            "properties": {
+              "key": {
+                "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.KeyMatch"
+              }
+            }
+          }
+        ]
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.Destination": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "format": "string"
+          },
+          "port": {
+            "type": "integer"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisService.Mirror": {
+        "type": "object",
+        "properties": {
+          "route": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisService.Destination"
+          },
+          "percentage": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.Percent"
+          },
+          "excludeReadCommands": {
+            "type": "boolean"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.Fault.Type": {
+        "type": "string",
+        "enum": [
+          "DELAY",
+          "ERROR"
+        ]
+      }
+    }
+  }
+}

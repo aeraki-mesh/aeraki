@@ -1,0 +1,26 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis-client
+  name: redis-client
+spec:
+  selector:
+    matchLabels:
+      app: redis-client
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/logLevel: debug
+      labels:
+        app: redis-client
+    spec:
+      containers:
+        - image: redis
+          imagePullPolicy: Always
+          name: redis-client
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi

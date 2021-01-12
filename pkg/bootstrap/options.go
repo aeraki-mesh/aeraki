@@ -23,6 +23,9 @@ import (
 type AerakiArgs struct {
 	IstiodAddr string
 	ListenAddr string
+	Namespace  string
+	ElectionID string
+	LogLevel   string
 	Protocols  map[protocol.Instance]envoyfilter.Generator
 }
 

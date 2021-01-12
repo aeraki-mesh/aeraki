@@ -22,14 +22,14 @@ replace github.com/evanphx/json-patch => github.com/evanphx/json-patch v0.0.0-20
 // There are some bugs in the Istio 1.8.0
 // https://github.com/istio/istio/pull/29209
 // https://github.com/istio/istio/pull/29296
-replace istio.io/istio => github.com/zhaohuabing/istio v0.0.0-20201201123742-0738ca6370f3
+replace istio.io/istio => github.com/zhaohuabing/istio v0.0.0-20210111232828-ecea0bbe3312
 
 // https://github.com/istio/api/pull/1774 add destination port support for envoyfilter
 replace istio.io/api => github.com/istio/api v0.0.0-20201217155105-21c3bd1ba1d3
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/envoyproxy/go-control-plane v0.9.8-0.20201019204000-12785f608982
+	github.com/envoyproxy/go-control-plane v0.9.8
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.3
 	github.com/golang/sync v0.0.0-20180314180146-1d60e4601c6f
@@ -39,10 +39,14 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/pkg/errors v0.9.1
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73
-	google.golang.org/grpc v1.33.1
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
+	google.golang.org/grpc v1.33.2
 	google.golang.org/protobuf v1.25.0
-	istio.io/api v0.0.0-20201125194658-3cee6a1d3ab4
+	istio.io/api v0.0.0-20210109163259-0575f65cd5df
+	istio.io/gogo-genproto v0.0.0-20201015184601-1e80d26d6249
 	istio.io/istio v0.0.0-20201118224433-c87a4c874df2
-	istio.io/pkg v0.0.0-20201112235759-c861803834b2
+	istio.io/pkg v0.0.0-20201230223204-2d0a1c8bd9e5
+	k8s.io/apimachinery v0.20.1
+	k8s.io/client-go v0.20.1
+	sigs.k8s.io/controller-runtime v0.7.0
 )

@@ -10,7 +10,7 @@ GOBIN?=$(GOPATH)/bin
 # Build parameters
 OUT?=./out
 DOCKER_TMP?=$(OUT)/docker_temp/
-DOCKER_TAG_E2E=aeraki/aeraki:`git log --format="%H" -n 1`
+DOCKER_TAG_E2E?=aeraki/aeraki:`git log --format="%H" -n 1`
 DOCKER_TAG?=aeraki/aeraki:latest
 BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
@@ -51,6 +51,8 @@ e2e-thrift:
 	go test -v github.com/aeraki-framework/aeraki/test/e2e/thrift/...
 e2e-kafka-zookeeper:
 	go test -v github.com/aeraki-framework/aeraki/test/e2e/kafka/...
-e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper
+e2e-redis:
+	go test -v github.com/aeraki-framework/aeraki/test/e2e/redis/...
+e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e-redis
 .PHONY: build docker-build docker-push clean style-check lint e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e
 
