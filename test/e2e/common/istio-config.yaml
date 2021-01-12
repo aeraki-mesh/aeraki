@@ -2,13 +2,15 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
-  profile: preview
+  profile: default
   meshConfig:
     accessLogFile: /dev/stdout
     configSources:
     - address: "aeraki.istio-system.svc:1109"
     - address: "k8s://"
     defaultConfig:
+      proxyMetadata:
+        ISTIO_META_DNS_CAPTURE: "true"
       proxyStatsMatcher:
         inclusionPrefixes:
           - thrift
