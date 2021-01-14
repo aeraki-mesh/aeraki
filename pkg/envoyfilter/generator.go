@@ -16,10 +16,9 @@ package envoyfilter
 
 import (
 	"github.com/aeraki-framework/aeraki/pkg/model"
-	networking "istio.io/api/networking/v1alpha3"
 )
 
 // Generator generates protocol specified envoyfilters
 type Generator interface {
-	Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter
+	Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper
 }

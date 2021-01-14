@@ -17,7 +17,6 @@ package kafka
 import (
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/model"
-	networking "istio.io/api/networking/v1alpha3"
 )
 
 // Generator defines a kafka envoyfilter Generator
@@ -30,7 +29,7 @@ func NewGenerator() *Generator {
 }
 
 // Generate create EnvoyFilters for Dubbo services
-func (*Generator) Generate(context *model.EnvoyFilterContext) *networking.EnvoyFilter {
+func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
 	return envoyfilter.GenerateInsertBeforeNetworkFilter(
 		context.ServiceEntry.Spec,
 		buildOutboundProxy(context),

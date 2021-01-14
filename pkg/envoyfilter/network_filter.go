@@ -18,33 +18,33 @@ import (
 	"bytes"
 	"strconv"
 
-	"istio.io/pkg/log"
-
+	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
+	"istio.io/pkg/log"
 )
 
 var generatorLog = log.RegisterScope("aeraki-generator", "aeraki generator", 0)
 
 // GenerateInsertBeforeNetworkFilter generates an EnvoyFilter that inserts a protocol specified filter before the tcp proxy
 func GenerateInsertBeforeNetworkFilter(service *networking.ServiceEntry, outboundProxy proto.Message,
-	inboundProxy proto.Message, filterName string, filterType string) *networking.EnvoyFilter {
+	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
 	return generateNetworkFilter(service, outboundProxy, inboundProxy, filterName, filterType, networking.EnvoyFilter_Patch_INSERT_BEFORE)
 }
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
 func GenerateReplaceNetworkFilter(service *networking.ServiceEntry, outboundProxy proto.Message,
-	inboundProxy proto.Message, filterName string, filterType string) *networking.EnvoyFilter {
+	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
 	return generateNetworkFilter(service, outboundProxy, inboundProxy, filterName, filterType, networking.EnvoyFilter_Patch_REPLACE)
 }
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
 func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto.Message,
-	inboundProxy proto.Message, filterName string, filterType string, operation networking.EnvoyFilter_Patch_Operation) *networking.EnvoyFilter {
+	inboundProxy proto.Message, filterName string, filterType string, operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	var outboundProxyPatch, inboundProxyPatch *networking.EnvoyFilter_EnvoyConfigObjectPatch
 	if outboundProxy != nil {
 		outboundProxyStruct, err := generateValue(outboundProxy, filterName, filterType)
@@ -106,19 +106,39 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	}
 
 	if outboundProxyPatch != nil && inboundProxyPatch != nil {
-		return &networking.EnvoyFilter{
-			ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch, inboundProxyPatch},
-		}
+		return []*model.EnvoyFilterWrapper{
+			{
+				Name: service.Hosts[0] + "_outbound" + "_aeraki",
+				Envoyfilter: &networking.EnvoyFilter{
+					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
+				},
+			},
+			{
+				Name: service.Hosts[0] + "_inbound" + "_aeraki",
+				Envoyfilter: &networking.EnvoyFilter{
+					WorkloadSelector: service.WorkloadSelector,
+					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
+				},
+			}}
 	}
 	if outboundProxyPatch != nil {
-		return &networking.EnvoyFilter{
-			ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
-		}
+		return []*model.EnvoyFilterWrapper{
+			{
+				Name: service.Hosts[0] + "_outbound" + "_aeraki",
+				Envoyfilter: &networking.EnvoyFilter{
+					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
+				},
+			}}
 	}
 	if inboundProxyPatch != nil {
-		return &networking.EnvoyFilter{
-			ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
-		}
+		return []*model.EnvoyFilterWrapper{
+			{
+				Name: service.Hosts[0] + "_inbound" + "_aeraki",
+				Envoyfilter: &networking.EnvoyFilter{
+					WorkloadSelector: service.WorkloadSelector,
+					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
+				},
+			}}
 	}
 	return nil
 }
