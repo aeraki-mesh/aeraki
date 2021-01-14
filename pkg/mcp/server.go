@@ -62,12 +62,6 @@ var (
 	connectionNumber = int64(0)
 )
 
-type envoyFilterWrapper struct {
-	service     *networking.ServiceEntry
-	envoyfilter *networking.EnvoyFilter
-	instance    protocol.Instance
-}
-
 // Connection holds information about connected client.
 type Connection struct {
 	sync.RWMutex
@@ -195,7 +189,7 @@ func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishReso
 }
 
 func (s *Server) pushEnvoyFilters(con *Connection) error {
-	envoyFilters := make([]*envoyFilterWrapper, 0)
+	envoyFilters := make([]*model.EnvoyFilterWrapper, 0)
 	serviceEntries, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return fmt.Errorf("failed to list configs: %v", err)
@@ -229,14 +223,7 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := s.generators[instance]; ok {
-				ef := generator.Generate(context)
-				if ef != nil {
-					envoyFilters = append(envoyFilters, &envoyFilterWrapper{
-						service:     service,
-						envoyfilter: ef,
-						instance:    instance,
-					})
-				}
+				envoyFilters = append(envoyFilters, generator.Generate(context)...)
 				break
 			}
 		}
@@ -284,17 +271,17 @@ func (s *Server) findRelatedVirtualService(service *networking.ServiceEntry) (*m
 	return nil, nil
 }
 
-func constructResources(envoyFilters []*envoyFilterWrapper) ([]mcp.Resource, error) {
+func constructResources(envoyFilters []*model.EnvoyFilterWrapper) ([]mcp.Resource, error) {
 	resources := make([]mcp.Resource, 0)
 	for _, wrapper := range envoyFilters {
-		seAny, err := types.MarshalAny(wrapper.envoyfilter)
+		seAny, err := types.MarshalAny(wrapper.Envoyfilter)
 		if err != nil {
 			return resources, err
 		}
 		resources = append(resources, mcp.Resource{
 			Body: seAny,
 			Metadata: &v1alpha1.Metadata{
-				Name:    configRootNS + "/" + wrapper.service.Hosts[0] + "_" + "aeraki" + "_" + wrapper.instance.ToString(),
+				Name:    configRootNS + "/" + wrapper.Name,
 				Version: "v1",
 			},
 		})
