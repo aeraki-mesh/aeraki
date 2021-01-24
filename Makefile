@@ -38,7 +38,6 @@ docker-build-e2e: build
 	cp $(BINARY_NAME) $(DOCKER_TMP)
 	docker build -t $(DOCKER_TAG_E2E) $(DOCKER_TMP)
 	rm -rf $(DOCKER_TMP)
-	docker push $(DOCKER_TAG_E2E)
 clean:
 	rm -rf $(OUT)
 style-check:

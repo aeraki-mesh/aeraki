@@ -20,7 +20,6 @@ spec:
       containers:
         - name: aeraki
           image: aeraki/aeraki:${BUILD_TAG}
-          imagePullPolicy: Always
           env:
             - name: istiodAddr
               value: "istiod.istio-system:15010"
