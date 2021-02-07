@@ -1,0 +1,88 @@
+syntax = "proto3";
+import "google/protobuf/struct.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
+import "google/api/field_behavior.proto";
+import "istio.io/api/networking/v1alpha3/destination_rule.proto";
+
+// $schema: redis.aeraki.io.v1alpha1.RedisDestination
+// $title: Redis Destination
+// $description: Configuration affecting auth , discovery_endpoints etc.
+
+// RedisDestination defines policies that apply to redis traffic intended for a redis service
+package redis.aeraki.io.v1alpha1;
+
+option go_package = "github.com/aeraki-framework/aeraki/api/redis/v1alpha1";
+
+// RedisDestination defines policies that apply to redis traffic intended for a redis service
+//
+// <!-- crd generation tags
+// +cue-gen:RedisDestination:groupName:redis.aeraki.io
+// +cue-gen:RedisDestination:version:v1alpha1
+// +cue-gen:RedisDestination:storageVersion
+// +cue-gen:RedisDestination:subresource:status
+// +cue-gen:RedisDestination:scope:Namespaced
+// +cue-gen:RedisDestination:resource:categories=redis-aeraki-io,shortNames=rd
+// +cue-gen:RedisDestination:printerColumn:name=Host,type=string,JSONPath=.spec.host,description="The name of a service from the service registry"
+// +cue-gen:RedisDestination:printerColumn:name=Age,type=date,JSONPath=.metadata.creationTimestamp,description="CreationTimestamp is a timestamp
+// representing the server time when this object was created. It is not guaranteed to be set in happens-before order across separate operations.
+// Clients may not set this value. It is represented in RFC3339 form and is in UTC.
+// Populated by the system. Read-only. Null for lists. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata"
+// +cue-gen:RedisDestination:preserveUnknownFields:false
+// -->
+//
+// <!-- go code generation tags
+// +kubetype-gen
+// +kubetype-gen:groupVersion=redis.aeraki.io/v1alpha1
+// +genclient
+// +k8s:deepcopy-gen=true
+// -->
+message RedisDestination {
+    string host = 1 [(google.api.field_behavior) = REQUIRED];
+    TrafficPolicy traffic_policy = 2;
+}
+
+// Connection pool settings for an upstream host. The settings apply to
+// each individual host in the upstream service.
+message ConnectionPoolSettings {
+    istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings tcp = 1;
+    RedisSettings redis = 2;
+}
+
+// Auth provide a way to get redis auth token.
+message Auth {
+    oneof auth {
+        // Secret use the k8s secret in current namespace.
+        SecretReference secret = 1;
+        // redis password.
+        PlainAuth plain = 2;
+    }
+}
+
+message SecretReference {
+    string name = 1;
+    string password_field = 2;
+    string username_field = 3;
+}
+
+message PlainAuth {
+    string password = 1 [(google.api.field_behavior) = REQUIRED];
+    string username = 2;
+}
+
+message RedisSettings {
+    enum Mode {
+        PROXY = 0;
+        CLUSTER = 1;
+    }
+
+    Mode mode = 1;
+
+    Auth auth = 2;
+
+    repeated string discovery_endpoints = 3;
+}
+
+message TrafficPolicy {
+    ConnectionPoolSettings connection_pool = 1;
+}

@@ -297,6 +297,12 @@ func getRetrier(serviceType string) Retrier {
 	}
 }
 
+// GetServiceIP get the service clusterIP.
+func GetServiceIP(serviceName, namespace, kubeconfig string) (string, error) {
+	res, err := Shell("kubectl -n %s get svc %s -o go-template='{{$.spec.clusterIP}}' --kubeconfig=%s", namespace, serviceName, kubeconfig)
+	return strings.TrimSpace(res), err
+}
+
 // GetIngress get istio ingress ip and port. Could relate to either Istio Ingress or to
 // Istio Ingress Gateway, by serviceName and podLabel. Handles two cases: when the Ingress/Ingress Gateway
 // Kubernetes Service is a LoadBalancer or NodePort (for tests within the  cluster, including for minikube)
@@ -438,6 +444,25 @@ func GetIngressPodNames(n string, kubeconfig string) ([]string, error) {
 	}
 	res = strings.Trim(res, "'")
 	return strings.Split(res, " "), nil
+}
+
+// GetPodsInfo get pods info.
+func GetPodsInfo(n string, kubeconfig string, label string) (pods []PodInfo, err error) {
+	res, err := Shell("kubectl -n %s -l=%s get pods -o=jsonpath='{range .items[*]}{.metadata.name}{\" \"}{.status.podIP}{\"\\n\"}{end}' --kubeconfig=%s", n, label, kubeconfig)
+	if err != nil {
+		log.Infof("Failed to get pods by label %s in namespace %s: %s", label, n, err)
+		return nil, err
+	}
+	for _, line := range strings.Split(res, "\n") {
+		f := strings.Fields(line)
+		if len(f) >= 2 {
+			pods = append(pods, PodInfo{
+				Name:   f[0],
+				IPAddr: f[1],
+			})
+		}
+	}
+	return pods, nil
 }
 
 // GetAppPodsInfo returns a map of a list of PodInfo
@@ -900,7 +925,7 @@ func CheckDeploymentsReady(ns string, kubeconfig string) (int, error) {
 // get podsReady() sometimes gets pods created by the "Job" resource which never reach the "Running" steady state.
 func CheckStatefulsetReady(ns string, kubeconfig string) (int, error) {
 	CMD := "kubectl -n %s get statefulset -o jsonpath='{range .items[*]}{@.metadata.name}{\" \"}" +
-		"{@.status.readyReplicas}{\"\\n\"}{end}' --kubeconfig=%s"
+		"{@.status.replicas}{\" \"}{@.status.readyReplicas}{\"\\n\"}{end}' --kubeconfig=%s"
 	out, err := Shell(fmt.Sprintf(CMD, ns, kubeconfig))
 
 	if err != nil {
@@ -913,8 +938,13 @@ func CheckStatefulsetReady(ns string, kubeconfig string) (int, error) {
 		if len(flds) < 1 {
 			continue
 		}
-		if len(flds) == 1 || flds[1] == "0" { // no replicas ready
+		if len(flds) <= 2 { // no replicas ready
 			notReady++
+		}
+		if len(flds) == 3 {
+			if flds[1] != flds[2] {
+				notReady++
+			}
 		}
 	}
 

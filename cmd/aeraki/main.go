@@ -18,14 +18,15 @@ import (
 	"flag"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
-
-	"github.com/aeraki-framework/aeraki/plugin/kafka"
-	"github.com/aeraki-framework/aeraki/plugin/zookeeper"
 
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/plugin/dubbo"
+	"github.com/aeraki-framework/aeraki/plugin/kafka"
 	"github.com/aeraki-framework/aeraki/plugin/thrift"
+	"github.com/aeraki-framework/aeraki/plugin/zookeeper"
+	"istio.io/pkg/log"
 
 	"github.com/aeraki-framework/aeraki/pkg/bootstrap"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
@@ -34,14 +35,20 @@ import (
 const (
 	defaultIstiodAddr    = "istiod.istio-system:15010"
 	defaultListeningAddr = ":1109"
+	defaultNamespace     = "istio-system"
+	defaultElectionID    = "aeraki-controller"
+	defaultLogLevel      = "default:info"
 )
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	args.IstiodAddr = *flag.String("istiodaddr", defaultIstiodAddr, "Istiod xds server address")
 	args.ListenAddr = *flag.String("listeningAddr", defaultListeningAddr, "MCP listening address")
+	args.Namespace = *flag.String("namespace", defaultNamespace, "Current namespace")
+	args.ElectionID = *flag.String("electionID", defaultElectionID, "ElectionID to elect master controller")
+	args.LogLevel = *flag.String("logLevel", defaultLogLevel, "Component log level")
 	flag.Parse()
-
+	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.
 	stopChan := make(chan struct{}, 1)
 	args.Protocols = initGenerators()
@@ -61,4 +68,27 @@ func initGenerators() map[protocol.Instance]envoyfilter.Generator {
 		protocol.Kafka:     kafka.NewGenerator(),
 		protocol.Zookeeper: zookeeper.NewGenerator(),
 	}
+}
+
+func setLogLevels(level string) {
+	logOpts := log.DefaultOptions()
+	levels := strings.Split(level, ",")
+	for _, l := range levels {
+		cl := strings.Split(l, ":")
+		if len(cl) != 2 {
+			continue
+		}
+		logOpts.SetOutputLevel(cl[0], stringToLevel[cl[1]])
+	}
+	_ = log.Configure(logOpts)
+}
+
+// this is the same as istio.io/pkg/log.stringToLevel
+var stringToLevel = map[string]log.Level{
+	"debug": log.DebugLevel,
+	"info":  log.InfoLevel,
+	"warn":  log.WarnLevel,
+	"error": log.ErrorLevel,
+	"fatal": log.FatalLevel,
+	"none":  log.NoneLevel,
 }

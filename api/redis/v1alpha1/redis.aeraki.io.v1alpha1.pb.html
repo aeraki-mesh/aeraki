@@ -1,0 +1,1024 @@
+---
+title: Redis Destination
+description: Configuration affecting auth , discovery_endpoints etc.
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+schema: redis.aeraki.io.v1alpha1.RedisDestination
+schema: redis.aeraki.io.v1alpha1.RedisService
+number_of_entries: 25
+---
+<p>RedisDestination defines policies that apply to redis traffic intended for a redis service</p>
+
+<h2 id="RedisDestination">RedisDestination</h2>
+<section>
+<p>RedisDestination defines policies that apply to redis traffic intended for a redis service</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisDestination-host">
+<td><code>host</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="RedisDestination-traffic_policy">
+<td><code>trafficPolicy</code></td>
+<td><code><a href="#TrafficPolicy">TrafficPolicy</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="ConnectionPoolSettings">ConnectionPoolSettings</h2>
+<section>
+<p>Connection pool settings for an upstream host. The settings apply to
+each individual host in the upstream service.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ConnectionPoolSettings-tcp">
+<td><code>tcp</code></td>
+<td><code><a href="https://istio.io/docs/reference/config/networking/destination-rule.html#ConnectionPoolSettings-TCPSettings">TCPSettings</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ConnectionPoolSettings-redis">
+<td><code>redis</code></td>
+<td><code><a href="#RedisSettings">RedisSettings</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Auth">Auth</h2>
+<section>
+<p>Auth provide a way to get redis auth token.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Auth-secret" class="oneof oneof-start">
+<td><code>secret</code></td>
+<td><code><a href="#SecretReference">SecretReference (oneof)</a></code></td>
+<td>
+<p>Secret use the k8s secret in current namespace.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Auth-plain" class="oneof">
+<td><code>plain</code></td>
+<td><code><a href="#PlainAuth">PlainAuth (oneof)</a></code></td>
+<td>
+<p>redis password.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="SecretReference">SecretReference</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="SecretReference-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SecretReference-password_field">
+<td><code>passwordField</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="SecretReference-username_field">
+<td><code>usernameField</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PlainAuth">PlainAuth</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PlainAuth-password">
+<td><code>password</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="PlainAuth-username">
+<td><code>username</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisSettings">RedisSettings</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisSettings-mode">
+<td><code>mode</code></td>
+<td><code><a href="#RedisSettings-Mode">Mode</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisSettings-auth">
+<td><code>auth</code></td>
+<td><code><a href="#Auth">Auth</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisSettings-discovery_endpoints">
+<td><code>discoveryEndpoints</code></td>
+<td><code>string[]</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="TrafficPolicy">TrafficPolicy</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="TrafficPolicy-connection_pool">
+<td><code>connectionPool</code></td>
+<td><code><a href="#ConnectionPoolSettings">ConnectionPoolSettings</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService">RedisService</h2>
+<section>
+<p>RedisService provide a way to config redis service in service mesh.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-host">
+<td><code>host</code></td>
+<td><code>string[]</code></td>
+<td>
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="RedisService-settings">
+<td><code>settings</code></td>
+<td><code><a href="#RedisService-Settings">Settings</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-redis">
+<td><code>redis</code></td>
+<td><code><a href="#RedisService-Route">Route[]</a></code></td>
+<td>
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="RedisService-faults">
+<td><code>faults</code></td>
+<td><code><a href="#Fault">Fault[]</a></code></td>
+<td>
+<p>List of faults to inject. Faults currently come in two flavors:
+- Delay, which delays a request.
+- Error, which responds to a request with an error. Errors can also have delays attached.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Percent">Percent</h2>
+<section>
+<p>Percent specifies a percentage in the range of [0.0, 100.0].</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Percent-value">
+<td><code>value</code></td>
+<td><code>double</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Fault">Fault</h2>
+<section>
+<p>Fault defines redis faults used for fault injection.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Fault-type">
+<td><code>type</code></td>
+<td><code><a href="#Fault-Type">Type</a></code></td>
+<td>
+<p>Fault type.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Fault-percentage">
+<td><code>percentage</code></td>
+<td><code><a href="#Percent">Percent</a></code></td>
+<td>
+<p>Percentage of requests fault applies to.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Fault-delay">
+<td><code>delay</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration">Duration</a></code></td>
+<td>
+<p>Delay for all faults. If not set, defaults to zero</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Fault-commands">
+<td><code>commands</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Commands fault is restricted to, if any. If not set, fault applies to all commands
+other than auth and ping (due to special handling of those commands in Envoy).</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-Settings">RedisService.Settings</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-Settings-case_insensitive">
+<td><code>caseInsensitive</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Indicates that prefix matching should be case insensitive.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-op_timeout">
+<td><code>opTimeout</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration">Duration</a></code></td>
+<td>
+<p>Per-operation timeout in milliseconds. The timer starts when the first
+command of a pipeline is written to the backend connection. Each response received from Redis
+resets the timer since it signifies that the next command is being processed by the backend.
+The only exception to this behavior is when a connection to a backend is not yet established.
+In that case, the connect timeout on the cluster will govern the timeout until the connection
+is ready.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-enable_command_stats">
+<td><code>enableCommandStats</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Enable per-command statistics per upstream cluster, in addition to the filter level aggregate
+count</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-max_buffer_size_before_flush">
+<td><code>maxBufferSizeBeforeFlush</code></td>
+<td><code>uint32</code></td>
+<td>
+<p>Maximum size of encoded request buffer before flush is triggered and encoded requests
+are sent upstream. If this is unset, the buffer flushes whenever it receives data
+and performs no batching.
+This feature makes it possible for multiple clients to send requests to Envoy and have
+them batched- for example if one is running several worker processes, each with its own
+Redis connection. There is no benefit to using this with a single downstream process.
+Recommended size (if enabled) is 1024 bytes.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-buffer_flush_timeout">
+<td><code>bufferFlushTimeout</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration">Duration</a></code></td>
+<td>
+<p>The encoded request buffer is flushed N milliseconds after the first request has been
+encoded, unless the buffer size has already exceeded <code>max_buffer_size_before_flush</code>.
+If <code>max_buffer_size_before_flush</code> is not set, this flush timer is not used. Otherwise,
+the timer should be set according to the number of clients, overall request rate and
+desired maximum latency for a single command. For example, if there are many requests
+being batched together at a high rate, the buffer will likely be filled before the timer
+fires. Alternatively, if the request rate is lower the buffer will not be filled as often
+before the timer fires.
+If <code>max_buffer_size_before_flush</code> is set, but <code>buffer_flush_timeout</code> is not, the latter
+defaults to 3ms.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-max_upstream_unknown_connections">
+<td><code>maxUpstreamUnknownConnections</code></td>
+<td><code><a href="#google-protobuf-UInt32Value">UInt32Value</a></code></td>
+<td>
+<p><code>max_upstream_unknown_connections</code> controls how many upstream connections to unknown hosts
+can be created at any given time by any given worker thread (see <code>enable_redirection</code> for
+more details). If the host is unknown and a connection cannot be created due to enforcing
+this limit, then redirection will fail and the original redirection error will be passed
+downstream unchanged. This limit defaults to 100.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-enable_hashtagging">
+<td><code>enableHashtagging</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Use hash tagging on every redis key to guarantee that keys with the same hash tag will be
+forwarded to the same upstream. The hash key used for determining the upstream in a
+consistent hash ring configuration will be computed from the hash tagged key instead of the
+whole key. The algorithm used to compute the hash tag is identical to the <code>redis-cluster
+implementation &lt;https://redis.io/topics/cluster-spec#keys-hash-tags&gt;</code>_.</p>
+
+<p>Examples:</p>
+
+<ul>
+<li>&rsquo;{user1000}.following&rsquo; and &lsquo;{user1000}.followers&rsquo; <strong>will</strong> be sent to the same upstream</li>
+<li>&rsquo;{user1000}.following&rsquo; and &lsquo;{user1001}.following&rsquo; <strong>might</strong> be sent to the same upstream</li>
+</ul>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-enable_redirection">
+<td><code>enableRedirection</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Accept <code>moved and ask redirection
+&lt;https://redis.io/topics/cluster-spec#redirection-and-resharding&gt;</code>_ errors from upstream
+redis servers, and retry commands to the specified target server. The target server does not
+need to be known to the cluster manager. If the command cannot be redirected, then the
+original error is passed downstream unchanged. By default, this support is not enabled.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-read_policy">
+<td><code>readPolicy</code></td>
+<td><code><a href="#RedisService-ReadPolicy">ReadPolicy</a></code></td>
+<td>
+<p>Read policy. The default is to read from the primary.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Settings-auth">
+<td><code>auth</code></td>
+<td><code><a href="#Auth">Auth</a></code></td>
+<td>
+<p>Downstream auth.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-KeyMatch">RedisService.KeyMatch</h2>
+<section>
+<p>KeyMatch match the redis key prefix;</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-KeyMatch-prefix">
+<td><code>prefix</code></td>
+<td><code>string</code></td>
+<td>
+<p>String prefix that must match the beginning of the keys. Envoy will always favor the
+longest match.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-KeyMatch-remove_prefix">
+<td><code>removePrefix</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Indicates if the prefix needs to be removed from the key when forwarded.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-RouteMatch">RedisService.RouteMatch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-RouteMatch-key" class="oneof oneof-start">
+<td><code>key</code></td>
+<td><code><a href="#RedisService-KeyMatch">KeyMatch (oneof)</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-Destination">RedisService.Destination</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-Destination-host">
+<td><code>host</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="RedisService-Destination-port">
+<td><code>port</code></td>
+<td><code>uint32</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-Mirror">RedisService.Mirror</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-Mirror-route">
+<td><code>route</code></td>
+<td><code><a href="#RedisService-Destination">Destination</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Mirror-percentage">
+<td><code>percentage</code></td>
+<td><code><a href="#Percent">Percent</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Mirror-exclude_read_commands">
+<td><code>excludeReadCommands</code></td>
+<td><code>bool</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-Route">RedisService.Route</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-Route-match">
+<td><code>match</code></td>
+<td><code><a href="#RedisService-RouteMatch">RouteMatch</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Route-route">
+<td><code>route</code></td>
+<td><code><a href="#RedisService-Destination">Destination</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="RedisService-Route-mirror">
+<td><code>mirror</code></td>
+<td><code><a href="#RedisService-Mirror">Mirror[]</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="google-protobuf-UInt32Value">google.protobuf.UInt32Value</h2>
+<section>
+<p>Wrapper message for <code>uint32</code>.</p>
+
+<p>The JSON representation for <code>UInt32Value</code> is JSON number.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="google-protobuf-UInt32Value-value">
+<td><code>value</code></td>
+<td><code>uint32</code></td>
+<td>
+<p>The uint32 value.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisSettings-Mode">RedisSettings.Mode</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisSettings-Mode-PROXY">
+<td><code>PROXY</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisSettings-Mode-CLUSTER">
+<td><code>CLUSTER</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisSettings-Mode">RedisSettings.Mode</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisSettings-Mode-PROXY">
+<td><code>PROXY</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisSettings-Mode-CLUSTER">
+<td><code>CLUSTER</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-ReadPolicy">RedisService.ReadPolicy</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-ReadPolicy-MASTER">
+<td><code>MASTER</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-PREFER_MASTER">
+<td><code>PREFER_MASTER</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-REPLICA">
+<td><code>REPLICA</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-PREFER_REPLICA">
+<td><code>PREFER_REPLICA</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-ANY">
+<td><code>ANY</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Fault-Type">Fault.Type</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Fault-Type-DELAY">
+<td><code>DELAY</code></td>
+<td>
+<p>Delays requests. This is the base fault; other faults can have delays added.</p>
+
+</td>
+</tr>
+<tr id="Fault-Type-ERROR">
+<td><code>ERROR</code></td>
+<td>
+<p>Returns errors on requests.</p>
+
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Fault-Type">Fault.Type</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Fault-Type-DELAY">
+<td><code>DELAY</code></td>
+<td>
+<p>Delays requests. This is the base fault; other faults can have delays added.</p>
+
+</td>
+</tr>
+<tr id="Fault-Type-ERROR">
+<td><code>ERROR</code></td>
+<td>
+<p>Returns errors on requests.</p>
+
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Fault-Type">Fault.Type</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Fault-Type-DELAY">
+<td><code>DELAY</code></td>
+<td>
+<p>Delays requests. This is the base fault; other faults can have delays added.</p>
+
+</td>
+</tr>
+<tr id="Fault-Type-ERROR">
+<td><code>ERROR</code></td>
+<td>
+<p>Returns errors on requests.</p>
+
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-ReadPolicy">RedisService.ReadPolicy</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-ReadPolicy-MASTER">
+<td><code>MASTER</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-PREFER_MASTER">
+<td><code>PREFER_MASTER</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-REPLICA">
+<td><code>REPLICA</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-PREFER_REPLICA">
+<td><code>PREFER_REPLICA</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-ANY">
+<td><code>ANY</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="RedisService-ReadPolicy">RedisService.ReadPolicy</h2>
+<section>
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="RedisService-ReadPolicy-MASTER">
+<td><code>MASTER</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-PREFER_MASTER">
+<td><code>PREFER_MASTER</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-REPLICA">
+<td><code>REPLICA</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-PREFER_REPLICA">
+<td><code>PREFER_REPLICA</code></td>
+<td>
+</td>
+</tr>
+<tr id="RedisService-ReadPolicy-ANY">
+<td><code>ANY</code></td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+</section>

@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-service-secret
+type: Opaque
+data:
+  password: dGVzdHJlZGlzCg==
+---
+apiVersion: redis.aeraki.io/v1alpha1
+kind: RedisService
+metadata:
+  name: redis-cluster
+spec:
+  host:
+    - redis-cluster.redis.svc.cluster.local
+  settings:
+    auth:
+      secret:
+        name: redis-service-secret
+  redis:
+    - match:
+        key:
+          prefix: cluster
+      route:
+        host: redis-cluster.redis.svc.cluster.local
+    - route:
+        host: redis-single.redis.svc.cluster.local
+---
+apiVersion: redis.aeraki.io/v1alpha1
+kind: RedisService
+metadata:
+  name: redis-single
+spec:
+  host:
+    - redis-single.redis.svc.cluster.local
+  redis:
+    - route:
+        host: redis-single.redis.svc.cluster.local

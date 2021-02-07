@@ -3,6 +3,10 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   profile: default
+  values:
+    global:
+      logging:
+        level: default:debug
   meshConfig:
     accessLogFile: /dev/stdout
     configSources:

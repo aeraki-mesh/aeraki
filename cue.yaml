@@ -1,0 +1,20 @@
+---
+# Cuelang configuration to generate OpenAPI schema for configs.
+
+module: github.com/aeraki-framework/aeraki
+
+openapi:
+  selfContained: true
+  fieldFilter: "min.*|max.*"
+
+directories:
+  api/redis/v1alpha1:
+    - mode: perFile
+crd:
+  dir: ./crd/kubernetes
+# All is used when generating all types referenced in the above directories to
+# one file.
+all:
+  title: All aeraki types.
+  version: v1alpha1
+  oapiFilename: aeraki.gen.json

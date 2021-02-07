@@ -15,9 +15,15 @@
 package bootstrap
 
 import (
+	"context"
+
+	"github.com/aeraki-framework/aeraki/pkg/kube/controller"
 	"github.com/aeraki-framework/aeraki/pkg/mcp"
+	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-framework/aeraki/plugin/redis"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/aeraki-framework/aeraki/pkg/config"
 	"istio.io/pkg/log"
@@ -29,15 +35,25 @@ var (
 
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
-	args             *AerakiArgs
-	configController *config.Controller
-	mcpServer        *mcp.Server
+	args              *AerakiArgs
+	configController  *config.Controller
+	mcpServer         *mcp.Server
+	crdController     manager.Manager
+	stopCRDController func()
 }
 
 // NewServer creates a new Server instance based on the provided arguments.
 func NewServer(args *AerakiArgs) *Server {
 	configController := config.NewController(args.IstiodAddr)
 	mcpServer := mcp.NewServer(args.ListenAddr, configController.Store, args.Protocols)
+	crdController := controller.NewManager(args.Namespace, args.ElectionID, func() error {
+		mcpServer.ConfigUpdate(model.EventUpdate)
+		return nil
+	})
+
+	cfg := crdController.GetConfig()
+	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
+
 	configController.RegisterEventHandler(args.Protocols, func(_, curr istioconfig.Config, event model.Event) {
 		mcpServer.ConfigUpdate(event)
 	})
@@ -46,6 +62,7 @@ func NewServer(args *AerakiArgs) *Server {
 		args:             args,
 		configController: configController,
 		mcpServer:        mcpServer,
+		crdController:    crdController,
 	}
 }
 
@@ -65,6 +82,13 @@ func (s *Server) Start(stop <-chan struct{}) {
 		aerakiLog.Infof("Watching xDS resource changes at %s", s.args.IstiodAddr)
 		s.configController.Run(stop)
 	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	s.stopCRDController = cancel
+	go func() {
+		_ = s.crdController.Start(ctx)
+	}()
+
 	s.waitForShutdown(stop)
 }
 
@@ -73,5 +97,6 @@ func (s *Server) waitForShutdown(stop <-chan struct{}) {
 	go func() {
 		<-stop
 		s.mcpServer.Stop()
+		s.stopCRDController()
 	}()
 }

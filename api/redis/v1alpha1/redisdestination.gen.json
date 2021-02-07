@@ -1,0 +1,186 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Configuration affecting auth , discovery_endpoints etc.",
+    "version": "v1alpha1"
+  },
+  "components": {
+    "schemas": {
+      "redis.aeraki.io.v1alpha1.TrafficPolicy": {
+        "type": "object",
+        "properties": {
+          "connectionPool": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.ConnectionPoolSettings"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.ConnectionPoolSettings": {
+        "description": "Connection pool settings for an upstream host. The settings apply to each individual host in the upstream service.",
+        "type": "object",
+        "properties": {
+          "tcp": {
+            "$ref": "#/components/schemas/istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings"
+          },
+          "redis": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisSettings"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisDestination": {
+        "description": "RedisDestination defines policies that apply to redis traffic intended for a redis service",
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "format": "string"
+          },
+          "trafficPolicy": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.TrafficPolicy"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisSettings": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.RedisSettings.Mode"
+          },
+          "auth": {
+            "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.Auth"
+          },
+          "discoveryEndpoints": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.Auth": {
+        "description": "Auth provide a way to get redis auth token.",
+        "type": "object",
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "secret"
+                  ],
+                  "properties": {
+                    "secret": {
+                      "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.SecretReference"
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "plain"
+                  ],
+                  "properties": {
+                    "plain": {
+                      "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.PlainAuth"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "required": [
+              "secret"
+            ],
+            "properties": {
+              "secret": {
+                "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.SecretReference"
+              }
+            }
+          },
+          {
+            "required": [
+              "plain"
+            ],
+            "properties": {
+              "plain": {
+                "$ref": "#/components/schemas/redis.aeraki.io.v1alpha1.PlainAuth"
+              }
+            }
+          }
+        ]
+      },
+      "redis.aeraki.io.v1alpha1.SecretReference": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "format": "string"
+          },
+          "passwordField": {
+            "type": "string",
+            "format": "string"
+          },
+          "usernameField": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.PlainAuth": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "format": "string"
+          },
+          "username": {
+            "type": "string",
+            "format": "string"
+          }
+        }
+      },
+      "redis.aeraki.io.v1alpha1.RedisSettings.Mode": {
+        "type": "string",
+        "enum": [
+          "PROXY",
+          "CLUSTER"
+        ]
+      },
+      "istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings": {
+        "type": "object",
+        "properties": {
+          "maxConnections": {
+            "description": "Maximum number of HTTP1 /TCP connections to a destination host. Default 2^32-1.",
+            "type": "integer",
+            "format": "int32"
+          },
+          "connectTimeout": {
+            "description": "TCP connection timeout. format: 1h/1m/1s/1ms. MUST BE \u003e=1ms. Default is 10s.",
+            "type": "string"
+          },
+          "tcpKeepalive": {
+            "$ref": "#/components/schemas/istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive"
+          }
+        }
+      },
+      "istio.networking.v1alpha3.ConnectionPoolSettings.TCPSettings.TcpKeepalive": {
+        "description": "If set then set SO_KEEPALIVE on the socket to enable TCP Keepalives.",
+        "type": "object",
+        "properties": {
+          "time": {
+            "description": "The time duration a connection needs to be idle before keep-alive probes start being sent. Default is to use the OS level configuration (unless overridden, Linux defaults to 7200s (ie 2 hours.)",
+            "type": "string"
+          },
+          "probes": {
+            "description": "Maximum number of keepalive probes to send without response before deciding the connection is dead. Default is to use the OS level configuration (unless overridden, Linux defaults to 9.)",
+            "type": "integer"
+          },
+          "interval": {
+            "description": "The time duration between keep-alive probes. Default is to use the OS level configuration (unless overridden, Linux defaults to 75s.)",
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -144,7 +144,7 @@ func (s *Server) EstablishResourceStream(stream mcp.ResourceSource_EstablishReso
 	var timeChan <-chan time.Time
 	var startDebounce time.Time
 	var lastResourceUpdateTime time.Time
-
+	mcpLog.Infof("establish resource stream")
 	pushCounter := 0
 	debouncedEvents := 0
 	con := s.newConnection(stream)
@@ -219,7 +219,6 @@ func (s *Server) pushEnvoyFilters(con *Connection) error {
 			},
 			VirtualService: relatedVs,
 		}
-
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := s.generators[instance]; ok {

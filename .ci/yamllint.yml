@@ -1,6 +1,9 @@
 ---
 extends: default
 
+ignore: |
+  customresourcedefinitions.gen.yaml
+
 yaml-files:
   - '*.yaml'
   - '*.yml'
