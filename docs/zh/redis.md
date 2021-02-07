@@ -40,7 +40,7 @@ spec:
 
 #### Host 字段
 
-雷同于 VirtualService 的 Host 字段，这是客户端向 Redis 服务发送请求时使用的一个或多个地址。
+类似于 VirtualService 的 Host 字段，这是客户端向 Redis 服务发送请求时使用的一个或多个地址。
 
 *请注意：host 字段目前只能是 Kubernetes 集群内服务 DNS 全称，即格式为 \${svc}.\${ns}.svc.cluster.local 。*
 
