@@ -104,6 +104,7 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 	}
 	return filters
 }
+
 // ReplaceClusterPatches create a `replace` operation patch on `cluster`
 func ReplaceClusterPatches(cluster *clusterv3.Cluster) []*networking.EnvoyFilter_EnvoyConfigObjectPatch {
 	clusterStruct, err := valueOf(cluster)

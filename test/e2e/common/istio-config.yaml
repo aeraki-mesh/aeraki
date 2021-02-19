@@ -9,9 +9,6 @@ spec:
         level: default:debug
   meshConfig:
     accessLogFile: /dev/stdout
-    configSources:
-    - address: "aeraki.istio-system.svc:1109"
-    - address: "k8s://"
     defaultConfig:
       proxyMetadata:
         ISTIO_META_DNS_CAPTURE: "true"

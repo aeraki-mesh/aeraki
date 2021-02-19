@@ -108,13 +108,13 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	if outboundProxyPatch != nil && inboundProxyPatch != nil {
 		return []*model.EnvoyFilterWrapper{
 			{
-				Name: service.Hosts[0] + "_outbound" + "_aeraki",
+				Name: outboundEnvoyFilterName(service),
 				Envoyfilter: &networking.EnvoyFilter{
 					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
 				},
 			},
 			{
-				Name: service.Hosts[0] + "_inbound" + "_aeraki",
+				Name: inboundEnvoyFilterName(service),
 				Envoyfilter: &networking.EnvoyFilter{
 					WorkloadSelector: service.WorkloadSelector,
 					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
@@ -124,7 +124,7 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	if outboundProxyPatch != nil {
 		return []*model.EnvoyFilterWrapper{
 			{
-				Name: service.Hosts[0] + "_outbound" + "_aeraki",
+				Name: outboundEnvoyFilterName(service),
 				Envoyfilter: &networking.EnvoyFilter{
 					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
 				},
@@ -133,7 +133,7 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	if inboundProxyPatch != nil {
 		return []*model.EnvoyFilterWrapper{
 			{
-				Name: service.Hosts[0] + "_inbound" + "_aeraki",
+				Name: inboundEnvoyFilterName(service),
 				Envoyfilter: &networking.EnvoyFilter{
 					WorkloadSelector: service.WorkloadSelector,
 					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
@@ -141,6 +141,14 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 			}}
 	}
 	return nil
+}
+
+func outboundEnvoyFilterName(service *networking.ServiceEntry) string {
+	return "aeraki" + "-outbound-" + service.Hosts[0]
+}
+
+func inboundEnvoyFilterName(service *networking.ServiceEntry) string {
+	return "aeraki" + "-inbound-" + service.Hosts[0]
 }
 
 func generateValue(proxy proto.Message, filterName string, filterType string) (*types.Struct, error) {

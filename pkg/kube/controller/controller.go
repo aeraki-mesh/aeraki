@@ -10,7 +10,7 @@ import (
 var controllerLog = log.RegisterScope("controller", "crd controller", 0)
 
 // NewManager create a manager to manager all crd controllers.
-func NewManager(namespace string, electionID string, triggerPush func() error) (manager.Manager) {
+func NewManager(namespace string, electionID string, triggerPush func() error) manager.Manager {
 	// Get a config to talk to the apiserver
 	cfg, err := config.GetConfig()
 	if err != nil {
