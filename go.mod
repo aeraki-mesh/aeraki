@@ -35,14 +35,18 @@ require (
 	github.com/golang/sync v0.0.0-20180314180146-1d60e4601c6f
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
-	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/go-multierror v1.1.0
+	github.com/klauspost/compress v1.11.0 // indirect
+	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/spf13/cobra v1.1.3 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
-	google.golang.org/grpc v1.33.2
+	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/protobuf v1.25.0
+	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 	istio.io/api v0.0.0-20210109163259-0575f65cd5df
+	istio.io/client-go v0.0.0-20200908160912-f99162621a1a
 	istio.io/gogo-genproto v0.0.0-20201015184601-1e80d26d6249
 	istio.io/istio v0.0.0-20201118224433-c87a4c874df2
 	istio.io/pkg v0.0.0-20201230223204-2d0a1c8bd9e5

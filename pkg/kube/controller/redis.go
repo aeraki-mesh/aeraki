@@ -15,7 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var redisLog = log.RegisterScope("redis-controller", "mcp debugging", 0)
+var redisLog = log.RegisterScope("redis-controller", "redis-controller debugging", 0)
 
 // RedisController control RedisService or RedisDestination
 type RedisController struct {

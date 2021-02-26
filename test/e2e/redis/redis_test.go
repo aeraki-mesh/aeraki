@@ -22,8 +22,9 @@ import (
 	"strings"
 	"testing"
 	"time"
-	"k8s.io/client-go/util/jsonpath"
+
 	"github.com/aeraki-framework/aeraki/test/e2e/util"
+	"k8s.io/client-go/util/jsonpath"
 )
 
 func TestMain(m *testing.M) {

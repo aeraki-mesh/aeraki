@@ -17,8 +17,9 @@ package bootstrap
 import (
 	"context"
 
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
+
 	"github.com/aeraki-framework/aeraki/pkg/kube/controller"
-	"github.com/aeraki-framework/aeraki/pkg/mcp"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	"github.com/aeraki-framework/aeraki/plugin/redis"
 	"istio.io/istio/pilot/pkg/model"
@@ -30,24 +31,24 @@ import (
 )
 
 var (
-	aerakiLog = log.RegisterScope("aeraki-server", "mcp debugging", 0)
+	aerakiLog = log.RegisterScope("aeraki-server", "aeraki-server debugging", 0)
 )
 
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
-	args              *AerakiArgs
-	configController  *config.Controller
-	mcpServer         *mcp.Server
-	crdController     manager.Manager
-	stopCRDController func()
+	args                  *AerakiArgs
+	configController      *config.Controller
+	envoyFilterController *envoyfilter.Controller
+	crdController         manager.Manager
+	stopCRDController     func()
 }
 
 // NewServer creates a new Server instance based on the provided arguments.
 func NewServer(args *AerakiArgs) *Server {
 	configController := config.NewController(args.IstiodAddr)
-	mcpServer := mcp.NewServer(args.ListenAddr, configController.Store, args.Protocols)
+	envoyFilterController := envoyfilter.NewController(configController.Store, args.Protocols)
 	crdController := controller.NewManager(args.Namespace, args.ElectionID, func() error {
-		mcpServer.ConfigUpdate(model.EventUpdate)
+		envoyFilterController.ConfigUpdate(model.EventUpdate)
 		return nil
 	})
 
@@ -55,14 +56,14 @@ func NewServer(args *AerakiArgs) *Server {
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
 
 	configController.RegisterEventHandler(args.Protocols, func(_, curr istioconfig.Config, event model.Event) {
-		mcpServer.ConfigUpdate(event)
+		envoyFilterController.ConfigUpdate(event)
 	})
 
 	return &Server{
-		args:             args,
-		configController: configController,
-		mcpServer:        mcpServer,
-		crdController:    crdController,
+		args:                  args,
+		configController:      configController,
+		envoyFilterController: envoyFilterController,
+		crdController:         crdController,
 	}
 }
 
@@ -72,10 +73,8 @@ func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("Staring Aeraki Server")
 
 	go func() {
-		aerakiLog.Infof("Starting MCP service at %s", s.args.ListenAddr)
-		if err := s.mcpServer.Start(); err != nil {
-			aerakiLog.Warn(err)
-		}
+		aerakiLog.Infof("Starting Envoy Filter Controller")
+		s.envoyFilterController.Run(stop)
 	}()
 
 	go func() {
@@ -96,7 +95,6 @@ func (s *Server) Start(stop <-chan struct{}) {
 func (s *Server) waitForShutdown(stop <-chan struct{}) {
 	go func() {
 		<-stop
-		s.mcpServer.Stop()
 		s.stopCRDController()
 	}()
 }

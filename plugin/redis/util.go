@@ -138,8 +138,6 @@ func setKeepAliveSettings(cluster *cluster.Cluster, keepalive *networking.Connec
 	}
 }
 
-
 func outboundClusterName(host string, port uint32) string {
 	return model.BuildClusterName(model.TrafficDirectionOutbound, "", host, int(port))
 }
-

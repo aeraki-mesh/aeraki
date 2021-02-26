@@ -34,10 +34,10 @@ import (
 )
 
 var (
-	controllerLog = log.RegisterScope("config-controller", "mcp debugging", 0)
+	controllerLog = log.RegisterScope("config-controller", "config-controller debugging", 0)
 	// We need serviceentry and virtualservice to generate the envoyfiters
 	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
-		MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
+				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
 )
 
 // Controller watches Istio config xDS server and notifies the listeners when config changes.

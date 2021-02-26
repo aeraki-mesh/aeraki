@@ -33,17 +33,15 @@ import (
 )
 
 const (
-	defaultIstiodAddr    = "istiod.istio-system:15010"
-	defaultListeningAddr = ":1109"
-	defaultNamespace     = "istio-system"
-	defaultElectionID    = "aeraki-controller"
-	defaultLogLevel      = "default:info"
+	defaultIstiodAddr = "istiod.istio-system:15010"
+	defaultNamespace  = "istio-system"
+	defaultElectionID = "aeraki-controller"
+	defaultLogLevel   = "default:info"
 )
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	args.IstiodAddr = *flag.String("istiodaddr", defaultIstiodAddr, "Istiod xds server address")
-	args.ListenAddr = *flag.String("listeningAddr", defaultListeningAddr, "MCP listening address")
 	args.Namespace = *flag.String("namespace", defaultNamespace, "Current namespace")
 	args.ElectionID = *flag.String("electionID", defaultElectionID, "ElectionID to elect master controller")
 	args.LogLevel = *flag.String("logLevel", defaultLogLevel, "Component log level")
