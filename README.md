@@ -13,6 +13,8 @@ Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microse
 
 In a nutshell, you can think of Aeraki as the [Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) in Istio to automate the envoy configuration for layer 7 protocols.
 
+IstioCon2021 Talk: [How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
+
 ## Architecture
 ![ Aeraki ](docs/aeraki-architecture.png)
 
@@ -83,7 +85,6 @@ Screenshot: Service Metrics:
 ![Screenshot: Service Metrics](docs/metrics.png)
 
 Recored Demo: Dubbo and Thrift Traffic Management
-
 [![Thrift and Dubbo traffic management demo](http://i3.ytimg.com/vi/vrjp-Yg3Leg/maxresdefault.jpg)](https://www.youtube.com/watch?v=vrjp-Yg3Leg)
 
 ## Install
