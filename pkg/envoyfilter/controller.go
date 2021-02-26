@@ -17,13 +17,15 @@ package envoyfilter
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	"github.com/gogo/protobuf/proto"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	versionedclient "istio.io/client-go/pkg/clientset/versioned"
-	"k8s.io/client-go/rest"
 
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
@@ -131,7 +133,7 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 		return fmt.Errorf("failed to generate EnvoyFilter: %v", err)
 	}
 
-	config, err := rest.InClusterConfig()
+	config, err := config.GetConfig()
 	if err != nil {
 		return fmt.Errorf("can not get kubernetes config: %v", err)
 	}
@@ -148,14 +150,16 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 	for _, oldEnvoyFilter := range existingEnvoyFilters.Items {
 		if newEnvoyFilter, ok := generatedEnvoyFilters[oldEnvoyFilter.Name]; !ok {
 			controllerLog.Infof("Deleting EnvoyFilter: %v", oldEnvoyFilter)
-			err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name, v1.DeleteOptions{})
+			err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name,
+				v1.DeleteOptions{})
 			if err != nil {
 				err = fmt.Errorf("failed to create istio client: %v", err)
 			}
 		} else {
-			if !reflect.DeepEqual(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
+			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
 				controllerLog.Infof("Updating EnvoyFilter: %v", *newEnvoyFilter.Envoyfilter)
-				_, err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Update(context.TODO(), s.toEnovyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
+				_, err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Update(context.TODO(),
+					s.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
 					v1.UpdateOptions{FieldManager: aerakiFieldManager})
 				if err != nil {
 					err = fmt.Errorf("failed to update EnvoyFilter: %v", err)
@@ -168,7 +172,7 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 	}
 
 	for _, wrapper := range generatedEnvoyFilters {
-		_, err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Create(context.TODO(), s.toEnovyFilterCRD(wrapper, nil),
+		_, err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Create(context.TODO(), s.toEnvoyFilterCRD(wrapper, nil),
 			v1.CreateOptions{FieldManager: aerakiFieldManager})
 		controllerLog.Infof("Creating EnvoyFilter: %v", *wrapper.Envoyfilter)
 		if err != nil {
@@ -178,7 +182,7 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 	return err
 }
 
-func (s *Controller) toEnovyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
+func (s *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
 	envoyFilter := &v1alpha3.EnvoyFilter{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      new.Name,
@@ -243,7 +247,8 @@ func (s *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 }
 
 func (s *Controller) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
-	virtualServices, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind(), "")
+	virtualServices, err := s.configStore.List(
+		collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list configs: %v", err)
 	}
