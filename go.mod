@@ -19,38 +19,37 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 // See https://github.com/kubernetes/kubernetes/issues/92867, there is a bug in the library
 replace github.com/evanphx/json-patch => github.com/evanphx/json-patch v0.0.0-20190815234213-e83c0a1c26c8
 
-// There are some bugs in the Istio 1.8.0
-// https://github.com/istio/istio/pull/29209
-// https://github.com/istio/istio/pull/29296
-replace istio.io/istio => github.com/zhaohuabing/istio v0.0.0-20210111232828-ecea0bbe3312
+// Pending https://github.com/kubernetes/kube-openapi/pull/220
+replace k8s.io/kube-openapi => github.com/howardjohn/kube-openapi v0.0.0-20210104181841-c0b40d2cb1c8
 
-// https://github.com/istio/api/pull/1774 add destination port support for envoyfilter
-replace istio.io/api => github.com/istio/api v0.0.0-20201217155105-21c3bd1ba1d3
+replace istio.io/api => istio.io/api v0.0.0-20210218044411-561dc276d04d
+
+replace istio.io/client-go => istio.io/client-go v1.9.1-0.20210224044613-d50a7c1b358b
+
+replace istio.io/gogo-genproto => istio.io/gogo-genproto v0.0.0-20210204223132-432f642bc065
+
+replace istio.io/pkg => istio.io/pkg v0.0.0-20201230223204-2d0a1c8bd9e5
+
+replace istio.io/istio => istio.io/istio v0.0.0-20210226235243-2dd7b6207f02
 
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/envoyproxy/go-control-plane v0.9.8
-	github.com/gogo/protobuf v1.3.1
+	github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
-	github.com/golang/sync v0.0.0-20180314180146-1d60e4601c6f
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0
-	github.com/klauspost/compress v1.11.0 // indirect
-	github.com/onsi/ginkgo v1.14.2 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.1.3 // indirect
-	github.com/stretchr/testify v1.7.0 // indirect
-	golang.org/x/net v0.0.0-20201224014010-6772e930b67b
-	golang.org/x/tools v0.1.0 // indirect
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/protobuf v1.25.0
-	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
-	istio.io/api v0.0.0-20210109163259-0575f65cd5df
-	istio.io/client-go v0.0.0-20200908160912-f99162621a1a
-	istio.io/gogo-genproto v0.0.0-20201015184601-1e80d26d6249
-	istio.io/istio v0.0.0-20201118224433-c87a4c874df2
-	istio.io/pkg v0.0.0-20201230223204-2d0a1c8bd9e5
-	k8s.io/apimachinery v0.20.1
-	k8s.io/client-go v0.20.1
-	sigs.k8s.io/controller-runtime v0.7.0
+	istio.io/api v0.0.0-20210302211031-2e1e4d7e6f4b
+	istio.io/client-go v1.9.1
+	istio.io/gogo-genproto v0.0.0-20210302011020-ae262edaabe3
+	istio.io/istio v0.0.0-20210304052440-b811231b14cf
+	istio.io/pkg v0.0.0-20210302010922-525eaee65cc5
+	k8s.io/apimachinery v0.20.4
+	k8s.io/client-go v0.20.4
+	sigs.k8s.io/controller-runtime v0.8.2
 )

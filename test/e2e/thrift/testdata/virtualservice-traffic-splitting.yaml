@@ -12,8 +12,8 @@ spec:
         - destination:
             host: thrift-sample-server.thrift.svc.cluster.local
             subset: v1
-          weight: 20
+          weight: 30
         - destination:
             host: thrift-sample-server.thrift.svc.cluster.local
             subset: v2
-          weight: 80
+          weight: 70
