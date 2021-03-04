@@ -30,9 +30,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/golang/sync/errgroup"
 	multierror "github.com/hashicorp/go-multierror"
 	"golang.org/x/net/context/ctxhttp"
+	"golang.org/x/sync/errgroup"
 
 	"istio.io/pkg/log"
 

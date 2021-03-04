@@ -15,7 +15,7 @@ on:
       - '*'
 
 env:
-  ISTIO_VERSION: 1.8.0
+  ISTIO_VERSION: 1.9.1
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
 
@@ -32,7 +32,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.14.4
+          go-version: 1.15.8
       - name: Install dependencies
         run: |
           go version
