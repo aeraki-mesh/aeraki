@@ -112,4 +112,6 @@ aeraki/demo/install-demo.sh
 You can import Aeraika demo dashboard from file `demo/aeraki-demo.json` into the Grafana.
 
 ## Contact
-If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
+* Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
+* Wechat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
+* Slack: Join [Aeraki slack channel](http://aeraki.slack.com/)
