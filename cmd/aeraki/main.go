@@ -50,7 +50,10 @@ func main() {
 	// Create the stop channel for all of the servers.
 	stopChan := make(chan struct{}, 1)
 	args.Protocols = initGenerators()
-	server := bootstrap.NewServer(args)
+	server, err := bootstrap.NewServer(args)
+	if err != nil {
+		log.Fatalf("Failed to start Aeraki :%v", err)
+	}
 	server.Start(stopChan)
 
 	signalChan := make(chan os.Signal, 1)

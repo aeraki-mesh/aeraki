@@ -16,18 +16,23 @@ package bootstrap
 
 import (
 	"context"
+	"fmt"
+
+	"istio.io/pkg/log"
+
+	"github.com/aeraki-framework/aeraki/pkg/config/serviceentry"
 
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 
+	"github.com/aeraki-framework/aeraki/pkg/config"
 	"github.com/aeraki-framework/aeraki/pkg/kube/controller"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	"github.com/aeraki-framework/aeraki/plugin/redis"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-
-	"github.com/aeraki-framework/aeraki/pkg/config"
-	"istio.io/pkg/log"
 )
 
 var (
@@ -36,17 +41,22 @@ var (
 
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
-	args                  *AerakiArgs
-	configController      *config.Controller
-	envoyFilterController *envoyfilter.Controller
-	crdController         manager.Manager
-	stopCRDController     func()
+	args                   *AerakiArgs
+	configController       *config.Controller
+	serviceEntryController *serviceentry.Controller
+	envoyFilterController  *envoyfilter.Controller
+	crdController          manager.Manager
+	stopCRDController      func()
 }
 
 // NewServer creates a new Server instance based on the provided arguments.
-func NewServer(args *AerakiArgs) *Server {
+func NewServer(args *AerakiArgs) (*Server, error) {
+	ic, err := getIstioClient()
+	if err != nil {
+		return nil, err
+	}
 	configController := config.NewController(args.IstiodAddr)
-	envoyFilterController := envoyfilter.NewController(configController.Store, args.Protocols)
+	envoyFilterController := envoyfilter.NewController(ic, configController.Store, args.Protocols)
 	crdController := controller.NewManager(args.Namespace, args.ElectionID, func() error {
 		envoyFilterController.ConfigUpdate(model.EventUpdate)
 		return nil
@@ -59,12 +69,15 @@ func NewServer(args *AerakiArgs) *Server {
 		envoyFilterController.ConfigUpdate(event)
 	})
 
+	serviceEntryController := serviceentry.NewController(ic)
+
 	return &Server{
-		args:                  args,
-		configController:      configController,
-		envoyFilterController: envoyFilterController,
-		crdController:         crdController,
-	}
+		args:                   args,
+		configController:       configController,
+		envoyFilterController:  envoyFilterController,
+		crdController:          crdController,
+		serviceEntryController: serviceEntryController,
+	}, nil
 }
 
 // Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop channel.
@@ -82,6 +95,11 @@ func (s *Server) Start(stop <-chan struct{}) {
 		s.configController.Run(stop)
 	}()
 
+	go func() {
+		aerakiLog.Infof("Starting ServiceEntry controller")
+		s.serviceEntryController.Run(stop)
+	}()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	s.stopCRDController = cancel
 	go func() {
@@ -97,4 +115,17 @@ func (s *Server) waitForShutdown(stop <-chan struct{}) {
 		<-stop
 		s.stopCRDController()
 	}()
+}
+
+func getIstioClient() (*istioclient.Clientset, error) {
+	config, err := kubeconfig.GetConfig()
+	if err != nil {
+		return nil, fmt.Errorf("can not get kubernetes config: %v", err)
+	}
+
+	ic, err := istioclient.NewForConfig(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create istio client: %v", err)
+	}
+	return ic, nil
 }
