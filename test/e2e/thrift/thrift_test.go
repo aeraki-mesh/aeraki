@@ -39,9 +39,9 @@ func setup() {
 }
 
 func shutdown() {
-	util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
+	/*util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
 	util.KubeDelete("thrift", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("thrift", "")
+	util.DeleteNamespace("thrift", "")*/
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {

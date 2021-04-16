@@ -104,6 +104,7 @@ rules:
       - virtualservices
       - destinationrules
       - envoyfilters
+      - serviceentries
     verbs:
       - get
       - watch

@@ -48,6 +48,7 @@ func shutdown() {
 
 func TestSidecarOutboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
+	time.Sleep(10 * time.Second) //wait for serviceentry vip allocation
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
 	config, _ := util.PodExec("dubbo", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
@@ -60,6 +61,7 @@ func TestSidecarOutboundConfig(t *testing.T) {
 
 func TestSidecarInboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
+	time.Sleep(10 * time.Second) //wait for serviceentry vip allocation
 	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-provider", "")
 	config, _ := util.PodExec("dubbo", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")

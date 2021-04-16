@@ -135,7 +135,9 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 							Method: &dubbo.MethodMatch{
 								Name: &matcher.StringMatcher{
 									MatchPattern: &matcher.StringMatcher_SafeRegex{
-										SafeRegex: &matcher.RegexMatcher{Regex: method.GetRegex()},
+										SafeRegex: &matcher.RegexMatcher{
+											EngineType: regexEngine,
+											Regex:      method.GetRegex()},
 									},
 								},
 							},

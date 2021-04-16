@@ -8,8 +8,6 @@ metadata:
 spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
-  addresses:
-    - 193.193.192.192
   ports:
     - number: 20880
       name: tcp-dubbo

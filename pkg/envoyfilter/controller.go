@@ -19,13 +19,11 @@ import (
 	"fmt"
 	"time"
 
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
-
 	"github.com/gogo/protobuf/proto"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	versionedclient "istio.io/client-go/pkg/clientset/versioned"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
 
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
@@ -59,30 +57,33 @@ var (
 
 // Controller contains the runtime configuration for the envoyFilter controller.
 type Controller struct {
-	configStore istiomodel.ConfigStore
-	generators  map[protocol.Instance]Generator
+	istioClientset *istioclient.Clientset
+	configStore    istiomodel.ConfigStore
+	generators     map[protocol.Instance]Generator
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 }
 
 // NewController creates a new controller instance based on the provided arguments.
-func NewController(store istiomodel.ConfigStore, generators map[protocol.Instance]Generator) *Controller {
+func NewController(istioClientset *istioclient.Clientset, store istiomodel.ConfigStore,
+	generators map[protocol.Instance]Generator) *Controller {
 	controller := &Controller{
-		configStore: store,
-		generators:  generators,
-		pushChannel: make(chan istiomodel.Event, 100),
+		istioClientset: istioClientset,
+		configStore:    store,
+		generators:     generators,
+		pushChannel:    make(chan istiomodel.Event, 100),
 	}
 	return controller
 }
 
 // Run until a signal is received, this function won't block
-func (s *Controller) Run(stop <-chan struct{}) {
+func (c *Controller) Run(stop <-chan struct{}) {
 	go func() {
-		s.mainLoop(stop)
+		c.mainLoop(stop)
 	}()
 }
 
-func (s *Controller) mainLoop(stop <-chan struct{}) {
+func (c *Controller) mainLoop(stop <-chan struct{}) {
 	var timeChan <-chan time.Time
 	var startDebounce time.Time
 	var lastResourceUpdateTime time.Time
@@ -93,7 +94,7 @@ func (s *Controller) mainLoop(stop <-chan struct{}) {
 		select {
 		case <-stop:
 			break
-		case e := <-s.pushChannel:
+		case e := <-c.pushChannel:
 			controllerLog.Debugf("Receive event from push chanel : %v", e)
 			lastResourceUpdateTime = time.Now()
 			if debouncedEvents == 0 {
@@ -112,11 +113,11 @@ func (s *Controller) mainLoop(stop <-chan struct{}) {
 					pushCounter++
 					controllerLog.Infof("Push debounce stable[%d] %d: %v since last change, %v since last push",
 						pushCounter, debouncedEvents, quietTime, eventDelay)
-					err := s.pushEnvoyFilters2APIServer()
+					err := c.pushEnvoyFilters2APIServer()
 					if err != nil {
 						controllerLog.Errorf("%v", err)
 						// Retry if failed to push envoyFilters to AP IServer
-						s.ConfigUpdate(istiomodel.EventUpdate)
+						c.ConfigUpdate(istiomodel.EventUpdate)
 					}
 					debouncedEvents = 0
 				}
@@ -127,30 +128,20 @@ func (s *Controller) mainLoop(stop <-chan struct{}) {
 	}
 }
 
-func (s *Controller) pushEnvoyFilters2APIServer() error {
-	generatedEnvoyFilters, err := s.generateEnvoyFilters()
+func (c *Controller) pushEnvoyFilters2APIServer() error {
+	generatedEnvoyFilters, err := c.generateEnvoyFilters()
 	if err != nil {
 		return fmt.Errorf("failed to generate EnvoyFilter: %v", err)
 	}
 
-	config, err := config.GetConfig()
-	if err != nil {
-		return fmt.Errorf("can not get kubernetes config: %v", err)
-	}
-
-	ic, err := versionedclient.NewForConfig(config)
-	if err != nil {
-		return fmt.Errorf("failed to create istio client: %v", err)
-	}
-
-	existingEnvoyFilters, _ := ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).List(context.TODO(), v1.ListOptions{
+	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).List(context.TODO(), v1.ListOptions{
 		LabelSelector: "manager=" + aerakiFieldManager,
 	})
 
 	for _, oldEnvoyFilter := range existingEnvoyFilters.Items {
 		if newEnvoyFilter, ok := generatedEnvoyFilters[oldEnvoyFilter.Name]; !ok {
 			controllerLog.Infof("Deleting EnvoyFilter: %v", oldEnvoyFilter)
-			err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name,
+			err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name,
 				v1.DeleteOptions{})
 			if err != nil {
 				err = fmt.Errorf("failed to create istio client: %v", err)
@@ -158,8 +149,8 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 		} else {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
 				controllerLog.Infof("Updating EnvoyFilter: %v", *newEnvoyFilter.Envoyfilter)
-				_, err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Update(context.TODO(),
-					s.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
+				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Update(context.TODO(),
+					c.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
 					v1.UpdateOptions{FieldManager: aerakiFieldManager})
 				if err != nil {
 					err = fmt.Errorf("failed to update EnvoyFilter: %v", err)
@@ -172,7 +163,8 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 	}
 
 	for _, wrapper := range generatedEnvoyFilters {
-		_, err = ic.NetworkingV1alpha3().EnvoyFilters(configRootNS).Create(context.TODO(), s.toEnvoyFilterCRD(wrapper, nil),
+		_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Create(context.TODO(), c.toEnvoyFilterCRD(wrapper,
+			nil),
 			v1.CreateOptions{FieldManager: aerakiFieldManager})
 		controllerLog.Infof("Creating EnvoyFilter: %v", *wrapper.Envoyfilter)
 		if err != nil {
@@ -182,7 +174,7 @@ func (s *Controller) pushEnvoyFilters2APIServer() error {
 	return err
 }
 
-func (s *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
+func (c *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
 	envoyFilter := &v1alpha3.EnvoyFilter{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      new.Name,
@@ -199,9 +191,10 @@ func (s *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alph
 	return envoyFilter
 }
 
-func (s *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrapper, error) {
+func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrapper, error) {
 	envoyFilters := make(map[string]*model.EnvoyFilterWrapper)
-	serviceEntries, err := s.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
+		GroupVersionKind(), "")
 	if err != nil {
 		return envoyFilters, fmt.Errorf("failed to list configs: %v", err)
 	}
@@ -221,7 +214,7 @@ func (s *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 			controllerLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", config.Name)
 		}
 
-		relatedVs, err := s.findRelatedVirtualService(service)
+		relatedVs, err := c.findRelatedVirtualService(service)
 		if err != nil {
 			return envoyFilters, fmt.Errorf("failed in finding the related virtual service : %s: %v", config.Name, err)
 		}
@@ -234,7 +227,7 @@ func (s *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		}
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
-			if generator, ok := s.generators[instance]; ok {
+			if generator, ok := c.generators[instance]; ok {
 				envoyFilterWrappers := generator.Generate(context)
 				for _, wrapper := range envoyFilterWrappers {
 					envoyFilters[wrapper.Name] = wrapper
@@ -246,8 +239,8 @@ func (s *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 	return envoyFilters, nil
 }
 
-func (s *Controller) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
-	virtualServices, err := s.configStore.List(
+func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
+	virtualServices, err := c.configStore.List(
 		collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list configs: %v", err)
@@ -273,6 +266,6 @@ func (s *Controller) findRelatedVirtualService(service *networking.ServiceEntry)
 }
 
 // ConfigUpdate sends a config change event to the pushChannel of connections
-func (s *Controller) ConfigUpdate(event istiomodel.Event) {
-	s.pushChannel <- event
+func (c *Controller) ConfigUpdate(event istiomodel.Event) {
+	c.pushChannel <- event
 }

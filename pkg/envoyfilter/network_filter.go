@@ -52,26 +52,29 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 			//This should not happen
 			generatorLog.Errorf("Failed to generate outbound EnvoyFilter: %v", err)
 			return nil
-		}
-		outboundListenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
-		outboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
-			ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
-			Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
-				ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-					Listener: &networking.EnvoyFilter_ListenerMatch{
-						Name: outboundListenerName,
-						FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-							Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
-								Name: wellknown.TCPProxy,
+		} else if len(service.GetAddresses()) == 0 {
+			generatorLog.Infof("Service doesn't have VIP: %v", service)
+		} else {
+			outboundListenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
+			outboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
+				ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
+				Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
+					ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+						Listener: &networking.EnvoyFilter_ListenerMatch{
+							Name: outboundListenerName,
+							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
+								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
+									Name: wellknown.TCPProxy,
+								},
 							},
 						},
 					},
 				},
-			},
-			Patch: &networking.EnvoyFilter_Patch{
-				Operation: operation,
-				Value:     outboundProxyStruct,
-			},
+				Patch: &networking.EnvoyFilter_Patch{
+					Operation: operation,
+					Value:     outboundProxyStruct,
+				},
+			}
 		}
 	}
 
@@ -80,28 +83,27 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 		if err != nil {
 			//This should not happen
 			generatorLog.Errorf("Failed to generate inbound EnvoyFilter: %v", err)
-			return nil
-		}
-
-		inboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
-			ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
-			Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
-				ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-					Listener: &networking.EnvoyFilter_ListenerMatch{
-						Name: "virtualInbound",
-						FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-							DestinationPort: service.Ports[0].Number,
-							Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
-								Name: wellknown.TCPProxy,
+		} else {
+			inboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
+				ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
+				Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
+					ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+						Listener: &networking.EnvoyFilter_ListenerMatch{
+							Name: "virtualInbound",
+							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
+								DestinationPort: service.Ports[0].Number,
+								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
+									Name: wellknown.TCPProxy,
+								},
 							},
 						},
 					},
 				},
-			},
-			Patch: &networking.EnvoyFilter_Patch{
-				Operation: operation,
-				Value:     inboundProxyStruct,
-			},
+				Patch: &networking.EnvoyFilter_Patch{
+					Operation: operation,
+					Value:     inboundProxyStruct,
+				},
+			}
 		}
 	}
 
