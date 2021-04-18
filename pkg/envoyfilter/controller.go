@@ -144,7 +144,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 			err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name,
 				v1.DeleteOptions{})
 			if err != nil {
-				err = fmt.Errorf("failed to create istio client: %v", err)
+				err = fmt.Errorf("failed to delete EnvoyFilter: %v", err)
 			}
 		} else {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
