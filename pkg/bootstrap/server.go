@@ -16,7 +16,14 @@ package bootstrap
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
+
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+
+	"k8s.io/client-go/kubernetes"
 
 	"istio.io/pkg/log"
 
@@ -31,6 +38,7 @@ import (
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -51,13 +59,19 @@ type Server struct {
 
 // NewServer creates a new Server instance based on the provided arguments.
 func NewServer(args *AerakiArgs) (*Server, error) {
-	ic, err := getIstioClient()
+	kubeConfig, err := getConfigStoreKubeConfig()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get Istio kube config store : %v", err)
 	}
+	ic, err := istioclient.NewForConfig(kubeConfig)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create istio client: %v", err)
+	}
+
 	configController := config.NewController(args.IstiodAddr)
 	envoyFilterController := envoyfilter.NewController(ic, configController.Store, args.Protocols)
-	crdController := controller.NewManager(args.Namespace, args.ElectionID, func() error {
+	crdController := controller.NewManager(kubeConfig, args.Namespace, args.ElectionID, func() error {
 		envoyFilterController.ConfigUpdate(model.EventUpdate)
 		return nil
 	})
@@ -117,15 +131,58 @@ func (s *Server) waitForShutdown(stop <-chan struct{}) {
 	}()
 }
 
-func getIstioClient() (*istioclient.Clientset, error) {
-	config, err := kubeconfig.GetConfig()
+func getConfigStoreKubeConfig() (*rest.Config, error) {
+	kubeConfig, err := kubeconfig.GetConfig()
 	if err != nil {
 		return nil, fmt.Errorf("can not get kubernetes config: %v", err)
 	}
 
-	ic, err := istioclient.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create istio client: %v", err)
+	// Aeraki allows to use a dedicated API Server as the Istio config store.
+	// The credential to access this dedicated Istio config store should be stored in a secret
+	configStoreSecretNS := os.Getenv("ISTIO_CONFIG_STORE_SECRET_NS")
+	configStoreSecret := os.Getenv("ISTIO_CONFIG_STORE_SECRET")
+	if configStoreSecret != "" && configStoreSecretNS != "" {
+		client, err := kubernetes.NewForConfig(kubeConfig)
+		if err != nil {
+			err = fmt.Errorf("failed to get Kube client: %v", err)
+			return nil, err
+		}
+		secret, err := client.CoreV1().Secrets(configStoreSecretNS).Get(context.TODO(), configStoreSecret,
+			metav1.GetOptions{})
+		if err != nil {
+			err = fmt.Errorf("failed to get Istio config store secret: %v", err)
+			return nil, err
+		}
+
+		rawConfig := secret.Data["kubeconfig.admin"]
+		kubeConfig, err = getRestConfig(rawConfig)
+		if err != nil {
+			err = fmt.Errorf("failed to get Istio config store secret: %v", err)
+			return nil, err
+		}
 	}
-	return ic, nil
+
+	return kubeConfig, nil
+}
+
+func getRestConfig(kubeConfig []byte) (*rest.Config, error) {
+	if len(kubeConfig) == 0 {
+		return nil, errors.New("kubeconfig is empty")
+	}
+
+	rawConfig, err := clientcmd.Load(kubeConfig)
+	if err != nil {
+		return nil, fmt.Errorf("kubeconfig cannot be loaded: %v", err)
+	}
+
+	if err := clientcmd.Validate(*rawConfig); err != nil {
+		return nil, fmt.Errorf("kubeconfig is not valid: %v", err)
+	}
+
+	clientConfig := clientcmd.NewDefaultClientConfig(*rawConfig, &clientcmd.ConfigOverrides{})
+	restConfig, err := clientConfig.ClientConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create kube clients: %v", err)
+	}
+	return restConfig, nil
 }

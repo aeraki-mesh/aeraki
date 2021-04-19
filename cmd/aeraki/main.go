@@ -41,11 +41,12 @@ const (
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
-	args.IstiodAddr = *flag.String("istiodaddr", defaultIstiodAddr, "Istiod xds server address")
-	args.Namespace = *flag.String("namespace", defaultNamespace, "Current namespace")
-	args.ElectionID = *flag.String("electionID", defaultElectionID, "ElectionID to elect master controller")
-	args.LogLevel = *flag.String("logLevel", defaultLogLevel, "Component log level")
+	flag.StringVar(&args.IstiodAddr, "istiodaddr", defaultIstiodAddr, "Istiod xds server address")
+	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "Current namespace")
+	flag.StringVar(&args.ElectionID, "electionID", defaultElectionID, "ElectionID to elect master controller")
+	flag.StringVar(&args.LogLevel, "logLevel", defaultLogLevel, "Component log level")
 	flag.Parse()
+
 	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.
 	stopChan := make(chan struct{}, 1)

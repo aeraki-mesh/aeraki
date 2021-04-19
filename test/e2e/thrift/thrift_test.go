@@ -39,9 +39,9 @@ func setup() {
 }
 
 func shutdown() {
-	/*util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
+	util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
 	util.KubeDelete("thrift", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("thrift", "")*/
+	util.DeleteNamespace("thrift", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -108,9 +108,9 @@ func TestPercentageRouting(t *testing.T) {
 			v1++
 		}
 	}
-	// The most accurate number should be 8, but the number may fall into a range around 8 since the sample is not big enough
-	if v1 > 12 || v1 < 4 {
-		t.Errorf("percentage traffic routing failed, want: %s got:%v ", "between 4 and 12", v1)
+	// The most accurate number should be 12, but the number may fall into a range around 12 since the sample is not big enough
+	if v1 > 20 || v1 < 8 {
+		t.Errorf("percentage traffic routing failed, want: %s got:%v ", "between 8 and 20", v1)
 	} else {
 		t.Logf("%v requests have been sent to v1", v1)
 	}

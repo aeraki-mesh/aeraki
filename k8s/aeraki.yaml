@@ -22,7 +22,7 @@ spec:
         - name: aeraki
           image: aeraki/aeraki:${BUILD_TAG}
           env:
-            - name: istiodAddr
+            - name: ISTIOD_ADDR
               value: "istiod.istio-system:15010"
 ---
 apiVersion: v1

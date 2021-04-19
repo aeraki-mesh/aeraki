@@ -1,8 +1,8 @@
 # FROM ubuntu:bionic
-FROM praqma/network-multitool
+#FROM praqma/network-multitool
+FROM alpine:3.13.5
 
-ENV istiodAddr="istiod.istio-system:15012"
-ENV listeningAddr=":1109"
+ENV ISTIOD_ADDR="istiod.istio-system:15010"
 
 COPY aeraki /usr/local/bin/
-ENTRYPOINT /usr/local/bin/aeraki -istiodaddr=$istiodAddr
+ENTRYPOINT /usr/local/bin/aeraki -istiodaddr=$ISTIOD_ADDR
