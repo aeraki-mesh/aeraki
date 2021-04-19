@@ -59,8 +59,8 @@ func setup() {
 }
 
 func shutdown() {
-	util.DeleteNamespace("redis", "")
-	util.DeleteNamespace("redis-client", "")
+	//util.DeleteNamespace("redis", "")
+	//util.DeleteNamespace("redis-client", "")
 }
 
 func TestAutoAuth(t *testing.T) {

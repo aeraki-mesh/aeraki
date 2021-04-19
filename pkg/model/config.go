@@ -23,6 +23,7 @@ type VirtualServiceWrapper struct {
 // If two Envoyfilters with the same name have been created, the previous one sill be replaced by the latter one
 type EnvoyFilterWrapper struct {
 	Name        string
+	Namespace   string
 	Envoyfilter *networking.EnvoyFilter
 }
 

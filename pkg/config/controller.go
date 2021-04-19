@@ -37,7 +37,9 @@ var (
 	controllerLog = log.RegisterScope("config-controller", "config-controller debugging", 0)
 	// We need serviceentry and virtualservice to generate the envoyfiters
 	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
-				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).Build()
+				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).
+				MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).
+				MustAdd(collections.IstioNetworkingV1Alpha3Envoyfilters).Build()
 )
 
 // Controller watches Istio config xDS server and notifies the listeners when config changes.
@@ -115,10 +117,7 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 				if !strings.HasPrefix(port.Name, "tcp") {
 					continue
 				}
-				if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
-					controllerLog.Infof("Matched protocol :%s %s %s", protocol.GetLayer7ProtocolFromPortName(port.Name), event.String(), curr.Name)
-					handler(prev, curr, event)
-				}
+				handler(prev, curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
 			controllerLog.Infof("Virtual Service changed: %s %s", event.String(), curr.Name)
