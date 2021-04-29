@@ -39,6 +39,7 @@ Although Aeraki is a standalone component, it does depend on Istio [xds-mcp API]
 Similar to Istio, protocols are identified by service port prefix. Please name service ports with this pattern: `tcp-protocol-xxxx`. For example, a dubbo service port may be named as `tcp-dubbo-service`. Please keep `tcp` at the beginning of the port name because it is a TCP service from the perspective of Istio.
 
 ## Reference
+[Dubbo (中文) ](https://github.com/aeraki-framework/dubbo2istio)
 [Redis (中文) ](docs/zh/redis.md)
 
 ## Supported protocols:
