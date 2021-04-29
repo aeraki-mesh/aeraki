@@ -142,7 +142,7 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 				},
 			}}
 	}
-	return nil
+	return []*model.EnvoyFilterWrapper{}
 }
 
 func outboundEnvoyFilterName(service *networking.ServiceEntry) string {
