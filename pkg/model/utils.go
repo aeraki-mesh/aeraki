@@ -1,6 +1,8 @@
 package model
 
 import (
+	"encoding/json"
+
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/config/host"
 )
@@ -22,4 +24,13 @@ func BuildClusterName(direction TrafficDirection, subsetName string, hostname st
 		return istiomodel.BuildSubsetKey(istiomodel.TrafficDirection(direction), subsetName, "", port)
 	}
 	return istiomodel.BuildSubsetKey(istiomodel.TrafficDirection(direction), subsetName, host.Name(hostname), port)
+}
+
+// Struct2JSON convert a go struct to a json object
+func Struct2JSON(ojb interface{}) interface{} {
+	b, err := json.Marshal(ojb)
+	if err != nil {
+		return ojb
+	}
+	return string(b)
 }

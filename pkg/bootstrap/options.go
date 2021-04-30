@@ -21,12 +21,12 @@ import (
 
 // AerakiArgs provides all of the configuration parameters for the Aeraki service.
 type AerakiArgs struct {
-	IstiodAddr string
-	ListenAddr string
-	Namespace  string
-	ElectionID string
-	LogLevel   string
-	Protocols  map[protocol.Instance]envoyfilter.Generator
+	IstiodAddr        string
+	Namespace         string
+	ConfigStoreSecret string
+	ElectionID        string
+	LogLevel          string
+	Protocols         map[protocol.Instance]envoyfilter.Generator
 }
 
 // NewAerakiArgs constructs AerakiArgs with default value.

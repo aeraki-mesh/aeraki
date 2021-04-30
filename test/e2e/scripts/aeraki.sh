@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 set -ex
-export NAMESPACE=istio-system
+export NAMESPACE="istio-system"
+export ISTIOD_ADDR="istiod.istio-system:15010"
 
 BASEDIR=$(dirname "$0")
 

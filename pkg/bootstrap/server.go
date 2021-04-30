@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -59,7 +58,7 @@ type Server struct {
 
 // NewServer creates a new Server instance based on the provided arguments.
 func NewServer(args *AerakiArgs) (*Server, error) {
-	kubeConfig, err := getConfigStoreKubeConfig()
+	kubeConfig, err := getConfigStoreKubeConfig(args)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Istio kube config store : %v", err)
 	}
@@ -131,7 +130,7 @@ func (s *Server) waitForShutdown(stop <-chan struct{}) {
 	}()
 }
 
-func getConfigStoreKubeConfig() (*rest.Config, error) {
+func getConfigStoreKubeConfig(args *AerakiArgs) (*rest.Config, error) {
 	kubeConfig, err := kubeconfig.GetConfig()
 	if err != nil {
 		return nil, fmt.Errorf("can not get kubernetes config: %v", err)
@@ -139,15 +138,13 @@ func getConfigStoreKubeConfig() (*rest.Config, error) {
 
 	// Aeraki allows to use a dedicated API Server as the Istio config store.
 	// The credential to access this dedicated Istio config store should be stored in a secret
-	configStoreSecretNS := os.Getenv("ISTIO_CONFIG_STORE_SECRET_NS")
-	configStoreSecret := os.Getenv("ISTIO_CONFIG_STORE_SECRET")
-	if configStoreSecret != "" && configStoreSecretNS != "" {
+	if args.Namespace != "" && args.ConfigStoreSecret != "" {
 		client, err := kubernetes.NewForConfig(kubeConfig)
 		if err != nil {
 			err = fmt.Errorf("failed to get Kube client: %v", err)
 			return nil, err
 		}
-		secret, err := client.CoreV1().Secrets(configStoreSecretNS).Get(context.TODO(), configStoreSecret,
+		secret, err := client.CoreV1().Secrets(args.Namespace).Get(context.TODO(), args.ConfigStoreSecret,
 			metav1.GetOptions{})
 		if err != nil {
 			err = fmt.Errorf("failed to get Istio config store secret: %v", err)

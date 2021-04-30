@@ -29,6 +29,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
+	"github.com/aeraki-framework/aeraki/pkg/model"
 	istionapi "istio.io/api/networking/v1alpha3"
 	istionetworking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
@@ -212,7 +213,7 @@ func (c *Controller) updateServiceEntry(s *istionetworking.ServiceEntry, key str
 		controllerLog.Errorf("failed to update serviceEntry %s, error: %v", s.Name, err)
 	} else {
 		c.serviceIPs[s.Spec.Addresses[0]] = key
-		controllerLog.Infof("allocate vip for serviceEntry %s", s)
+		controllerLog.Infof("allocate vip for serviceEntry %v", model.Struct2JSON(s))
 	}
 }
 

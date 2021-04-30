@@ -2,7 +2,7 @@ BASEDIR=$(dirname "$0")/..
 
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 COMMON_DIR=$BASEDIR/test/e2e/common
-export ISTIO_VERSION=1.9.1
+export ISTIO_VERSION=1.9.4
 export BUILD_TAG=latest
 
 bash ${SCRIPTS_DIR}/aeraki.sh

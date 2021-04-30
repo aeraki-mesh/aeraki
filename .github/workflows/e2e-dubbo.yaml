@@ -15,17 +15,17 @@ on:
       - '*'
 
 env:
-  ISTIO_VERSION: 1.9.1
+  ISTIO_VERSION: 1.9.4
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
 
 jobs:
-  test:
+  TestSidecarOutboundConfig:
     runs-on: ubuntu-16.04
     timeout-minutes: 60
     strategy:
       fail-fast: true
-    name: e2e-test
+    name: TestSidecarOutboundConfig
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -48,4 +48,120 @@ jobs:
       - name: Install Istio
         run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
       - name: test
-        run: make e2e-dubbo
+        run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestSidecarOutboundConfig
+  TestSidecarInboundConfig:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: TestSidecarInboundConfig
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.8
+      - name: Install dependencies
+        run: |
+          go version
+          go get golang.org/x/tools/cmd/goimports
+      - name: build docker
+        run: make docker-build-e2e
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+      - name: test
+        run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestSidecarInboundConfig
+  TestVersionRouting:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: TestVersionRouting
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.8
+      - name: Install dependencies
+        run: |
+          go version
+          go get golang.org/x/tools/cmd/goimports
+      - name: build docker
+        run: make docker-build-e2e
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+      - name: test
+        run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestVersionRouting
+  TestPercentageRouting:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: TestPercentageRouting
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.8
+      - name: Install dependencies
+        run: |
+          go version
+          go get golang.org/x/tools/cmd/goimports
+      - name: build docker
+        run: make docker-build-e2e
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+      - name: test
+        run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestPercentageRouting
+  TestMethodRouting:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: TestMethodRouting
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.8
+      - name: Install dependencies
+        run: |
+          go version
+          go get golang.org/x/tools/cmd/goimports
+      - name: build docker
+        run: make docker-build-e2e
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+      - name: test
+        run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestMethodRouting
