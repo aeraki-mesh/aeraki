@@ -44,18 +44,11 @@ func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteCo
 }
 
 func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfiguration, error) {
-	// dubbo service interface should be passed in via serviceentry annotation
-	var serviceInterface string
-	var exist bool
-	if serviceInterface, exist = context.ServiceEntry.Annotations["interface"]; !exist {
-		err := fmt.Errorf("no interface annotation")
-		return nil, err
-	}
 	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
 	route := []*dubbo.Route{defaultRoute(clusterName)}
 	return &dubbo.RouteConfiguration{
 		Name:      clusterName,
-		Interface: serviceInterface, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
+		Interface: "*", // Use wildcard to catch all the dubbo interfaces at this inbound port
 		Routes:    route,
 	}, nil
 }
