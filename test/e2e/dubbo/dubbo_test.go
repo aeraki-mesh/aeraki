@@ -40,10 +40,10 @@ func setup() {
 }
 
 func shutdown() {
-	util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
-	util.KubeDelete("dubbo", "testdata/serviceentry.yaml", "")
-	util.KubeDelete("dubbo", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("dubbo", "")
+	//util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
+	//util.KubeDelete("dubbo", "testdata/serviceentry.yaml", "")
+	//util.KubeDelete("dubbo", "testdata/destinationrule.yaml", "")
+	//util.DeleteNamespace("dubbo", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -143,5 +143,25 @@ func testMethodMatch(matchPattern string, t *testing.T) {
 		if !strings.Contains(dubboResponse, want) {
 			t.Errorf("method routing failed, want: %s, got %s", want, dubboResponse)
 		}
+	}
+}
+
+func TestMultipleInterfacesInAProcess(t *testing.T) {
+	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
+	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
+	dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
+		"curl -s 127.0.0.1:9009/hello", false, "")
+	want := "response from dubbo-sample-provider-"
+	log.Info(dubboResponse)
+	if !strings.Contains(dubboResponse, want) {
+		t.Errorf("call dubbo interface failed, want: %s, got %s", want, dubboResponse)
+	}
+
+	dubboResponse, _ = util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
+		"curl -s 127.0.0.1:9009/test", false, "")
+	want = "response from dubbo-sample-provider-"
+	log.Info(dubboResponse)
+	if !strings.Contains(dubboResponse, want) {
+		t.Errorf("call dubbo interface failed, want: %s, got %s", want, dubboResponse)
 	}
 }
