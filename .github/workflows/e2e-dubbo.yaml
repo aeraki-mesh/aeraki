@@ -107,35 +107,6 @@ jobs:
         run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
       - name: test
         run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestVersionRouting
-  TestPercentageRouting:
-    runs-on: ubuntu-16.04
-    timeout-minutes: 60
-    strategy:
-      fail-fast: true
-    name: TestPercentageRouting
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.15.8
-      - name: Install dependencies
-        run: |
-          go version
-          go get golang.org/x/tools/cmd/goimports
-      - name: build docker
-        run: make docker-build-e2e
-      - name: Prepare envrionment
-        run: bash ${SCRIPTS_DIR}/pre.sh
-      - name: Install Minikube
-        run: bash ${SCRIPTS_DIR}/minikube.sh start
-      - name: Install aeraki
-        run: bash ${SCRIPTS_DIR}/aeraki.sh
-      - name: Install Istio
-        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
-      - name: test
-        run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestPercentageRouting
   TestMethodRouting:
     runs-on: ubuntu-16.04
     timeout-minutes: 60
