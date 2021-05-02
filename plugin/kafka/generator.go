@@ -31,7 +31,7 @@ func NewGenerator() *Generator {
 // Generate create EnvoyFilters for Dubbo services
 func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
 	return envoyfilter.GenerateInsertBeforeNetworkFilter(
-		context.ServiceEntry.Spec,
+		context.ServiceEntry,
 		buildOutboundProxy(context),
 		buildInboundProxy(context),
 		"envoy.filters.network.kafka_broker",

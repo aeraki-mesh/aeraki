@@ -40,10 +40,10 @@ func setup() {
 }
 
 func shutdown() {
-	//util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
-	//util.KubeDelete("dubbo", "testdata/serviceentry.yaml", "")
-	//util.KubeDelete("dubbo", "testdata/destinationrule.yaml", "")
-	//util.DeleteNamespace("dubbo", "")
+	util.KubeDelete("dubbo", "testdata/dubbo-sample.yaml", "")
+	util.KubeDelete("dubbo", "testdata/serviceentry.yaml", "")
+	util.KubeDelete("dubbo", "testdata/destinationrule.yaml", "")
+	util.DeleteNamespace("dubbo", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {

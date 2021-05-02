@@ -17,6 +17,7 @@ package envoyfilter
 import (
 	"bytes"
 	"strconv"
+	"strings"
 
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -31,19 +32,19 @@ import (
 var generatorLog = log.RegisterScope("aeraki-generator", "aeraki generator", 0)
 
 // GenerateInsertBeforeNetworkFilter generates an EnvoyFilter that inserts a protocol specified filter before the tcp proxy
-func GenerateInsertBeforeNetworkFilter(service *networking.ServiceEntry, outboundProxy proto.Message,
+func GenerateInsertBeforeNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
 	return generateNetworkFilter(service, outboundProxy, inboundProxy, filterName, filterType, networking.EnvoyFilter_Patch_INSERT_BEFORE)
 }
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
-func GenerateReplaceNetworkFilter(service *networking.ServiceEntry, outboundProxy proto.Message,
+func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
 	return generateNetworkFilter(service, outboundProxy, inboundProxy, filterName, filterType, networking.EnvoyFilter_Patch_REPLACE)
 }
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
-func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto.Message,
+func generateNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string, operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	var outboundProxyPatch, inboundProxyPatch *networking.EnvoyFilter_EnvoyConfigObjectPatch
 	if outboundProxy != nil {
@@ -52,10 +53,11 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 			//This should not happen
 			generatorLog.Errorf("Failed to generate outbound EnvoyFilter: %v", err)
 			return nil
-		} else if len(service.GetAddresses()) == 0 {
+		} else if len(service.Spec.GetAddresses()) == 0 {
 			generatorLog.Infof("Service doesn't have VIP: %v", service)
 		} else {
-			outboundListenerName := service.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Ports[0].Number))
+			outboundListenerName := service.Spec.GetAddresses()[0] + "_" + strconv.Itoa(int(service.Spec.Ports[0].
+				Number))
 			outboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
 				ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
 				Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
@@ -78,7 +80,11 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 		}
 	}
 
-	if inboundProxy != nil {
+	WorkloadSelector := inboudEnvoyFilterWorkloadSelector(service)
+
+	// a workload selector should be set in an inbound envoy filter so wo won't override the inbound config of other
+	// services at the same port
+	if inboundProxy != nil && hasInboundWorkloadSelector(WorkloadSelector) {
 		inboundProxyStruct, err := generateValue(inboundProxy, filterName, filterType)
 		if err != nil {
 			//This should not happen
@@ -91,7 +97,7 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 						Listener: &networking.EnvoyFilter_ListenerMatch{
 							Name: "virtualInbound",
 							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								DestinationPort: service.Ports[0].Number,
+								DestinationPort: service.Spec.Ports[0].Number,
 								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
 									Name: wellknown.TCPProxy,
 								},
@@ -110,15 +116,15 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	if outboundProxyPatch != nil && inboundProxyPatch != nil {
 		return []*model.EnvoyFilterWrapper{
 			{
-				Name: outboundEnvoyFilterName(service),
+				Name: outboundEnvoyFilterName(service.Spec),
 				Envoyfilter: &networking.EnvoyFilter{
 					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
 				},
 			},
 			{
-				Name: inboundEnvoyFilterName(service),
+				Name: inboundEnvoyFilterName(service.Spec),
 				Envoyfilter: &networking.EnvoyFilter{
-					WorkloadSelector: service.WorkloadSelector,
+					WorkloadSelector: WorkloadSelector,
 					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
 				},
 			}}
@@ -126,7 +132,7 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	if outboundProxyPatch != nil {
 		return []*model.EnvoyFilterWrapper{
 			{
-				Name: outboundEnvoyFilterName(service),
+				Name: outboundEnvoyFilterName(service.Spec),
 				Envoyfilter: &networking.EnvoyFilter{
 					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
 				},
@@ -135,14 +141,34 @@ func generateNetworkFilter(service *networking.ServiceEntry, outboundProxy proto
 	if inboundProxyPatch != nil {
 		return []*model.EnvoyFilterWrapper{
 			{
-				Name: inboundEnvoyFilterName(service),
+				Name: inboundEnvoyFilterName(service.Spec),
 				Envoyfilter: &networking.EnvoyFilter{
-					WorkloadSelector: service.WorkloadSelector,
+					WorkloadSelector: WorkloadSelector,
 					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
 				},
 			}}
 	}
 	return []*model.EnvoyFilterWrapper{}
+}
+
+func hasInboundWorkloadSelector(selector *networking.WorkloadSelector) bool {
+	return len(selector.Labels) != 0
+}
+
+func inboudEnvoyFilterWorkloadSelector(service *model.ServiceEntryWrapper) *networking.WorkloadSelector {
+	selector := service.Spec.WorkloadSelector
+	if selector == nil {
+		selector = &networking.WorkloadSelector{
+			Labels: make(map[string]string),
+		}
+	}
+	if len(selector.Labels) == 0 {
+		label := strings.ReplaceAll(service.Annotations["workloadSelector"], " ", "")
+		if label != "" {
+			selector.Labels["app"] = label
+		}
+	}
+	return selector
 }
 
 func outboundEnvoyFilterName(service *networking.ServiceEntry) string {

@@ -34,7 +34,7 @@ func NewGenerator() *Generator {
 // Generate create EnvoyFilters for Dubbo services
 func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
 	return envoyfilter.GenerateReplaceNetworkFilter(
-		context.ServiceEntry.Spec,
+		context.ServiceEntry,
 		buildOutboundProxy(context),
 		buildInboundProxy(context),
 		"envoy.filters.network.thrift_proxy",
