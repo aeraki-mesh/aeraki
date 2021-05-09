@@ -50,15 +50,15 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
   * [x] Traffic splitting
   * [x] Metrics
   * [x] Method based routing
-  * [  ] Header based routing
-  * [  ] Peer authorization on Interface/Method
+  * [ ] Header based routing
+  * [ ] Peer authorization on Interface/Method (Wok in Progress)
 * Thrift
   * [x] Default routing
   * [x] Version-based routing
   * [x] Traffic splitting
   * [x] Metrics
-  * [  ] Header based routing
-  * [  ] Rate limit
+  * [ ] Header based routing
+  * [ ] Rate limit
 * Kafka
   * [x] Metrics
 * ZooKeeper
