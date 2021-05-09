@@ -19,7 +19,8 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	v1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -50,10 +51,14 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=redis.aeraki.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("redisdestinations"):
+	// Group=dubbo.aeraki.io, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("dubboauthorizationpolicies"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dubbo().V1alpha1().DubboAuthorizationPolicies().Informer()}, nil
+
+		// Group=redis.aeraki.io, Version=v1alpha1
+	case redisv1alpha1.SchemeGroupVersion.WithResource("redisdestinations"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Redis().V1alpha1().RedisDestinations().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("redisservices"):
+	case redisv1alpha1.SchemeGroupVersion.WithResource("redisservices"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Redis().V1alpha1().RedisServices().Informer()}, nil
 
 	}

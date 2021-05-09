@@ -18,6 +18,8 @@ package fake
 
 import (
 	clientset "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
+	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	fakedubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1/fake"
 	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 	fakeredisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -73,6 +75,11 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 }
 
 var _ clientset.Interface = &Clientset{}
+
+// DubboV1alpha1 retrieves the DubboV1alpha1Client
+func (c *Clientset) DubboV1alpha1() dubbov1alpha1.DubboV1alpha1Interface {
+	return &fakedubbov1alpha1.FakeDubboV1alpha1{Fake: &c.Fake}
+}
 
 // RedisV1alpha1 retrieves the RedisV1alpha1Client
 func (c *Clientset) RedisV1alpha1() redisv1alpha1.RedisV1alpha1Interface {

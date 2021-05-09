@@ -79,6 +79,7 @@ protoc_gen_k8s_support_plugins := --jsonshim_out=$(gogo_mapping):$(out_path) --d
 #####################
 
 gen: generate-redis \
+     generate-dubbo \
      generate-openapi-schema \
      generate-openapi-crd \
      generate-k8s-client
@@ -107,6 +108,28 @@ generate-redis: $(redis_pb_gos) $(redis_pb_docs)
 clean-redis:
 	@rm -fr $(redis_pb_gos) $(redis_pb_docs)
 
+#####################
+# api/dubbo/v1alpha1/...
+#####################
+
+dubbo_path := api/dubbo/v1alpha1
+dubbo_protos := $(wildcard $(dubbo_path)/*.proto)
+dubbo_pb_gos := $(dubbo_protos:.proto=.pb.go)
+dubbo_pb_docs := $(dubbo_protos:.proto=.pb.html)
+dubbo_openapi := $(dubbo_protos:.proto=.gen.json)
+dubbo_k8s_gos := \
+	$(patsubst $(dubbo_path)/%.proto,$(dubbo_path)/%_json.gen.go,$(shell grep -l "^ *oneof " $(dubbo_protos))) \
+	$(patsubst $(dubbo_path)/%.proto,$(dubbo_path)/%_deepcopy.gen.go,$(shell grep -l "+kubetype-gen" $(dubbo_protos)))
+
+$(dubbo_pb_gos) $(dubbo_pb_docs) $(dubbo_k8s_gos): $(dubbo_protos)
+	@$(protolock) status
+	@$(protoc) $(gogofast_plugin) $(protoc_gen_k8s_support_plugins) $(protoc_gen_docs_plugin)$(dubbo_path) $^
+	@cp -r $(out_path)/$(module_name)/api/dubbo/v1alpha1/* api/dubbo/v1alpha1 && rm -rf $(out_path)/$(module_name)/api/dubbo/v1alpha1
+
+generate-dubbo: $(dubbo_pb_gos) $(dubbo_pb_docs)
+
+clean-dubbo:
+	@rm -fr $(dubbo_pb_gos) $(dubbo_pb_docs)
 
 
 #####################
@@ -114,10 +137,10 @@ clean-redis:
 #####################
 
 all_protos := \
-	$(redis_protos)
+	$(redis_protos) $(dubbo_protos)
 
 all_openapi := \
-	$(redis_openapi)
+	$(redis_openapi) $(dubbo_openapi)
 
 all_openapi_crd :=./crd/kubernetes/customresourcedefinitions.gen.yaml
 
@@ -128,7 +151,9 @@ $(all_openapi): $(all_protos)
 $(all_openapi_crd): $(all_protos)
 	@$(cue) -f=$(repo_dir)/cue.yaml --crd=true -snake=jwksUri,apiKeys,apiSpecs,includedPaths,jwtHeaders,triggerRules,excludedPaths,mirrorPercent
 ifeq ($(VERIFY_CRDS_SCHEMA),1)
-	@$(validate_crds) check_equal_schema --kinds RedisService,RedisDestination --versions v1alpha1 --file $(all_openapi_crd)
+	@$(validate_crds) check_equal_schema --kinds RedisService,RedisDestination,DubboAuthorizationPolicy --versions
+	v1alpha1 --file $
+	(all_openapi_crd)
 endif
 
 
@@ -153,6 +178,7 @@ comma := ,
 # source packages to scan for kubetype-gen tags
 kube_source_packages = $(subst $(space),$(empty), \
 	$(module_name)/api/redis/v1alpha1 \
+	$(space), $(module_name)/api/dubbo/v1alpha1 \
 	)
 
 # base output package for generated files
@@ -163,6 +189,7 @@ kube_api_base_package = $(kube_base_output_package)/apis
 # these should correspond to the output packages from kubetype-gen
 kube_api_packages = $(subst $(space),$(empty), \
 	$(kube_api_base_package)/redis/v1alpha1 \
+	$(space), $(kube_api_base_package)/dubbo/v1alpha1 \
 	)
 # base output package used by kubernetes client-gen
 kube_clientset_package = $(kube_base_output_package)/clientset

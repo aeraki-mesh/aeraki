@@ -22,6 +22,7 @@ import (
 	time "time"
 
 	versioned "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
+	dubbo "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/dubbo"
 	internalinterfaces "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
 	redis "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/redis"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -170,7 +171,12 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
+	Dubbo() dubbo.Interface
 	Redis() redis.Interface
+}
+
+func (f *sharedInformerFactory) Dubbo() dubbo.Interface {
+	return dubbo.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Redis() redis.Interface {
