@@ -1,0 +1,149 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Configuration for access control on Dubbo services.",
+    "version": "v1alpha1"
+  },
+  "components": {
+    "schemas": {
+      "dubbo.aeraki.io.v1alpha1.DubboAuthorizationPolicy": {
+        "description": "DubboAuthorizationPolicy enables access control on Dubbo services.",
+        "type": "object",
+        "properties": {
+          "rules": {
+            "description": "Optional. A list of rules to match the request. A match occurs when at least one rule matches the request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dubbo.aeraki.io.v1alpha1.Rule"
+            }
+          },
+          "action": {
+            "$ref": "#/components/schemas/dubbo.aeraki.io.v1alpha1.DubboAuthorizationPolicy.Action"
+          }
+        }
+      },
+      "dubbo.aeraki.io.v1alpha1.Rule": {
+        "description": "Rule matches requests from a list of sources that perform a list of operations subject to a list of conditions. A match occurs when at least one source, one operation and all conditions matches the request. An empty rule is always matched.",
+        "type": "object",
+        "properties": {
+          "from": {
+            "description": "Optional. from specifies the source of a request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dubbo.aeraki.io.v1alpha1.Rule.From"
+            }
+          },
+          "to": {
+            "description": "Optional. to specifies the operation of a request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/dubbo.aeraki.io.v1alpha1.Rule.To"
+            }
+          }
+        }
+      },
+      "dubbo.aeraki.io.v1alpha1.DubboAuthorizationPolicy.Action": {
+        "description": "Action specifies the operation to take.",
+        "type": "string",
+        "enum": [
+          "ALLOW",
+          "DENY"
+        ]
+      },
+      "dubbo.aeraki.io.v1alpha1.Rule.From": {
+        "description": "From includes a list or sources.",
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/dubbo.aeraki.io.v1alpha1.Source"
+          }
+        }
+      },
+      "dubbo.aeraki.io.v1alpha1.Rule.To": {
+        "description": "To includes a list or operations.",
+        "type": "object",
+        "properties": {
+          "operation": {
+            "$ref": "#/components/schemas/dubbo.aeraki.io.v1alpha1.Operation"
+          }
+        }
+      },
+      "dubbo.aeraki.io.v1alpha1.Source": {
+        "description": "Source specifies the source identities of a request. Fields in the source are ANDed together.",
+        "type": "object",
+        "properties": {
+          "principals": {
+            "description": "Optional. A list of source peer identities (i.e. service account), which matches to the \"source.principal\" attribute. This field requires mTLS enabled.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "notPrincipals": {
+            "description": "Optional. A list of negative match of source peer identities.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "namespaces": {
+            "description": "Optional. A list of namespaces, which matches to the \"source.namespace\" attribute. This field requires mTLS enabled.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "notNamespaces": {
+            "description": "Optional. A list of negative match of namespaces.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        }
+      },
+      "dubbo.aeraki.io.v1alpha1.Operation": {
+        "description": "Operation specifies the operations of a request. Fields in the operation are ANDed together.",
+        "type": "object",
+        "properties": {
+          "interfaces": {
+            "description": "Optional. A list of interfaces, which matches to the Dubbo interface.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "notInterfaces": {
+            "description": "Optional. A list of negative match of interfaces.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "methods": {
+            "description": "Optional. A list of methods, which matches to the Dubbo methods.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          },
+          "notMethods": {
+            "description": "Optional. A list of negative match of methods.",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

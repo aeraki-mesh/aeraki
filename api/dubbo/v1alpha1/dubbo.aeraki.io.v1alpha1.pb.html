@@ -1,0 +1,375 @@
+---
+title: Authorization Policy
+description: Configuration for access control on Dubbo services.
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+schema: dubbo.aeraki.io.v1alpha1.DubboAuthorizationPolicy
+number_of_entries: 8
+---
+<p>Authorization Policy scope (target) is determined by &ldquo;metadata/namespace&rdquo; and
+ an optional &ldquo;selector&rdquo;.</p>
+
+<ul>
+<li>&ldquo;metadata/namespace&rdquo; tells which namespace the policy applies. If set to root
+namespace, the policy applies to all namespaces in a mesh.</li>
+</ul>
+
+<h2 id="DubboAuthorizationPolicy">DubboAuthorizationPolicy</h2>
+<section>
+<p>DubboAuthorizationPolicy enables access control on Dubbo services.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="DubboAuthorizationPolicy-rules">
+<td><code>rules</code></td>
+<td><code><a href="#Rule">Rule[]</a></code></td>
+<td>
+<p>Optional. A list of rules to match the request. A match occurs when at least
+one rule matches the request.</p>
+
+<p>If not set, the match will never occur. This is equivalent to setting a
+default of deny for the target workloads.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="DubboAuthorizationPolicy-action">
+<td><code>action</code></td>
+<td><code><a href="#DubboAuthorizationPolicy-Action">Action</a></code></td>
+<td>
+<p>Optional. The action to take if the request is matched with the rules.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Rule">Rule</h2>
+<section>
+<p>Rule matches requests from a list of sources that perform a list of operations subject to a
+list of conditions. A match occurs when at least one source, one operation and all conditions
+matches the request. An empty rule is always matched.</p>
+
+<p>Any string field in the rule supports Exact, Prefix, Suffix and Presence match:</p>
+
+<ul>
+<li>Exact match: &ldquo;abc&rdquo; will match on value &ldquo;abc&rdquo;.</li>
+<li>Prefix match: &ldquo;abc*&rdquo; will match on value &ldquo;abc&rdquo; and &ldquo;abcd&rdquo;.</li>
+<li>Suffix match: &ldquo;*abc&rdquo; will match on value &ldquo;abc&rdquo; and &ldquo;xabc&rdquo;.</li>
+<li>Presence match: &ldquo;*&rdquo; will match when value is not empty.</li>
+</ul>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Rule-from">
+<td><code>from</code></td>
+<td><code><a href="#Rule-From">From[]</a></code></td>
+<td>
+<p>Optional. from specifies the source of a request.</p>
+
+<p>If not set, any source is allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Rule-to">
+<td><code>to</code></td>
+<td><code><a href="#Rule-To">To[]</a></code></td>
+<td>
+<p>Optional. to specifies the operation of a request.</p>
+
+<p>If not set, any operation is allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Source">Source</h2>
+<section>
+<p>Source specifies the source identities of a request. Fields in the source are
+ANDed together.</p>
+
+<p>For example, the following source matches if the principal is &ldquo;admin&rdquo; or &ldquo;dev&rdquo;
+and the namespace is &ldquo;prod&rdquo; or &ldquo;test&rdquo;.</p>
+
+<pre><code class="language-yaml">principals: [&quot;admin&quot;, &quot;dev&quot;]
+namespaces: [&quot;prod&quot;, &quot;test&quot;]
+</code></pre>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Source-principals">
+<td><code>principals</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of source peer identities (i.e. service account), which
+matches to the &ldquo;source.principal&rdquo; attribute. This field requires mTLS enabled.</p>
+
+<p>If not set, any principal is allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Source-not_principals">
+<td><code>notPrincipals</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of negative match of source peer identities.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Source-namespaces">
+<td><code>namespaces</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of namespaces, which matches to the &ldquo;source.namespace&rdquo;
+attribute. This field requires mTLS enabled.</p>
+
+<p>If not set, any namespace is allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Source-not_namespaces">
+<td><code>notNamespaces</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of negative match of namespaces.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Operation">Operation</h2>
+<section>
+<p>Operation specifies the operations of a request. Fields in the operation are
+ANDed together.</p>
+
+<p>For example, the following operation matches if the Dubbo interface is &ldquo;org.apache.dubbo.samples.basic.api.DemoService&rdquo;
+and the method is &ldquo;sayHello&rdquo;.</p>
+
+<pre><code class="language-yaml">interfaces: [&quot;org.apache.dubbo.samples.basic.api.DemoService&quot;]
+methods: [&quot;sayHello&quot;]
+</code></pre>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Operation-interfaces">
+<td><code>interfaces</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of interfaces, which matches to the Dubbo interface.</p>
+
+<p>If not set, any interfaces is allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Operation-not_interfaces">
+<td><code>notInterfaces</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of negative match of interfaces.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Operation-methods">
+<td><code>methods</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of methods, which matches to the Dubbo methods.</p>
+
+<p>If not set, any method is allowed.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Operation-not_methods">
+<td><code>notMethods</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>Optional. A list of negative match of methods.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Rule-From">Rule.From</h2>
+<section>
+<p>From includes a list or sources.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Rule-From-source">
+<td><code>source</code></td>
+<td><code><a href="#Source">Source</a></code></td>
+<td>
+<p>Source specifies the source of a request.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Rule-To">Rule.To</h2>
+<section>
+<p>To includes a list or operations.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Rule-To-operation">
+<td><code>operation</code></td>
+<td><code><a href="#Operation">Operation</a></code></td>
+<td>
+<p>Operation specifies the operation of a request.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="DubboAuthorizationPolicy-Action">DubboAuthorizationPolicy.Action</h2>
+<section>
+<p>Action specifies the operation to take.</p>
+
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="DubboAuthorizationPolicy-Action-ALLOW">
+<td><code>ALLOW</code></td>
+<td>
+<p>Allow a request only if it matches the rules. This is the default type.</p>
+
+</td>
+</tr>
+<tr id="DubboAuthorizationPolicy-Action-DENY">
+<td><code>DENY</code></td>
+<td>
+<p>Deny a request if it matches any of the rules.</p>
+
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="DubboAuthorizationPolicy-Action">DubboAuthorizationPolicy.Action</h2>
+<section>
+<p>Action specifies the operation to take.</p>
+
+<table class="enum-values">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr id="DubboAuthorizationPolicy-Action-ALLOW">
+<td><code>ALLOW</code></td>
+<td>
+<p>Allow a request only if it matches the rules. This is the default type.</p>
+
+</td>
+</tr>
+<tr id="DubboAuthorizationPolicy-Action-DENY">
+<td><code>DENY</code></td>
+<td>
+<p>Deny a request if it matches any of the rules.</p>
+
+</td>
+</tr>
+</tbody>
+</table>
+</section>

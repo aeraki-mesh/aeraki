@@ -15,7 +15,7 @@ syntax = "proto3";
 
 import "google/api/field_behavior.proto";
 
-// $schema: dubbo.aeraki.io.v1alpha1.AuthorizationPolicy
+// $schema: dubbo.aeraki.io.v1alpha1.DubboAuthorizationPolicy
 // $title: Authorization Policy
 // $description: Configuration for access control on Dubbo services.
 //
@@ -47,7 +47,7 @@ import "google/api/field_behavior.proto";
 //
 // ```yaml
 // apiVersion: dubbo.aeraki.io/v1alpha1
-// kind: AuthorizationPolicy
+// kind: DubboAuthorizationPolicy
 // metadata:
 //   name: demo
 //   namespace: istio-system
@@ -69,7 +69,7 @@ import "google/api/field_behavior.proto";
 //
 // ```yaml
 // apiVersion: dubbo.aeraki.io/v1alpha1
-// kind: AuthorizationPolicy
+// kind: DubboAuthorizationPolicy
 // metadata:
 //   name: demo
 //   namespace: dubbo
@@ -95,18 +95,18 @@ package dubbo.aeraki.io.v1alpha1;
 
 option go_package = "github.com/aeraki-framework/aeraki/api/dubbo/v1alpha1";
 
-// AuthorizationPolicy enables access control on Dubbo services.
+// DubboAuthorizationPolicy enables access control on Dubbo services.
 //
 // <!-- crd generation tags
-// +cue-gen:AuthorizationPolicy:groupName:dubbo.aeraki.io
-// +cue-gen:AuthorizationPolicy:version:v1alpha1
-// +cue-gen:AuthorizationPolicy:storageVersion
-// +cue-gen:AuthorizationPolicy:annotations:helm.sh/resource-policy=keep
-// +cue-gen:AuthorizationPolicy:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
-// +cue-gen:AuthorizationPolicy:subresource:status
-// +cue-gen:AuthorizationPolicy:scope:Namespaced
-// +cue-gen:AuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,plural=authorizationpolicies
-// +cue-gen:AuthorizationPolicy:preserveUnknownFields:false
+// +cue-gen:DubboAuthorizationPolicy:groupName:dubbo.aeraki.io
+// +cue-gen:DubboAuthorizationPolicy:version:v1alpha1
+// +cue-gen:DubboAuthorizationPolicy:storageVersion
+// +cue-gen:DubboAuthorizationPolicy:annotations:helm.sh/resource-policy=keep
+// +cue-gen:DubboAuthorizationPolicy:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
+// +cue-gen:DubboAuthorizationPolicy:subresource:status
+// +cue-gen:DubboAuthorizationPolicy:scope:Namespaced
+// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,shortNames=dap
+// +cue-gen:DubboAuthorizationPolicy:preserveUnknownFields:false
 // -->
 //
 // <!-- go code generation tags
@@ -115,8 +115,7 @@ option go_package = "github.com/aeraki-framework/aeraki/api/dubbo/v1alpha1";
 // +genclient
 // +k8s:deepcopy-gen=true
 // -->
-
-message AuthorizationPolicy {
+message DubboAuthorizationPolicy {
   // Optional. A list of rules to match the request. A match occurs when at least
   // one rule matches the request.
   //

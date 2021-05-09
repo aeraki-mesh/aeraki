@@ -10,6 +10,8 @@ openapi:
 directories:
   api/redis/v1alpha1:
     - mode: perFile
+  api/dubbo/v1alpha1:
+    - mode: perFile
 crd:
   dir: ./crd/kubernetes
 # All is used when generating all types referenced in the above directories to
