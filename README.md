@@ -45,6 +45,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
 
 ## Supported protocols:
 * Dubbo
+  * [x] ZooKeeper registry
   * [x] Default routing
   * [x] Version-based routing
   * [x] Traffic splitting
