@@ -1,0 +1,79 @@
+package controller
+
+import (
+	"context"
+	"reflect"
+
+	"github.com/aeraki-framework/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	"istio.io/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
+)
+
+var dubboLog = log.RegisterScope("dubbo-controller", "dubbo-controller debugging", 0)
+
+// DubboController control DubboAuthorizationPolicy
+type DubboController struct {
+	triggerPush func() error
+}
+
+// Reconcile will try to trigger once mcp push.
+func (r *DubboController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+	dubboLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
+	if r.triggerPush != nil {
+		err := r.triggerPush()
+		if err != nil {
+			return reconcile.Result{Requeue: true}, err
+		}
+	}
+	return reconcile.Result{}, nil
+}
+
+func addDubboAuthorizationPolicyController(mgr manager.Manager, triggerPush func() error) error {
+	dubboCtrl := &DubboController{triggerPush: triggerPush}
+	c, err := controller.New("aeraki-dubbo-authorization-policy-controller", mgr,
+		controller.Options{Reconciler: dubboCtrl})
+	if err != nil {
+		return err
+	}
+	// Watch for changes to primary resource IstioFilter
+	err = c.Watch(&source.Kind{Type: &v1alpha1.DubboAuthorizationPolicy{}}, &handler.EnqueueRequestForObject{}, dubboPredicates)
+	if err != nil {
+		return err
+	}
+	controllerLog.Infof("DubboAuthorizationPolicyController registered")
+	return nil
+}
+
+var (
+	dubboPredicates = predicate.Funcs{
+		CreateFunc: func(e event.CreateEvent) bool {
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return true
+		},
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			switch old := e.ObjectOld.(type) {
+			case *v1alpha1.DubboAuthorizationPolicy:
+				new, ok := e.ObjectNew.(*v1alpha1.DubboAuthorizationPolicy)
+				if !ok {
+					return false
+				}
+				if !reflect.DeepEqual(old.Spec, new.Spec) ||
+					old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+					old.GetGeneration() != new.GetGeneration() {
+					return true
+				}
+			default:
+				return false
+			}
+			return false
+		},
+	}
+)

@@ -9,7 +9,7 @@ metadata:
     chart: aeraki
     heritage: Tiller
     release: aeraki
-  name: dubboauthorizationpolicys.dubbo.aeraki.io
+  name: dubboauthorizationpolicies.dubbo.aeraki.io
 spec:
   group: dubbo.aeraki.io
   names:
@@ -18,7 +18,7 @@ spec:
     - dubbo-aeraki-io
     kind: DubboAuthorizationPolicy
     listKind: DubboAuthorizationPolicyList
-    plural: dubboauthorizationpolicys
+    plural: dubboauthorizationpolicies
     shortNames:
     - dap
     singular: dubboauthorizationpolicy

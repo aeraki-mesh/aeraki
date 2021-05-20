@@ -21,18 +21,19 @@ func NewManager(kubeConfig *rest.Config, namespace string, electionID string,
 	m, err := manager.New(kubeConfig, mgrOpt)
 	if err != nil {
 		controllerLog.Fatalf("Could not create a controller manager: %v", err)
-		return nil
 	}
 
 	err = addRedisServiceController(m, triggerPush)
 	if err != nil {
 		controllerLog.Fatalf("Could not add RedisServiceController: %e", err)
-		return nil
 	}
 	err = addRedisDestinationController(m, triggerPush)
 	if err != nil {
 		controllerLog.Fatalf("Could not add RedisDestinationController: %e", err)
-		return nil
+	}
+	err = addDubboAuthorizationPolicyController(m, triggerPush)
+	if err != nil {
+		controllerLog.Fatalf("Could not add DubboAuthorizationPolicyController: %e", err)
 	}
 	err = scheme.AddToScheme(m.GetScheme())
 	if err != nil {

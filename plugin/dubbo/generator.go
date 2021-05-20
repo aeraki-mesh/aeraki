@@ -15,6 +15,10 @@
 package dubbo
 
 import (
+	"github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
+	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	"k8s.io/client-go/rest"
+
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	"istio.io/pkg/log"
@@ -24,19 +28,27 @@ var generatorLog = log.RegisterScope("dubbo-generator", "dubbo generator", 0)
 
 // Generator defines a dubbo envoyfilter Generator
 type Generator struct {
+	client dubbov1alpha1.DubboV1alpha1Interface
 }
 
 // NewGenerator creates an new Dubbo Generator instance
-func NewGenerator() *Generator {
-	return &Generator{}
+func NewGenerator(cfg *rest.Config) *Generator {
+	clientset, err := versioned.NewForConfig(cfg)
+	if err != nil {
+		generatorLog.Fatalf("Could not create clientset: %e", err)
+	}
+
+	return &Generator{
+		client: clientset.DubboV1alpha1(),
+	}
 }
 
 // Generate create EnvoyFilters for Dubbo services
-func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
+func (g *Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry,
 		buildOutboundProxy(context),
-		buildInboundProxy(context),
+		buildInboundProxy(context, g.client),
 		"envoy.filters.network.dubbo_proxy",
 		"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy")
 }
