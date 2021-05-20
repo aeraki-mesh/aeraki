@@ -99,6 +99,18 @@ rules:
       - create
       - delete
   - apiGroups:
+      - dubbo.aeraki.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+  - apiGroups:
       - networking.istio.io
     resources:
       - virtualservices

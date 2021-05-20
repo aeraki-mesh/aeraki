@@ -12,11 +12,12 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	proto "github.com/gogo/protobuf/proto"
 	io "io"
-	_ "istio.io/gogo-genproto/googleapis/google/api"
 	math "math"
 	math_bits "math/bits"
+
+	proto "github.com/gogo/protobuf/proto"
+	_ "istio.io/gogo-genproto/googleapis/google/api"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -68,7 +69,7 @@ func (DubboAuthorizationPolicy_Action) EnumDescriptor() ([]byte, []int) {
 // +cue-gen:DubboAuthorizationPolicy:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
 // +cue-gen:DubboAuthorizationPolicy:subresource:status
 // +cue-gen:DubboAuthorizationPolicy:scope:Namespaced
-// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,shortNames=dap
+// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,plural=dubboauthorizationpolicies,shortNames=dap
 // +cue-gen:DubboAuthorizationPolicy:preserveUnknownFields:false
 // -->
 //

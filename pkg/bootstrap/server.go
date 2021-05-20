@@ -19,6 +19,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aeraki-framework/aeraki/plugin/dubbo"
+
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -76,6 +78,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	})
 
 	cfg := crdController.GetConfig()
+	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(cfg)
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
 
 	configController.RegisterEventHandler(args.Protocols, func(_, curr istioconfig.Config, event model.Event) {

@@ -105,7 +105,7 @@ option go_package = "github.com/aeraki-framework/aeraki/api/dubbo/v1alpha1";
 // +cue-gen:DubboAuthorizationPolicy:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
 // +cue-gen:DubboAuthorizationPolicy:subresource:status
 // +cue-gen:DubboAuthorizationPolicy:scope:Namespaced
-// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,shortNames=dap
+// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,plural=dubboauthorizationpolicies,shortNames=dap
 // +cue-gen:DubboAuthorizationPolicy:preserveUnknownFields:false
 // -->
 //

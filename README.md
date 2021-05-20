@@ -52,7 +52,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
   * [x] Metrics
   * [x] Method based routing
   * [ ] Header based routing
-  * [ ] Peer authorization on Interface/Method (Wok in Progress)
+  * [x] Peer authorization on Interface/Method
 * Thrift
   * [x] Default routing
   * [x] Version-based routing

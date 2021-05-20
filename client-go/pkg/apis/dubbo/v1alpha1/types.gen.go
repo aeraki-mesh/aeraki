@@ -37,7 +37,7 @@ import (
 // +cue-gen:DubboAuthorizationPolicy:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
 // +cue-gen:DubboAuthorizationPolicy:subresource:status
 // +cue-gen:DubboAuthorizationPolicy:scope:Namespaced
-// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,shortNames=dap
+// +cue-gen:DubboAuthorizationPolicy:resource:categories=aeraki-io,dubbo-aeraki-io,plural=dubboauthorizationpolicies,shortNames=dap
 // +cue-gen:DubboAuthorizationPolicy:preserveUnknownFields:false
 // -->
 //

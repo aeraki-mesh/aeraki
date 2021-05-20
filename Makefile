@@ -45,6 +45,7 @@ style-check:
 	goimports -l -d ./
 lint:
 	golint ./...
+	golangci-lint run --tests="false"
 e2e-dubbo:
 	go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/...
 e2e-thrift:
