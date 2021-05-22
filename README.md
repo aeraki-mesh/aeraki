@@ -45,21 +45,31 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
 
 ## Supported protocols:
 * Dubbo
-  * [x] ZooKeeper registry
-  * [x] Default routing
-  * [x] Version-based routing
-  * [x] Traffic splitting
-  * [x] Metrics
-  * [x] Method based routing
-  * [x] Header based routing
-  * [x] Peer authorization on Interface/Method
+  * Service Discovery
+    * [x] ServiceEntry Integration ([Example](https://github.com/aeraki-framework/aeraki/blob/master/demo/dubbo/serviceentry.yaml))
+    * [x] [ZooKeeper Integration](https://github.com/aeraki-framework/dubbo2istio)
+  * Traffic Management
+    * [x] Request Level Load Balancing
+    * [x] Version Based Routing
+    * [x] Traffic Splitting
+    * [x] Method Based Routing
+    * [x] Header Based Routing
+    * [ ] Locality Load Balancing (WIP)
+    * [ ] Crcuit Breaker (WIP)
+  * Observability
+    * [x] Dubbo Request Metrics
+  * Security 
+    * [x] Peer authorization on Interface/Method
+    * [ ] Rquest Authorization
 * Thrift
-  * [x] Default routing
-  * [x] Version-based routing
-  * [x] Traffic splitting
-  * [x] Metrics
-  * [ ] Header based routing
-  * [ ] Rate limit
+  * Traffic Management
+    * [x] Request Level Load Balancing
+    * [x] Version Based Routing
+    * [x] Traffic Splitting
+    * [ ] Header Based Routing
+    * [ ] Rate Limit
+  * Observability
+    * [x] Thrift Request Metrics
 * Kafka
   * [x] Metrics
 * ZooKeeper
