@@ -15,8 +15,6 @@ spec:
       labels:
         app: dubbo-sample-provider
         version: v1
-      annotations:
-        sidecar.istio.io/proxyImage: istio/proxyv2:1.10.0-rc.0   #  https://github.com/envoyproxy/envoy/pull/15121
     spec:
       containers:
         - name: dubbo-sample-provider
@@ -40,8 +38,6 @@ spec:
       labels:
         app: dubbo-sample-provider
         version: v2
-      annotations:
-        sidecar.istio.io/proxyImage: istio/proxyv2:1.10.0-rc.0   #  https://github.com/envoyproxy/envoy/pull/15121
     spec:
       containers:
         - name: dubbo-sample-provider
