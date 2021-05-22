@@ -7,7 +7,7 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   http:
-    - name: "reviews-traffic-splitting"
+    - name: "demoservice-traffic-splitting"
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice

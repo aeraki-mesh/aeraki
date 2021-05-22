@@ -7,7 +7,7 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   http:
-    - name: "reviews-v1-routes"
+    - name: "v1-routes"
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice

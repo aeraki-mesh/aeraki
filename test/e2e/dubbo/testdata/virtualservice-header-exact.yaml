@@ -7,19 +7,21 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   http:
-    - name: "v1-routes"
+    - name: route-batchjob
       match:
-        - method:
-            regex: sayHello01
+        - headers:
+            batchJob:
+              exact: "true"
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice
-            subset: v1
-    - name: "v2-routes"
+            subset: batchjob
+    - name: route-user
       match:
-        - method:
-            regex: ^s.*o$
+        - headers:
+            batchJob:
+              exact: "false"
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice
-            subset: v2
+            subset: user

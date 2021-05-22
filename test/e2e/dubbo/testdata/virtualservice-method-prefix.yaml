@@ -7,7 +7,7 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   http:
-    - name: "reviews-v1-routes"
+    - name: "v1-routes"
       match:
         - method:
             prefix: sayHello01
@@ -15,7 +15,7 @@ spec:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice
             subset: v1
-    - name: "reviews-v2-routes"
+    - name: "v2-routes"
       match:
         - method:
             prefix: say
