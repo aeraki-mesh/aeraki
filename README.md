@@ -59,7 +59,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
   * Observability
     * [x] Dubbo Request Metrics
   * Security 
-    * [x] Peer authorization on Interface/Method
+    * [x] Peer Authorization on Interface/Method
     * [ ] Rquest Authorization
 * Thrift
   * Traffic Management
@@ -77,9 +77,9 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
 * Redis
   * [x] Redis Cluster
   * [x] Sharding
-  * [x] Prefix routing
+  * [x] Prefix Routing
   * [x] Auth
-  * [x] Traffic mirroring
+  * [x] Traffic Mirroring
 * [ ] MySql
 * [ ] MongoDB
 * [ ] Postgres
