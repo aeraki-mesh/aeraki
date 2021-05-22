@@ -5,6 +5,7 @@ import (
 
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	envoy "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	routepb "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -89,79 +90,97 @@ func buildRoute(context *model.EnvoyFilterContext) []*dubbo.Route {
 			routeAction = buildSingleCluster(http, service)
 		}
 
-		dubboRoute := new(dubbo.Route)
-		fmt.Println("http.Match: ", http.Match)
-
-		if len(http.Match) > 0 {
-			method := http.Match[0].Method
-			if method != nil {
-				switch method.MatchType.(type) {
-				case *networking.StringMatch_Exact:
-					dubboRoute = &dubbo.Route{
-						Match: &dubbo.RouteMatch{
-							Method: &dubbo.MethodMatch{
-								Name: &matcher.StringMatcher{
-									MatchPattern: &matcher.StringMatcher_Exact{
-										Exact: method.GetExact(),
-									},
-								},
-							},
-						},
-						Route: routeAction,
-					}
-				case *networking.StringMatch_Prefix:
-					dubboRoute = &dubbo.Route{
-						Match: &dubbo.RouteMatch{
-							Method: &dubbo.MethodMatch{
-								Name: &matcher.StringMatcher{
-									MatchPattern: &matcher.StringMatcher_Prefix{
-										Prefix: method.GetPrefix(),
-									},
-								},
-							},
-						},
-						Route: routeAction,
-					}
-				case *networking.StringMatch_Regex:
-					dubboRoute = &dubbo.Route{
-						Match: &dubbo.RouteMatch{
-							Method: &dubbo.MethodMatch{
-								Name: &matcher.StringMatcher{
-									MatchPattern: &matcher.StringMatcher_SafeRegex{
-										SafeRegex: &matcher.RegexMatcher{
-											EngineType: regexEngine,
-											Regex:      method.GetRegex()},
-									},
-								},
-							},
-						},
-						Route: routeAction,
-					}
-				}
-			}
-		}
-
-		if dubboRoute.GetMatch() == nil {
-			fmt.Println("dubboRoute.GetMatch(): ", dubboRoute.GetMatch())
-			dubboRoute = &dubbo.Route{
-				Match: &dubbo.RouteMatch{
-					Method: &dubbo.MethodMatch{
-						Name: &matcher.StringMatcher{
-							MatchPattern: &matcher.StringMatcher_SafeRegex{
-								SafeRegex: &matcher.RegexMatcher{
-									EngineType: regexEngine,
-									Regex:      ".*",
-								},
-							},
-						},
-					},
-				},
-				Route: routeAction,
-			}
+		dubboRoute := &dubbo.Route{
+			Match: &dubbo.RouteMatch{
+				Method:  buildMethodMatch(http),
+				Headers: buildHeaderMatch(http),
+			},
+			Route: routeAction,
 		}
 		routes = append(routes, dubboRoute)
 	}
 	return routes
+}
+
+func buildMethodMatch(route *networking.HTTPRoute) *dubbo.MethodMatch {
+	var methodName *matcher.StringMatcher
+	if len(route.Match) > 0 {
+		method := route.Match[0].Method
+		if method != nil {
+			switch method.MatchType.(type) {
+			case *networking.StringMatch_Exact:
+				methodName = &matcher.StringMatcher{
+					MatchPattern: &matcher.StringMatcher_Exact{
+						Exact: method.GetExact(),
+					},
+				}
+			case *networking.StringMatch_Prefix:
+				methodName = &matcher.StringMatcher{
+					MatchPattern: &matcher.StringMatcher_Prefix{
+						Prefix: method.GetPrefix(),
+					},
+				}
+			case *networking.StringMatch_Regex:
+				methodName = &matcher.StringMatcher{
+					MatchPattern: &matcher.StringMatcher_SafeRegex{
+						SafeRegex: &matcher.RegexMatcher{
+							EngineType: regexEngine,
+							Regex:      method.GetRegex()},
+					},
+				}
+			}
+		}
+	}
+
+	// Set a default match-all MethodMatch, otherwise dubbo proxy will complain
+	if methodName == nil {
+		methodName = &matcher.StringMatcher{
+			MatchPattern: &matcher.StringMatcher_SafeRegex{
+				SafeRegex: &matcher.RegexMatcher{
+					EngineType: regexEngine,
+					Regex:      ".*",
+				},
+			},
+		}
+	}
+
+	return &dubbo.MethodMatch{
+		Name: methodName,
+	}
+}
+
+func buildHeaderMatch(route *networking.HTTPRoute) []*routepb.HeaderMatcher {
+	headerMatchers := make([]*routepb.HeaderMatcher, 0)
+	if len(route.Match) > 0 {
+		for name, value := range route.Match[0].Headers {
+			switch value.MatchType.(type) {
+			case *networking.StringMatch_Exact:
+				headerMatchers = append(headerMatchers, &routepb.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &routepb.HeaderMatcher_ExactMatch{
+						ExactMatch: value.GetExact(),
+					},
+				})
+			case *networking.StringMatch_Prefix:
+				headerMatchers = append(headerMatchers, &routepb.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &routepb.HeaderMatcher_PrefixMatch{
+						PrefixMatch: value.GetPrefix(),
+					},
+				})
+			case *networking.StringMatch_Regex:
+				headerMatchers = append(headerMatchers, &routepb.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &routepb.HeaderMatcher_SafeRegexMatch{
+						SafeRegexMatch: &matcher.RegexMatcher{
+							EngineType: regexEngine,
+							Regex:      value.GetRegex()},
+					},
+				})
+			}
+		}
+	}
+	return headerMatchers
 }
 
 func buildSingleCluster(http *networking.HTTPRoute, service *networking.ServiceEntry) *dubbo.RouteAction {

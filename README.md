@@ -51,7 +51,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
   * [x] Traffic splitting
   * [x] Metrics
   * [x] Method based routing
-  * [ ] Header based routing
+  * [x] Header based routing
   * [x] Peer authorization on Interface/Method
 * Thrift
   * [x] Default routing

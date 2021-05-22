@@ -12,3 +12,9 @@ spec:
   - name: v2
     labels:
       version: v2
+  - labels:
+      service_group: batchjob
+    name: batchjob
+  - labels:
+      service_group: user
+    name: user
