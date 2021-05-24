@@ -26,7 +26,7 @@ We are facing some challenges in Istio traffic management:
 * Although you could change Pilot code to support other protocols, maintanence of an Istio fork is inevitable, which makes further upgrading process painful.
 * EnvoyFilter could be a possible solution, but it can be very difficult to manually create and maintain those EnvoyFilters, especially in a large service mesh - too many trivial details and moving parts!
 
-To address these problems, Aeraki works alongside Istio and provides an extensive way to manage the traffic of any layer 7 protocols.
+To address these problems, Aeraki works alongside Istio, providing an non-intrusive, extendable way to manage any layer 7 traffic in a service mesh.
 
 Aeraki is a standalone component in the service mesh control plane. It follows a non-intrusive design and leverages Istio's [EnvoyFilter API](https://istio.io/latest/docs/reference/config/networking/envoy-filter/) to push the configurations to the Envoy sidecar proxies.
 
