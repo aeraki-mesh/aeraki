@@ -56,7 +56,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
     * [x] Method Based Routing
     * [x] Header Based Routing
     * [x] Crcuit Breaker
-    * [ ] Locality Load Balancing (WIP)
+    * [x] Locality Load Balancing
   * Observability
     * [x] Dubbo Request Metrics
   * Security 
