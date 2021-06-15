@@ -48,7 +48,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
   * Service Discovery
     * [x] ServiceEntry Integration ([Example](https://github.com/aeraki-framework/aeraki/blob/master/demo/dubbo/serviceentry.yaml))
     * [x] [ZooKeeper Integration](https://github.com/aeraki-framework/dubbo2istio)
-      * [X] Service group and version
+    * [x] [Nacos Integration](https://github.com/aeraki-framework/dubbo2istio)
   * Traffic Management
     * [x] Request Level Load Balancing
     * [x] Version Based Routing
