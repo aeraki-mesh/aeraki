@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: data-svc1
+  name: data-svc1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-svc1
+  template:
+    metadata:
+      labels:
+        app: data-svc1
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 4000
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: data-svc1
+            - name: TCP_PORTS
+              value: "4000"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: data-svc1
+  name: data-svc1
+spec:
+  ports:
+    - name: tcp-1
+      port: 4000
+      protocol: TCP
+  selector:
+    app: data-svc1
+  type: ClusterIP
+---

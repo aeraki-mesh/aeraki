@@ -1,0 +1,52 @@
+---
+
+name: e2e-lazyxds
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  push:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+    branches:
+      - '*'
+
+env:
+  ISTIO_VERSION: 1.10.0
+  SCRIPTS_DIR: test/e2e/scripts
+  COMMON_DIR: test/e2e/common
+
+jobs:
+  test:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: e2e-test
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15.8
+      - name: Install dependencies
+        run: |
+          go version
+          go get golang.org/x/tools/cmd/goimports
+          go get -u github.com/onsi/ginkgo/ginkgo
+      - name: build docker
+        run: make docker-build-e2e.lazyxds
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/lazyxds-istio-config.yaml
+      - name: Install lazyxds
+        run: bash ${SCRIPTS_DIR}/lazyxds.sh
+      - name: test
+        run: make e2e-lazyxds

@@ -1,0 +1,53 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: normal-source
+  name: normal-source
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: normal-source
+  template:
+    metadata:
+      labels:
+        app: normal-source
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 7123
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: normal-source
+            - name: HTTP_PORTS
+              value: "7123"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: normal-source
+  name: normal-source
+spec:
+  ports:
+    - name: http
+      port: 7123
+      protocol: TCP
+  selector:
+    app: normal-source
+  type: ClusterIP
+---

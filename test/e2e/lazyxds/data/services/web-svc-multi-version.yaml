@@ -1,0 +1,140 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-svc-multi-version
+    version: v1
+  name: web-svc-multi-version-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-svc-multi-version
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: web-svc-multi-version
+        version: v1
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 7001
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: web-svc-multi-version
+            - name: HTTP_PORTS
+              value: "7001"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-svc-multi-version
+    version: v2
+  name: web-svc-multi-version-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-svc-multi-version
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: web-svc-multi-version
+        version: v2
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 7001
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: web-svc-multi-version
+            - name: HTTP_PORTS
+              value: "7001"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-svc-multi-version
+  name: web-svc-multi-version
+spec:
+  ports:
+    - name: http-1
+      port: 7001
+      protocol: TCP
+  selector:
+    app: web-svc-multi-version
+  type: ClusterIP
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: web-svc-multi-version
+spec:
+  hosts:
+    - web-svc-multi-version.lazyxds-example.svc.cluster.local
+  gateways:
+    - mesh
+    - istio-system/lazyxds-egress
+  http:
+    - match:
+        - headers:
+            user:
+              exact: admin
+      route:
+        - destination:
+            host: web-svc-multi-version.lazyxds-example.svc.cluster.local
+            subset: v2
+            port:
+              number: 7001
+    - route:
+        - destination:
+            host: web-svc-multi-version.lazyxds-example.svc.cluster.local
+            subset: v1
+            port:
+              number: 7001
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: web-svc-multi-version
+spec:
+  host: web-svc-multi-version
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
+---

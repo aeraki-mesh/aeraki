@@ -1,0 +1,315 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istio-egressgateway-lazyxds-service-account
+  namespace: istio-system
+  labels:
+    app: lazyxds
+    istio: egressgateway
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: istio-egressgateway-lazyxds-sds
+  namespace: istio-system
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "watch", "list"]
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istio-egressgateway-lazyxds-sds
+  namespace: istio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: istio-egressgateway-lazyxds-sds
+subjects:
+  - kind: ServiceAccount
+    name: istio-egressgateway-lazyxds-service-account
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lazyxds-als-bootstrap
+  namespace: istio-system
+data:
+  custom_bootstrap.json: |
+    {
+      "static_resources": {
+        "clusters": [{
+          "name": "lazyxds-accesslog-service",
+          "type": "STRICT_DNS",
+          "connect_timeout": "1s",
+          "http2_protocol_options": {},
+          "dns_lookup_family": "V4_ONLY",
+          "load_assignment": {
+            "cluster_name": "lazyxds-accesslog-service",
+            "endpoints": [{
+              "lb_endpoints": [{
+                "endpoint": {
+                  "address": {
+                    "socket_address": {
+                      "address": "lazyxds.istio-system",
+                      "port_value": 8080
+                    }
+                  }
+                }
+              }]
+            }]
+          },
+          "respect_dns_ttl": true
+        }]
+      }
+    }
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: lazyxds-egress-als
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      app: istio-egressgateway-lazyxds
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+            access_log:
+              - name: envoy.access_loggers.file
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
+                  path: "/dev/stdout"
+                  log_format:
+                    text_format: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% \"%UPSTREAM_TRANSPORT_FAILURE_REASON%\" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%\n"
+              - name: envoy.access_loggers.http_grpc
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.access_loggers.grpc.v3.HttpGrpcAccessLogConfig
+                  common_config:
+                    log_name: http_envoy_accesslog
+                    transport_api_version: "V3"
+                    grpc_service:
+                      envoy_grpc:
+                        cluster_name: lazyxds-accesslog-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-egressgateway-lazyxds
+  namespace: istio-system
+  labels:
+    app: istio-egressgateway-lazyxds
+    istio: egressgateway
+spec:
+  ports:
+    - name: http2
+      port: 8080
+      protocol: TCP
+  selector:
+    app: istio-egressgateway-lazyxds
+    istio: egressgateway
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-egressgateway-lazyxds
+  namespace: istio-system
+  labels:
+    app: istio-egressgateway-lazyxds
+    istio: egressgateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: istio-egressgateway-lazyxds
+      istio: egressgateway
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/discoveryAddress: istiod.istio-system.svc:15012
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: istio-egressgateway-lazyxds
+        istio: egressgateway
+    spec:
+      containers:
+        - args:
+            - proxy
+            - router
+            - --domain
+            - $(POD_NAMESPACE).svc.cluster.local
+            - --proxyLogLevel=warning
+            - --proxyComponentLogLevel=misc:error
+            - --log_output_level=default:info
+            - --serviceCluster
+            - istio-egressgateway
+          env:
+            - name: ISTIO_BOOTSTRAP_OVERRIDE
+              value: /etc/istio/custom-bootstrap/custom_bootstrap.json
+            - name: JWT_POLICY
+              value: first-party-jwt
+            - name: PILOT_CERT_PROVIDER
+              value: istiod
+            - name: CA_ADDR
+              value: istiod.istio-system.svc:15012
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.serviceAccountName
+            - name: ISTIO_META_WORKLOAD_NAME
+              value: istio-egressgateway-lazyxds
+            - name: ISTIO_META_OWNER
+              value: kubernetes://apis/apps/v1/namespaces/istio-system/deployments/istio-egressgateway-lazyxds
+            - name: ISTIO_META_MESH_ID
+              value: cluster.local
+            - name: ISTIO_META_ROUTER_MODE
+              value: standard
+            - name: ISTIO_META_CLUSTER_ID
+              value: Kubernetes
+          image: docker.io/istio/proxyv2:1.10.0
+          imagePullPolicy: IfNotPresent
+          name: istio-proxy
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 15090
+              name: http-envoy-prom
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: 15021
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 2
+            failureThreshold: 30
+            successThreshold: 1
+            timeoutSeconds: 1
+          volumeMounts:
+            - mountPath: /etc/istio/custom-bootstrap
+              name: custom-bootstrap-volume
+            - mountPath: /etc/istio/proxy
+              name: istio-envoy
+            - mountPath: /etc/istio/config
+              name: config-volume
+            - mountPath: /var/run/secrets/istio
+              name: istiod-ca-cert
+            - mountPath: /var/run/ingress_gateway
+              name: gatewaysdsudspath
+            - mountPath: /var/lib/istio/data
+              name: istio-data
+            - mountPath: /etc/istio/pod
+              name: podinfo
+            - mountPath: /etc/istio/egressgateway-certs
+              name: egressgateway-certs
+              readOnly: true
+            - mountPath: /etc/istio/egressgateway-ca-certs
+              name: egressgateway-ca-certs
+              readOnly: true
+      serviceAccountName: istio-egressgateway-lazyxds-service-account
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: lazyxds-als-bootstrap
+          name: custom-bootstrap-volume
+        - configMap:
+            defaultMode: 420
+            name: istio-ca-root-cert
+          name: istiod-ca-cert
+        - downwardAPI:
+            defaultMode: 420
+            items:
+              - fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.labels
+                path: labels
+              - fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.annotations
+                path: annotations
+          name: podinfo
+        - emptyDir: {}
+          name: istio-envoy
+        - emptyDir: {}
+          name: gatewaysdsudspath
+        - emptyDir: {}
+          name: istio-data
+        - configMap:
+            defaultMode: 420
+            name: istio-1-8-1
+            optional: true
+          name: config-volume
+        - name: egressgateway-certs
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: istio-egressgateway-lazyxds-certs
+        - name: egressgateway-ca-certs
+          secret:
+            defaultMode: 420
+            optional: true
+            secretName: istio-egressgateway-lazyxds-ca-certs
+---
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: lazyxds-egress
+  namespace: istio-system
+  labels:
+    app: istio-egressgateway-lazyxds
+    istio: egressgateway
+spec:
+  selector:
+    app: istio-egressgateway-lazyxds
+    istio: egressgateway
+  servers:
+    - hosts:
+        - '*'
+      port:
+        name: http
+        number: 8080
+        protocol: HTTP
+---

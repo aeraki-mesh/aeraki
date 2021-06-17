@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: lazy-source
+  name: lazy-source
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lazy-source
+  template:
+    metadata:
+      labels:
+        app: lazy-source
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 7123
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: lazy-source
+            - name: HTTP_PORTS
+              value: "7123"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: lazy-source
+  annotations:
+    lazy-xds: "true"
+  name: lazy-source
+spec:
+  ports:
+    - name: http
+      port: 7123
+      protocol: TCP
+  selector:
+    app: lazy-source
+  type: ClusterIP
+---
