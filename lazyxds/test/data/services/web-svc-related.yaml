@@ -170,7 +170,7 @@ spec:
     - web-svc-related1.lazyxds-example.svc.cluster.local
   gateways:
     - mesh
-    - istio-system/lazyxds-egress # todo 这里有问题
+    - istio-system/lazyxds-egress
   http:
     - match:
         - queryParams:

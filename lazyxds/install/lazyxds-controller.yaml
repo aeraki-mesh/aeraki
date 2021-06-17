@@ -81,4 +81,3 @@ spec:
     app: lazyxds
   type: ClusterIP
 ---
-
