@@ -1,0 +1,18 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: web-svc1-se
+spec:
+  hosts:
+    - qq.com
+  location: MESH_INTERNAL
+  ports:
+    - number: 7000
+      name: http
+      protocol: HTTP
+  resolution: STATIC
+  workloadSelector:
+    labels:
+      app: web-svc1
+---
