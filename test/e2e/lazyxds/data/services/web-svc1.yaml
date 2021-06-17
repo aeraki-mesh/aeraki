@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: web-svc1
+  name: web-svc1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-svc1
+  template:
+    metadata:
+      labels:
+        app: web-svc1
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 7000
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: web-svc1
+            - name: HTTP_PORTS
+              value: "7000"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: web-svc1
+  name: web-svc1
+spec:
+  ports:
+    - name: http-1
+      port: 7000
+      protocol: TCP
+  selector:
+    app: web-svc1
+  type: ClusterIP
+---

@@ -1,0 +1,71 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mix-svc
+  name: mix-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mix-svc
+  template:
+    metadata:
+      labels:
+        app: mix-svc
+    spec:
+      containers:
+        - image: zhongfox/anyserver:v1
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 7001
+              protocol: TCP
+            - containerPort: 7002
+              protocol: TCP
+            - containerPort: 4001
+              protocol: TCP
+            - containerPort: 4002
+              protocol: TCP
+          env:
+            - name: SERVICE
+              value: mix-svc
+            - name: HTTP_PORTS
+              value: "7001,7002"
+            - name: TCP_PORTS
+              value: "4001,4002"
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mix-svc
+  name: mix-svc
+spec:
+  ports:
+    - name: http-1
+      port: 7001
+      protocol: TCP
+    - name: http-2
+      port: 7002
+      protocol: TCP
+    - name: tcp-1
+      port: 4001
+      protocol: TCP
+    - name: tcp-2
+      port: 4002
+      protocol: TCP
+  selector:
+    app: mix-svc
+  type: ClusterIP
+---

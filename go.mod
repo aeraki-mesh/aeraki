@@ -35,22 +35,34 @@ replace istio.io/istio => istio.io/istio v0.0.0-20210226235243-2dd7b6207f02
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.9-0.20210115003313-31f9241a16e6
+	github.com/fatih/color v1.10.0
+	github.com/go-logr/logr v0.3.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.4.3
 	github.com/google/go-cmp v0.5.4
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/gosuri/uitable v0.0.4
 	github.com/hashicorp/go-multierror v1.1.0
+	github.com/onsi/ginkgo v1.14.1
+	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1
+	github.com/spf13/cobra v1.1.1
+	github.com/spf13/pflag v1.0.5
+	github.com/spf13/viper v1.7.1
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	google.golang.org/grpc v1.33.2
 	google.golang.org/protobuf v1.25.0
 	istio.io/api v0.0.0-20210302211031-2e1e4d7e6f4b
 	istio.io/client-go v1.9.1
 	istio.io/gogo-genproto v0.0.0-20210302011020-ae262edaabe3
 	istio.io/istio v0.0.0-20210304052440-b811231b14cf
 	istio.io/pkg v0.0.0-20210302010922-525eaee65cc5
+	k8s.io/api v0.20.4
 	k8s.io/apimachinery v0.20.4
 	k8s.io/client-go v0.20.4
+	k8s.io/component-base v0.20.2
+	k8s.io/klog/v2 v2.4.0
 	sigs.k8s.io/controller-runtime v0.8.2
 )

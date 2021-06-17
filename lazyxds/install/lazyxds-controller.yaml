@@ -1,0 +1,83 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lazyxds
+  namespace: istio-system
+  labels:
+    app: lazyxds
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lazyxds
+  labels:
+    app: lazyxds
+rules:
+  - apiGroups: ["*"]
+    resources: ["pods", "nodes", "namespaces", "endpoints", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["*"]
+    resources: ["configmaps", "deployments", "services", "roles", "rolebindings", "serviceaccounts"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: ["networking.istio.io"]
+    resources: ["*"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: lazyxds
+  labels:
+    app: lazyxds
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: lazyxds
+subjects:
+  - kind: ServiceAccount
+    namespace: istio-system
+    name: lazyxds
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: lazyxds
+  name: lazyxds
+  namespace: istio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lazyxds
+  template:
+    metadata:
+      labels:
+        app: lazyxds
+    spec:
+      serviceAccountName: lazyxds
+      containers:
+        - image: aeraki/lazyxds:latest
+          imagePullPolicy: Always
+          name: app
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: lazyxds
+  name: lazyxds
+  namespace: istio-system
+spec:
+  ports:
+    - name: grpc-als
+      port: 8080
+      protocol: TCP
+  selector:
+    app: lazyxds
+  type: ClusterIP
+---
