@@ -180,7 +180,7 @@ func (c *AggregationController) ClusterClient(name string) *kubernetes.Clientset
 func (c *AggregationController) HandleAccess(fromIP, svcID, toIP string) error {
 	c.log.Info("HandleAccess", "fromIP", fromIP, "svcID", svcID, "toIP", toIP)
 
-	fromSvcID := c.Ip2ServiceID(fromIP)
+	fromSvcID := c.IP2ServiceID(fromIP)
 	if fromSvcID == "" {
 		return nil
 	}
@@ -191,7 +191,7 @@ func (c *AggregationController) HandleAccess(fromIP, svcID, toIP string) error {
 	}
 
 	if svcID == "" {
-		svcID := c.Ip2ServiceID(toIP)
+		svcID := c.IP2ServiceID(toIP)
 		if svcID == "" {
 			return nil
 		}

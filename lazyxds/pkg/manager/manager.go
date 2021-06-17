@@ -37,8 +37,8 @@ type LazyXdsManager interface {
 	//Run(stopCh <-chan struct{}) error
 }
 
-// manager ...
-type manager struct {
+// Manager contains the main lazy xds controller
+type Manager struct {
 	conf            *config.Config
 	stop            <-chan struct{} // todo move to args of run function
 	masterClient    *kubernetes.Clientset
@@ -47,10 +47,10 @@ type manager struct {
 	accessLogServer *accesslog.Server
 }
 
-var singleton *manager
+var singleton *Manager
 
 // NewManager ...
-func NewManager(conf *config.Config, stop <-chan struct{}) (*manager, error) {
+func NewManager(conf *config.Config, stop <-chan struct{}) (*Manager, error) {
 	if singleton != nil {
 		klog.Error("LazyXds Manager already exist")
 		return singleton, nil
@@ -65,7 +65,7 @@ func NewManager(conf *config.Config, stop <-chan struct{}) (*manager, error) {
 		return nil, err
 	}
 
-	singleton = &manager{
+	singleton = &Manager{
 		conf:         conf,
 		stop:         stop,
 		masterClient: kubeClient,
@@ -78,7 +78,7 @@ func NewManager(conf *config.Config, stop <-chan struct{}) (*manager, error) {
 }
 
 // Run ...
-func (m *manager) Run() error {
+func (m *Manager) Run() error {
 	klog.Info("Starting access log server...")
 	if err := m.accessLogServer.Serve(); err != nil {
 		return fmt.Errorf("start access log server failed: %w", err)
@@ -96,7 +96,7 @@ func (m *manager) Run() error {
 }
 
 // AddCluster ...
-func (m *manager) AddCluster(name string, client *kubernetes.Clientset) error {
+func (m *Manager) AddCluster(name string, client *kubernetes.Clientset) error {
 	if m.conf.AutoCreateEgress {
 		klog.Info("Starting create lazyxds egress", "cluster", name)
 		if err := bootstrap.InitEgress(context.TODO(), name, client, m.istioClient, m.conf.IstiodAddress, m.conf.ProxyImage); err != nil {
@@ -108,6 +108,6 @@ func (m *manager) AddCluster(name string, client *kubernetes.Clientset) error {
 }
 
 // DeleteCluster ...
-func (m *manager) DeleteCluster(name string) error {
+func (m *Manager) DeleteCluster(name string) error {
 	return nil
 }

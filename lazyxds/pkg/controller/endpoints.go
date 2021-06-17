@@ -36,13 +36,13 @@ func (c *AggregationController) deleteEndpoints(ctx context.Context, name, ns st
 	return nil
 }
 
-// Ip2ServiceID ...
-func (c *AggregationController) Ip2ServiceID(targetIp string) string {
+// IP2ServiceID ...
+func (c *AggregationController) IP2ServiceID(targetIP string) string {
 	var svcID string
 	c.endpoints.Range(func(key, value interface{}) bool {
 		ep := value.(*model.Endpoints)
-		for _, ip := range ep.IpList {
-			if targetIp == ip {
+		for _, ip := range ep.IPList {
+			if targetIP == ip {
 				svcID = ep.ID()
 				return false
 			}

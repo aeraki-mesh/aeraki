@@ -26,7 +26,7 @@ type Endpoints struct {
 	Name      string
 	Namespace string
 
-	IpList []string
+	IPList []string
 }
 
 // NewEndpoints creates new Endpoints from k8s endpoints
@@ -38,7 +38,7 @@ func NewEndpoints(endpoints *corev1.Endpoints) *Endpoints {
 
 	for _, subset := range endpoints.Subsets {
 		for _, address := range subset.Addresses {
-			ep.IpList = append(ep.IpList, address.IP)
+			ep.IPList = append(ep.IPList, address.IP)
 		}
 	}
 

@@ -45,22 +45,22 @@ func (c *AggregationController) buildPlaceHolderService(ctx context.Context) err
 		}
 	}
 
-	currentHttpPorts := make(map[string]struct{})
+	currentHTTPPorts := make(map[string]struct{})
 	handler := func(key, value interface{}) bool {
 		svc := value.(*model.Service)
 		for servicePort := range svc.Spec.HTTPPorts {
-			currentHttpPorts[servicePort] = struct{}{}
+			currentHTTPPorts[servicePort] = struct{}{}
 		}
 		return true
 	}
 	c.services.Range(handler)
-	if len(currentHttpPorts) == 0 {
+	if len(currentHTTPPorts) == 0 {
 		// todo delete empty svc
 		return nil
 	}
 
 	var servicePorts []coreV1.ServicePort
-	for port := range currentHttpPorts {
+	for port := range currentHTTPPorts {
 		portNum, _ := strconv.Atoi(port)
 		servicePorts = append(servicePorts, coreV1.ServicePort{
 			Name: "http-" + port,
@@ -74,7 +74,7 @@ func (c *AggregationController) buildPlaceHolderService(ctx context.Context) err
 		}
 	}
 
-	if !firstCreate && c.isServicePortsChanged(existingGlobalService, currentHttpPorts) {
+	if !firstCreate && c.isServicePortsChanged(existingGlobalService, currentHTTPPorts) {
 		if err := c.updatePlaceholderService(ctx, existingGlobalService, servicePorts); err != nil {
 			return err
 		}
@@ -84,21 +84,21 @@ func (c *AggregationController) buildPlaceHolderService(ctx context.Context) err
 }
 
 func (c *AggregationController) isServicePortsChanged(existingGlobalService *coreV1.Service,
-	currentHttpPorts map[string]struct{}) bool {
+	currentHTTPPorts map[string]struct{}) bool {
 	globalServicePorts := make(map[string]struct{})
 	for port := range existingGlobalService.Spec.Ports {
 		portStr := fmt.Sprint(port)
 		globalServicePorts[portStr] = struct{}{}
 	}
 
-	for httpPort := range currentHttpPorts {
+	for httpPort := range currentHTTPPorts {
 		if _, ok := globalServicePorts[httpPort]; !ok {
 			return true
 		}
 	}
 
 	for httpPort := range globalServicePorts {
-		if _, ok := currentHttpPorts[httpPort]; !ok {
+		if _, ok := currentHTTPPorts[httpPort]; !ok {
 			return true
 		}
 	}

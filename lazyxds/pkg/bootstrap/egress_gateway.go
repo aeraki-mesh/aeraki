@@ -379,7 +379,7 @@ func createAlsConfigMap(ctx context.Context, client *kubernetes.Clientset) error
 			Namespace: config.IstioNamespace,
 		},
 		Data: map[string]string{
-			"custom_bootstrap.json": alsBootstrapJson(),
+			"custom_bootstrap.json": alsBootstrapJSON(),
 		},
 	}
 
@@ -515,7 +515,7 @@ func egressEnvoyFilterPatch() string {
 }`
 }
 
-func alsBootstrapJson() string {
+func alsBootstrapJSON() string {
 	s := `{
 		"static_resources": {
 			"clusters": [{

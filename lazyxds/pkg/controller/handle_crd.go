@@ -101,9 +101,8 @@ func (c *AggregationController) syncEgressVirtualService(
 
 		if di.Host == dj.Host {
 			return di.Port.Number > dj.Port.Number
-		} else {
-			return di.Host > dj.Host
 		}
+		return di.Host > dj.Host
 	})
 
 	if len(spec.Http) == 0 {
@@ -241,18 +240,18 @@ func (c *AggregationController) syncSidecarOfLazySource(ctx context.Context, laz
 				FieldManager: config.LazyXdsManager,
 			})
 		return err
-	} else {
-		if reflect.DeepEqual(sidecar.Spec, newSpec) {
-			return nil
-		}
-
-		sidecar.Spec = newSpec
-		_, err := c.istioClient.NetworkingV1alpha3().Sidecars(lazySvc.Namespace).
-			Update(ctx, sidecar, metav1.UpdateOptions{
-				FieldManager: config.LazyXdsManager,
-			})
-		return err
 	}
+
+	if reflect.DeepEqual(sidecar.Spec, newSpec) {
+		return nil
+	}
+
+	sidecar.Spec = newSpec
+	_, err = c.istioClient.NetworkingV1alpha3().Sidecars(lazySvc.Namespace).
+		Update(ctx, sidecar, metav1.UpdateOptions{
+			FieldManager: config.LazyXdsManager,
+		})
+	return err
 }
 
 func (c *AggregationController) removeSidecar(ctx context.Context, svcName, svcNamespace string) error {

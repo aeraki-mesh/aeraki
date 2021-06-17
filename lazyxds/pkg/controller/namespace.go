@@ -49,9 +49,9 @@ func (c *AggregationController) deleteNamespace(ctx context.Context, clusterName
 	if len(ns.Distribution) == 0 {
 		c.namespaces.Delete(name)
 		return nil
-	} else {
-		return c.reconcileNamespace(ctx, ns)
 	}
+
+	return c.reconcileNamespace(ctx, ns)
 }
 func (c *AggregationController) reconcileNamespace(ctx context.Context, ns *model.Namespace) (err error) {
 	c.services.Range(func(key, value interface{}) bool {

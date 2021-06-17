@@ -21,7 +21,7 @@ import "fmt"
 const (
 	// IstioNamespace is the default root namespace of istio
 	IstioNamespace = "istio-system"
-	// LazyXdsController is the controller name which will put into fieldManager
+	// LazyXdsManager is the controller name which will put into fieldManager
 	LazyXdsManager = "lazyxds-manager"
 	// EgressName is name of egress deployment and service
 	EgressName = "istio-egressgateway-lazyxds"
@@ -37,6 +37,7 @@ const (
 	LazyLoadingAnnotation = "lazy-xds"
 )
 
+// GetEgressCluster returns the egress xds cluster string
 // default is "outbound|8080||istio-egressgateway-lazyxds.istio-system.svc.cluster.local"
 func GetEgressCluster() string {
 	return fmt.Sprintf("outbound|%d||%s.%s.svc.cluster.local",

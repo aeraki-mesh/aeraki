@@ -21,6 +21,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// NSLazyStatus represents the status of lazy xds
 type NSLazyStatus int
 
 const (

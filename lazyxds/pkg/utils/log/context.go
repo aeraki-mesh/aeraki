@@ -28,7 +28,7 @@ const (
 	logKey key = iota
 )
 
-// WithLogger returns a copy of parent in which the logger value is set
+// WithContext returns a copy of parent in which the logger value is set
 func WithContext(parent context.Context, logger logr.Logger) context.Context {
 	return context.WithValue(parent, logKey, logger)
 }

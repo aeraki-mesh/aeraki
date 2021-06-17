@@ -23,8 +23,10 @@ import (
 )
 
 const (
+	// DefaultIstiodAddress is the default istiod address
 	DefaultIstiodAddress = "istiod.istio-system.svc:15012"
-	DefaultProxyImage    = "docker.io/istio/proxyv2:1.10.0"
+	// DefaultProxyImage is the default sidecar image of istio
+	DefaultProxyImage = "docker.io/istio/proxyv2:1.10.0"
 )
 
 // Options for lazyxds

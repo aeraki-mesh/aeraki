@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-// nolint: funlen
+// Run start leader election and run main process
 func Run(conf *config.Config, stopCh <-chan struct{}) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
