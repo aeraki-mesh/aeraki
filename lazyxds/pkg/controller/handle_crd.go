@@ -106,7 +106,7 @@ func (c *AggregationController) syncEgressVirtualService(
 	})
 
 	if len(spec.Http) == 0 {
-		logger.Info("Deleting egress VirtualService", )
+		logger.Info("Deleting egress VirtualService")
 		err := c.istioClient.NetworkingV1alpha3().VirtualServices(config.IstioNamespace).
 			Delete(ctx, vs.Name, metav1.DeleteOptions{})
 		if err != nil && errors.IsNotFound(err) {
