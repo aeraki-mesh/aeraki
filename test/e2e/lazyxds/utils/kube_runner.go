@@ -47,9 +47,10 @@ func NewKubeRunnerFromENV() (*KubeRunner, error) {
 	runner := &KubeRunner{}
 
 	kubeConfFile := os.Getenv("KUBECONFIG")
-	//if kubeConfFile == "" {
-	//	return nil, fmt.Errorf("miss env KUBECONFIG")
-	//}
+	if kubeConfFile == "" {
+		kubeConfFile = "~/.kube/config" // todo check exists
+		//return nil, fmt.Errorf("miss env KUBECONFIG")
+	}
 
 	if kubeConf, err := clientcmd.BuildConfigFromFlags("", kubeConfFile); err == nil {
 		runner.config = kubeConf
