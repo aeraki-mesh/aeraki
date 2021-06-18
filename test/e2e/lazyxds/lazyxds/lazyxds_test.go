@@ -57,7 +57,7 @@ var _ = BeforeSuite(func() {
 	utils.RunCMD(fmt.Sprintf("kubectl apply -n %s -f ../data/services", TestNS))
 
 	// todo wait all pod ok
-	time.Sleep(30 * time.Second)
+	time.Sleep(120 * time.Second)
 
 	pod, err = kubeRunner.GetFirstPodByLabels(TestNS, "app=lazy-source")
 	if err != nil {
