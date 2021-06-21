@@ -97,7 +97,7 @@ var _ = Describe("Enable service Lazy xDS", func() {
 		It("Access external HTTP service http://baidu.com, should route to PassthroughCluster", func() {
 			now := time.Now()
 			requestID := fmt.Sprintf("request_id=%d", utils.GetRequestID())
-			out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://baidu.com?%s", requestID))
+			out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://www.google.com?%s", requestID))
 			if err != nil {
 				log.Fatalf("kubeRunner.ExecPod failed: %v", err)
 			}
