@@ -24,7 +24,6 @@ import (
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -356,71 +355,71 @@ var _ = Describe("Enable service Lazy xDS", func() {
 		})
 	})
 
-	Context("Headless Service", func() {
-		It("Access HTTP service headless-svc first time, should route to lazy xds egress", func() {
-			now := time.Now()
-			tag := fmt.Sprintf("request_id=%d", utils.GetRequestID())
-			out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://headless-svc.%s.svc.cluster.local:7000/test?%s", TestNS, tag))
-			if err != nil {
-				log.Fatalf("kubeRunner.ExecPod failed: %v", err)
-			}
-
-			Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
-			Expect(out).To(ContainSubstring("headless-svc"))
-
-			accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, tag)
-			if err != nil {
-				log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
-			}
-			Expect(accessLog).To(ContainSubstring("outbound|8080||istio-egressgateway-lazyxds.istio-system.svc.cluster.local"))
-
-			log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
-		})
-
-		It("Access HTTP service headless-svc using pod dns domain, should access service directly", func() {
-			pod, _ := kubeRunner.GetFirstPodByLabels(TestNS, "app=headless-svc")
-			podDomain := strings.Replace(pod.Status.PodIP, ".", "-", -1)
-
-			now := time.Now()
-			tag := fmt.Sprintf("request_id=%d", utils.GetRequestID())
-
-			out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://%s.headless-svc.%s.svc.cluster.local:7000/test?%s", podDomain, TestNS, tag))
-			if err != nil {
-				log.Fatalf("kubeRunner.ExecPod failed: %v", err)
-			}
-
-			Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
-			Expect(out).To(ContainSubstring("headless-svc"))
-
-			accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, tag)
-			if err != nil {
-				log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
-			}
-			Expect(accessLog).To(ContainSubstring(fmt.Sprintf("outbound|7000||headless-svc.%s.svc.cluster.local", TestNS)))
-
-			log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
-		})
-		It("Access HTTP service headless-svc using service dns domain, should access service directly", func() {
-			now := time.Now()
-			tag := fmt.Sprintf("request_id=%d", utils.GetRequestID())
-
-			out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://headless-svc.%s.svc.cluster.local:7000/test?%s", TestNS, tag))
-			if err != nil {
-				log.Fatalf("kubeRunner.ExecPod failed: %v", err)
-			}
-
-			Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
-			Expect(out).To(ContainSubstring("headless-svc"))
-
-			accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, tag)
-			if err != nil {
-				log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
-			}
-			Expect(accessLog).To(ContainSubstring(fmt.Sprintf("outbound|7000||headless-svc.%s.svc.cluster.local", TestNS)))
-
-			log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
-		})
-	})
+	//Context("Headless Service", func() {
+	//	It("Access HTTP service headless-svc first time, should route to lazy xds egress", func() {
+	//		now := time.Now()
+	//		tag := fmt.Sprintf("request_id=%d", utils.GetRequestID())
+	//		out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://headless-svc.%s.svc.cluster.local:7000/test?%s", TestNS, tag))
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.ExecPod failed: %v", err)
+	//		}
+	//
+	//		Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
+	//		Expect(out).To(ContainSubstring("headless-svc"))
+	//
+	//		accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, tag)
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
+	//		}
+	//		Expect(accessLog).To(ContainSubstring("outbound|8080||istio-egressgateway-lazyxds.istio-system.svc.cluster.local"))
+	//
+	//		log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
+	//	})
+	//
+	//	It("Access HTTP service headless-svc using pod dns domain, should access service directly", func() {
+	//		pod, _ := kubeRunner.GetFirstPodByLabels(TestNS, "app=headless-svc")
+	//		podDomain := strings.Replace(pod.Status.PodIP, ".", "-", -1)
+	//
+	//		now := time.Now()
+	//		tag := fmt.Sprintf("request_id=%d", utils.GetRequestID())
+	//
+	//		out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://%s.headless-svc.%s.svc.cluster.local:7000/test?%s", podDomain, TestNS, tag))
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.ExecPod failed: %v", err)
+	//		}
+	//
+	//		Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
+	//		Expect(out).To(ContainSubstring("headless-svc"))
+	//
+	//		accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, tag)
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
+	//		}
+	//		Expect(accessLog).To(ContainSubstring(fmt.Sprintf("outbound|7000||headless-svc.%s.svc.cluster.local", TestNS)))
+	//
+	//		log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
+	//	})
+	//	It("Access HTTP service headless-svc using service dns domain, should access service directly", func() {
+	//		now := time.Now()
+	//		tag := fmt.Sprintf("request_id=%d", utils.GetRequestID())
+	//
+	//		out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://headless-svc.%s.svc.cluster.local:7000/test?%s", TestNS, tag))
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.ExecPod failed: %v", err)
+	//		}
+	//
+	//		Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
+	//		Expect(out).To(ContainSubstring("headless-svc"))
+	//
+	//		accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, tag)
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
+	//		}
+	//		Expect(accessLog).To(ContainSubstring(fmt.Sprintf("outbound|7000||headless-svc.%s.svc.cluster.local", TestNS)))
+	//
+	//		log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
+	//	})
+	//})
 
 	Context("Disable lazyxds", func() {
 		It(" access internal HTTP service web-svc2, should access service directly", func() {
