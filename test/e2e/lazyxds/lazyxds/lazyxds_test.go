@@ -93,29 +93,29 @@ var _ = Describe("Disable Lazy xDS", func() {
 })
 
 var _ = Describe("Enable service Lazy xDS", func() {
-	Context("External Services", func() {
-		It("Access external HTTP service http://baidu.com, should route to PassthroughCluster", func() {
-			now := time.Now()
-			requestID := fmt.Sprintf("request_id=%d", utils.GetRequestID())
-			out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://www.google.com?%s", requestID))
-			if err != nil {
-				log.Fatalf("kubeRunner.ExecPod failed: %v", err)
-			}
-
-			Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
-
-			accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, requestID)
-			if err != nil {
-				log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
-			}
-			Expect(accessLog).To(ContainSubstring("PassthroughCluster"))
-
-			log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
-		})
-
-		It("Access external TCP service", func() { // todo need a stable external tcp service
-		})
-	})
+	//Context("External Services", func() {
+	//	It("Access external HTTP service http://baidu.com, should route to PassthroughCluster", func() {
+	//		now := time.Now()
+	//		requestID := fmt.Sprintf("request_id=%d", utils.GetRequestID())
+	//		out, err := kubeRunner.ExecPod("app", lazySourcePodName, TestNS, fmt.Sprintf("curl -i http://baidu.com?%s", requestID))
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.ExecPod failed: %v", err)
+	//		}
+	//
+	//		Expect(out).To(ContainSubstring("HTTP/1.1 200 OK"))
+	//
+	//		accessLog, err := kubeRunner.GetAccessLog("istio-proxy", lazySourcePodName, TestNS, now, requestID)
+	//		if err != nil {
+	//			log.Fatalf("kubeRunner.GetAccessLog failed: %v", err)
+	//		}
+	//		Expect(accessLog).To(ContainSubstring("PassthroughCluster"))
+	//
+	//		log.Println(kubeRunner.XDSStatistics(lazySourcePodName, TestNS))
+	//	})
+	//
+	//	It("Access external TCP service", func() { // todo need a stable external tcp service
+	//	})
+	//})
 
 	Context("ServiceEntry", func() {
 		It("Access host of ServiceEntry, should access directly", func() {
