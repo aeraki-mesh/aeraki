@@ -7,5 +7,10 @@ spec:
     accessLogFile: /dev/stdout
   components:
     pilot:
+      k8s:
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: 100m
       hub: istio
       tag: 1.10.0
