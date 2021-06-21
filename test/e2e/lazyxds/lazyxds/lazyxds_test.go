@@ -57,14 +57,14 @@ var _ = BeforeSuite(func() {
 	utils.RunCMD(fmt.Sprintf("kubectl apply -n %s -f ../data/services", TestNS))
 
 	// todo wait all pod ok
-	time.Sleep(120 * time.Second)
-	fmt.Println("get istio pod")
+	time.Sleep(30 * time.Second)
+	fmt.Println("pods of istio-system:")
 	fmt.Println(utils.RunCMD(fmt.Sprintf("kubectl -n %s get pod", "istio-system")))
-	fmt.Println("get svc")
+	fmt.Println("test services:")
 	fmt.Println(utils.RunCMD(fmt.Sprintf("kubectl -n %s get svc", TestNS)))
-	fmt.Println("get pod")
+	fmt.Println("test pods")
 	fmt.Println(utils.RunCMD(fmt.Sprintf("kubectl -n %s get pod", TestNS)))
-	fmt.Println("get ep")
+	fmt.Println("test endpoints")
 	fmt.Println(utils.RunCMD(fmt.Sprintf("kubectl -n %s get ep", TestNS)))
 
 	pod, err = kubeRunner.GetFirstPodByLabels(TestNS, "app=lazy-source")

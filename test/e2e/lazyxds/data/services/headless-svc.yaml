@@ -6,7 +6,7 @@ metadata:
     app: headless-svc
   name: headless-svc
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: headless-svc
