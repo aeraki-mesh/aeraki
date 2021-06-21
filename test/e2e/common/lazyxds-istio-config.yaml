@@ -6,6 +6,9 @@ spec:
   meshConfig:
     accessLogFile: /dev/stdout
   components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: false
     pilot:
       k8s:
         resources:
