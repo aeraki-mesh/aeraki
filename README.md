@@ -42,6 +42,7 @@ Similar to Istio, protocols are identified by service port prefix. Please name s
 
 * [Dubbo (中文) ](https://github.com/aeraki-framework/dubbo2istio#readme)
 * [Redis (中文) ](docs/zh/redis.md)
+* [LazyXDS（xDS 按需加载）](lazyxds/README.md)
 
 ## Supported protocols:
 * Dubbo
