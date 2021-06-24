@@ -20,8 +20,8 @@ Lazyxds enables Istio only push needed xds to sidecars to reduce resource consum
 ### Install Lazyxds egress and controller
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/lazyxds/master/install/lazyxds-egress.yaml
-kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/lazyxds/master/install/lazyxds-controller.yaml
+kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-egress.yaml
+kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-controller.yaml
 ```
 
 These steps install the lazyxds egress and controller into istio-system namespace.
@@ -67,10 +67,10 @@ or use kubectl:
 1. Install istio(version >= 1.10.0), and enable access log for debug purpose.
 
     ```
-    istioctl install --set meshConfig.accessLogFile=/dev/stdout
+    istioctl install -y --set meshConfig.accessLogFile=/dev/stdout
     ```
 
-2. Install lazyxds by following the instructions in [Install Lazyxds egress and controller]().
+2. Install lazyxds by following the instructions in [Install Lazyxds egress and controller](https://github.com/aeraki-framework/aeraki/blob/master/lazyxds/README.md#install-lazyxds-egress-and-controller).
 
 3. Install bookinfo application:
 
@@ -166,4 +166,16 @@ kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/lazy
 
 ## Performance
 
-todo
+We setup two bookinfo applications in one istio mesh with lazyxds installed, the product page in `lazy-on` namespace enable lazy xds, and the another is not.
+Then we use [istio load testing](https://github.com/istio/tools/tree/master/perf/load) to construct large size services increasingly, 
+each load test namespace contains 19 services, each service contains 5 pods.
+
+![performance-test-arch](docs/images/performance-test-arch.png)
+   
+Memory compare:
+   
+![performance-test-mem](docs/images/performance-test-mem.png)
+
+EDS and CDS compare:
+
+![performance-test-xds](docs/images/performance-test-xds.png)
