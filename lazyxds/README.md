@@ -160,8 +160,8 @@ or use kubectl:
 ## Uninstall
 
 ```
-kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/lazyxds/master/install/lazyxds-egress.yaml
-kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/lazyxds/install/lazyxds-controller.yaml
+kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-controller.yaml
+kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-egress.yaml
 ```
 
 ## Performance
