@@ -21,24 +21,23 @@ import (
 
 	"github.com/gogo/protobuf/proto"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
-
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/zhaohuabing/debounce"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
 	// debounceAfter is the delay added to events to wait after a registry event for debouncing.
 	// This will delay the push by at least this interval, plus the time getting subsequent events.
 	// If no change is detected the push will happen, otherwise we'll keep delaying until things settle.
-	debounceAfter = 500 * time.Millisecond
+	debounceAfter = 1 * time.Second
 
 	// debounceMax is the maximum time to wait for events while debouncing.
 	// Defaults to 10 seconds. If events keep showing up with no break for this time, we'll trigger a push.
@@ -84,47 +83,24 @@ func (c *Controller) Run(stop <-chan struct{}) {
 }
 
 func (c *Controller) mainLoop(stop <-chan struct{}) {
-	var timeChan <-chan time.Time
-	var startDebounce time.Time
-	var lastResourceUpdateTime time.Time
-	pushCounter := 0
-	debouncedEvents := 0
-
+	callback := func() {
+		err := c.pushEnvoyFilters2APIServer()
+		if err != nil {
+			controllerLog.Errorf("%v", err)
+			// Retry if failed to push envoyFilters to AP IServer
+			c.ConfigUpdate(istiomodel.EventUpdate)
+		}
+	}
+	debouncer := debounce.New(debounceAfter, debounceMax, callback, stop)
 	for {
 		select {
-		case <-stop:
-			break
 		case e := <-c.pushChannel:
 			controllerLog.Debugf("Receive event from push chanel : %v", e)
-			lastResourceUpdateTime = time.Now()
-			if debouncedEvents == 0 {
-				controllerLog.Debugf("This is the first debounced event")
-				startDebounce = lastResourceUpdateTime
-			}
-			timeChan = time.After(debounceAfter)
-			debouncedEvents++
-		case <-timeChan:
-			controllerLog.Debugf("Receive event from time chanel")
-			eventDelay := time.Since(startDebounce)
-			quietTime := time.Since(lastResourceUpdateTime)
-			// it has been too long since the first debounced event or quiet enough since the last debounced event
-			if eventDelay >= debounceMax || quietTime >= debounceAfter {
-				if debouncedEvents > 0 {
-					pushCounter++
-					controllerLog.Infof("Push debounce stable[%d] %d: %v since last change, %v since last push",
-						pushCounter, debouncedEvents, quietTime, eventDelay)
-					err := c.pushEnvoyFilters2APIServer()
-					if err != nil {
-						controllerLog.Errorf("%v", err)
-						// Retry if failed to push envoyFilters to AP IServer
-						c.ConfigUpdate(istiomodel.EventUpdate)
-					}
-					debouncedEvents = 0
-				}
-			} else {
-				timeChan = time.After(debounceAfter - quietTime)
-			}
+			debouncer.Bounce()
+		case <-stop:
+			break
 		}
+
 	}
 }
 
