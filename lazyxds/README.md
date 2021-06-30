@@ -1,6 +1,6 @@
-# Lazyxds
+# LazyXds
 
-Lazyxds enables Istio only push needed xds to sidecars to reduce resource consumption and speed up xds configuration propagation.
+LazyXds enables Istio only push needed xds to sidecars to reduce resource consumption and speed up xds configuration propagation.
 
 ## Problems to solve
 
@@ -24,13 +24,13 @@ kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/maste
 kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-controller.yaml
 ```
 
-These steps install the lazyxds egress and controller into istio-system namespace.
+The above commands install the lazyxds egress and controller into the istio-system namespace.
 
-## How to enable Lazy xDS
+## How to enable LazyXDS
 
-There are 2 ways to enable lazy xDS: per service, or per namespace. You just need add annotation `lazy-xds: "true"` to the target service or namespace.
+You can choose to enable lazyXDS on some particular services or enable it namespace wide. To enable lazyXDS on a service or a namespace, you just need to add an annotation `lazy-xds: "true"` to the target service or namespace.
 
-### Enable per Service
+### Enable on a Service
 
 ```
 apiVersion: v1
@@ -46,7 +46,7 @@ or use kubectl:
 
 `kubectl annotate service my-service lazy-xds=true --overwrite`
 
-### Enable per Namespace
+### Enable on a Namespace
 
 ```
 apiVersion: v1
@@ -70,7 +70,7 @@ or use kubectl:
     istioctl install -y --set meshConfig.accessLogFile=/dev/stdout
     ```
 
-2. Install lazyxds by following the instructions in [Install Lazyxds egress and controller](https://github.com/aeraki-framework/aeraki/blob/master/lazyxds/README.md#install-lazyxds-egress-and-controller).
+2. Install lazyXds by following the instructions in [Install Lazyxds egress and controller](https://github.com/aeraki-framework/aeraki/blob/master/lazyxds/README.md#install-lazyxds-egress-and-controller).
 
 3. Install bookinfo application:
 
@@ -80,7 +80,7 @@ or use kubectl:
     kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/bookinfo/networking/bookinfo-gateway.yaml
     ```
    
-    Determine the ingress IP, and we use 80 as ingress port by default.
+    Determine the ingress IP, and we use 80 as the ingress port by default.
     ```
     export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
     ```
@@ -101,7 +101,7 @@ or use kubectl:
     172.22.0.9:9080                  HEALTHY     OK                outbound|9080||ratings.default.svc.cluster.local
     ```
 
-4. Enable lazy xds for the productpage service:
+4. Enable lazyXds for the productpage service:
 
     ```
     kubectl annotate service productpage lazy-xds=true --overwrite
@@ -112,7 +112,7 @@ or use kubectl:
     istioctl pc endpoints $PRODUCT_PAGE_POD | grep '9080'
     // no eds show
     ```
-    After enable lazy loading, product page pod will not get any endpoints of bookinfo.
+    Once enabling lazyXds, product page pod won't get any endpoints of bookinfo.
 
 5. Access bookinfo the first time:
 
@@ -128,7 +128,7 @@ or use kubectl:
    
    ![access to egress](docs/images/productpage-accesslog-1.png)
    
-   We can see the first access form product page to details and reviews go to `istio-egressgateway-lazyxds`
+   We can see the first request form product page to details and reviews has been redirected to `istio-egressgateway-lazyxds`
    
    Check the eds of product page again:
    
@@ -139,7 +139,7 @@ or use kubectl:
    172.22.0.8:9080                  HEALTHY     OK                outbound|9080||details.default.svc.cluster.local
    ```
    
-   We can see there are only reviews and details endpoints, which are the endpoints product page just need.
+   Only reviews and details endpoints are in the eds, which are the exact endpoints product page needs.
 
 6. Access bookinfo again:
 
@@ -155,7 +155,7 @@ or use kubectl:
 
    ![access to egress](docs/images/productpage-accesslog-2.png)
    
-   We can see the traffic always go to the target services directly, will not proxy to `istio-egressgateway-lazyxds` anymore.
+   Now the traffic goes directly to the target services since the sidecar proxy already has all the endpoints it needs.
  
 ## Uninstall
 
@@ -166,9 +166,9 @@ kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/mast
 
 ## Performance
 
-We setup two bookinfo applications in one istio mesh with lazyxds installed, the product page in `lazy-on` namespace enable lazy xds, and the another is not.
-Then we use [istio load testing](https://github.com/istio/tools/tree/master/perf/load) to construct large size services increasingly, 
-each load test namespace contains 19 services, each service contains 5 pods.
+We have set up two bookinfo applications in an istio mesh with lazyxds installed, the product page in `lazy-on` namespace has lazyXds enabled, and the other one hasn't.
+Then we use [istio load testing](https://github.com/istio/tools/tree/master/perf/load) to increasingly create a large number of services, 
+each load test namespace contains 19 services, each service contains 5 pods. The following is the test result for your reference:
 
 ![performance-test-arch](docs/images/performance-test-arch.png)
    
