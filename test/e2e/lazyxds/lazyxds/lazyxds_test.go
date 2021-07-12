@@ -354,6 +354,22 @@ var _ = Describe("Enable service Lazy xDS", func() {
 		})
 	})
 
+	Context("Services unmet lazy xds requirements", func() {
+		It("ExternalName type service should always disable lazyxds", func() {
+			sidecars := utils.RunCMD(fmt.Sprintf("kubectl -n %s get sidecar -o jsonpath={..metadata.name}", TestNS))
+
+			Expect(sidecars).NotTo(ContainSubstring("external-name-svc-without-selector"))
+			Expect(sidecars).NotTo(ContainSubstring("external-name-svc-with-selector"))
+		})
+
+		It("Service without selector should always disable lazyxds", func() {
+			sidecars := utils.RunCMD(fmt.Sprintf("kubectl -n %s get sidecar -o jsonpath={..metadata.name}", TestNS))
+
+			Expect(sidecars).NotTo(ContainSubstring("lazyxds-selector-less-svc"))
+		})
+
+	})
+
 	//Context("Headless Service", func() {
 	//	It("Access HTTP service headless-svc first time, should route to lazy xds egress", func() {
 	//		now := time.Now()

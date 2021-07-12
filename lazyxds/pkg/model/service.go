@@ -112,6 +112,13 @@ func (svc *Service) UpdateClusterService(clusterName string, service *corev1.Ser
 		Selector:    service.Spec.Selector,
 	}
 
+	// https://github.com/aeraki-framework/aeraki/issues/83
+	// if a service without selector, the lazy loading is disabled
+	// we always disable lazy loading feature on a service with ExternalName
+	if service.Spec.Type == corev1.ServiceTypeExternalName {
+		cs.Selector = nil
+	}
+
 	for _, servicePort := range service.Spec.Ports {
 		if utils.IsHTTP(servicePort) {
 			cs.HTTPPorts[fmt.Sprint(servicePort.Port)] = struct{}{}
@@ -152,6 +159,7 @@ func (svc *Service) updateSpec() {
 
 	ports := make(map[string]bool)
 	clusterIPSet := make(map[string]bool)
+	svcMustDisableLazy := false
 	for _, cs := range svc.Distribution {
 		for p := range cs.HTTPPorts {
 			if old, ok := ports[p]; ok {
@@ -164,13 +172,22 @@ func (svc *Service) updateSpec() {
 			ports[p] = false
 		}
 
-		if svc.NSLazy == NSLazyStatusDisabled {
-			spec.LazyEnabled = false
-		} else if svc.NSLazy == NSLazyStatusEnabled {
-			spec.LazyEnabled = true
-		} else {
-			spec.LazyEnabled = spec.LazyEnabled || cs.LazyEnabled
+		if len(cs.Selector) == 0 {
+			svcMustDisableLazy = true
 		}
+
+		if svcMustDisableLazy {
+			spec.LazyEnabled = false
+		} else {
+			if svc.NSLazy == NSLazyStatusDisabled {
+				spec.LazyEnabled = false
+			} else if svc.NSLazy == NSLazyStatusEnabled {
+				spec.LazyEnabled = true
+			} else {
+				spec.LazyEnabled = spec.LazyEnabled || cs.LazyEnabled
+			}
+		}
+
 		// if cs.LazyEnabled {
 		spec.LazySelector = cs.Selector // random now, need doc this
 		// }
