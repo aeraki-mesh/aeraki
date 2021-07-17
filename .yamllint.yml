@@ -1,5 +1,12 @@
 ---
 
+# https://github.com/sbaudoin/yamllint/issues/16
+# Support for common YAML templates (specifically Helm)
+ignore: |
+  manifests/charts/aeraki/templates/deployment.yaml
+  manifests/charts/aeraki/templates/service.yaml
+  manifests/charts/aeraki/templates/serviceaccount.yaml
+
 extends: default
 
 rules:
