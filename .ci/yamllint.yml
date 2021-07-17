@@ -3,6 +3,9 @@ extends: default
 
 ignore: |
   customresourcedefinitions.gen.yaml
+  manifests/charts/aeraki/templates/deployment.yaml
+  manifests/charts/aeraki/templates/service.yaml
+  manifests/charts/aeraki/templates/serviceaccount.yaml
 
 yaml-files:
   - '*.yaml'
@@ -12,7 +15,11 @@ rules:
   truthy: disable
   # 80 chars should be enough, but don't fail if a line is longer
   line-length: disable
+  comments-indentation: disable
   indentation:
     spaces: consistent
     indent-sequences: whatever
     check-multi-line-strings: false
+  braces:
+    level: warning
+    max-spaces-inside: 1

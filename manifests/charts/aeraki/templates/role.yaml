@@ -1,0 +1,22 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app: aeraki
+  name: aeraki
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - events
+    verbs:
+      - '*'
+  - verbs:
+      - '*'
+    apiGroups:
+      - coordination.k8s.io
+    resources:
+      - '*'

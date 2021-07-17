@@ -1,0 +1,49 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: aeraki
+  name: aeraki
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+  - apiGroups:
+      - networking.istio.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - redis.aeraki.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+  - apiGroups:
+      - networking.istio.io
+    resources:
+      - virtualservices
+      - destinationrules
+      - envoyfilters
+      - serviceentries
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
