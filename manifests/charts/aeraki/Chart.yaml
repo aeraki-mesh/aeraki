@@ -1,6 +1,6 @@
 apiVersion: v2
 name: aeraki
-description: A Helm chart for Kubernetes
+description: Manage any layer 7 traffic in Istio service mesh!
 
 # A chart can be either an 'application' or a 'library' chart.
 #
