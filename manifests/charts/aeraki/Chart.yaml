@@ -1,10 +1,10 @@
 apiVersion: v2
 name: aeraki
 
-#  Require Istio v1.8 or above
+#  Require Istio v1.10.0 or above
 #  Require smart dns enabled
 #  See https://github.com/aeraki-framework/aeraki/blob/master/test/e2e/common/istio-config.yaml for Istio installation configuration
-description: Manage any layer 7 traffic in Istio service mesh!
+description: Manage any layer 7 traffic in Istio service mesh! 1. Require Istio v1.10.0 or above 2. Require smart dns enabled See https://github.com/aeraki-framework/aeraki/blob/master/test/e2e/common/istio-config.yaml for Istio installation configuration
 
 # A chart can be either an 'application' or a 'library' chart.
 #
