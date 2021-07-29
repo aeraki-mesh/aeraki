@@ -22,6 +22,7 @@ rules:
       - list
   - apiGroups:
       - redis.aeraki.io
+      - dubbo.aeraki.io
     resources:
       - '*'
     verbs:
