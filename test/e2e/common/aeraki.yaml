@@ -88,17 +88,6 @@ rules:
       - list
   - apiGroups:
       - redis.aeraki.io
-    resources:
-      - '*'
-    verbs:
-      - get
-      - watch
-      - list
-      - update
-      - patch
-      - create
-      - delete
-  - apiGroups:
       - dubbo.aeraki.io
     resources:
       - '*'

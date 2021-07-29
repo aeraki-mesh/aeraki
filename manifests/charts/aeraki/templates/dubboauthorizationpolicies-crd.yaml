@@ -1,0 +1,125 @@
+---
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    "helm.sh/resource-policy": keep
+  labels:
+    app: aeraki
+    chart: aeraki
+    heritage: Tiller
+    release: aeraki
+  name: dubboauthorizationpolicies.dubbo.aeraki.io
+spec:
+  group: dubbo.aeraki.io
+  names:
+    categories:
+      - aeraki-io
+      - dubbo-aeraki-io
+    kind: DubboAuthorizationPolicy
+    listKind: DubboAuthorizationPolicyList
+    plural: dubboauthorizationpolicies
+    shortNames:
+      - dap
+    singular: dubboauthorizationpolicy
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          properties:
+            spec:
+              description: DubboAuthorizationPolicy enables access control on Dubbo
+                services.
+              properties:
+                action:
+                  description: Optional.
+                  enum:
+                    - ALLOW
+                    - DENY
+                  type: string
+                rules:
+                  description: Optional.
+                  items:
+                    properties:
+                      from:
+                        description: Optional.
+                        items:
+                          properties:
+                            source:
+                              description: Source specifies the source of a request.
+                              properties:
+                                namespaces:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                notNamespaces:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                notPrincipals:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                principals:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                      to:
+                        description: Optional.
+                        items:
+                          properties:
+                            operation:
+                              description: Operation specifies the operation of a request.
+                              properties:
+                                interfaces:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                methods:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                notInterfaces:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                                notMethods:
+                                  description: Optional.
+                                  items:
+                                    format: string
+                                    type: string
+                                  type: array
+                              type: object
+                          type: object
+                        type: array
+                    type: object
+                  type: array
+              type: object
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+---
