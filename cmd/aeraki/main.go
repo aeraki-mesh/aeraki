@@ -32,17 +32,18 @@ import (
 )
 
 const (
-	defaultIstiodAddr = "istiod.istio-system:15010"
-	defaultNamespace  = "istio-system"
-	defaultElectionID = "aeraki-controller"
-	defaultLogLevel   = "default:info"
+	defaultIstiodAddr        = "istiod.istio-system:15010"
+	defaultNamespace         = "istio-system"
+	defaultElectionID        = "aeraki-controller"
+	defaultLogLevel          = "default:info"
+	defaultConfigStoreSecret = ""
 )
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
 	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The current namespace where Aeraki is deployed")
-	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultNamespace,
+	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultConfigStoreSecret,
 		"The secret to store the Istio kube config store, use the in cluster API server if it's not specified")
 	flag.StringVar(&args.ElectionID, "electionID", defaultElectionID, "ElectionID to elect master controller")
 	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
