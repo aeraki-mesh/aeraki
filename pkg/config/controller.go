@@ -138,7 +138,7 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 					controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
 					return
 				}
-				if len(service.Hosts) > 0 {
+				if len(vs.Hosts) > 0 {
 					for _, host := range service.Hosts {
 						if host == vs.Hosts[0] {
 							for _, port := range service.Ports {
