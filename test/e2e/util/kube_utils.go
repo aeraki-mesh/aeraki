@@ -35,9 +35,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"istio.io/pkg/log"
-
-	"istio.io/istio/istioctl/pkg/multicluster"
-	"istio.io/istio/pkg/kube/secretcontroller"
 )
 
 const (
@@ -995,83 +992,4 @@ func CheckPodRunning(n, name string, kubeconfig string) error {
 	}
 	log.Infof("Got the pod name=%s running!", name)
 	return nil
-}
-
-// ClusterNameFromKubeConfig generates the cluster name from the kubeconfig file path
-func ClusterNameFromKubeConfig(kubeconfig string) string {
-	s := strings.Split(kubeconfig, "/")
-	return s[len(s)-1]
-}
-
-// CreateMultiClusterSecret will create the secret associated with the remote cluster
-func CreateMultiClusterSecret(namespace string, remoteKubeConfig string, localKubeConfig string) error {
-	currentContext, err := ShellMuteOutput("kubectl --kubeconfig=%s config current-context", remoteKubeConfig)
-	if err != nil {
-		return err
-	}
-
-	currentContext = strings.Trim(currentContext, "\n")
-
-	env, err := multicluster.NewEnvironment(remoteKubeConfig, currentContext, os.Stdout, os.Stderr)
-	if err != nil {
-		return err
-	}
-
-	opts := multicluster.RemoteSecretOptions{
-		ClusterName:        ClusterNameFromKubeConfig(remoteKubeConfig),
-		ServiceAccountName: "istio-multi",
-		AuthType:           multicluster.RemoteSecretAuthTypeBearerToken,
-		KubeOptions: multicluster.KubeOptions{
-			Namespace:  namespace,
-			Context:    currentContext,
-			Kubeconfig: remoteKubeConfig,
-		},
-	}
-	config, err := multicluster.CreateRemoteSecret(opts, env)
-	if err != nil {
-		return err
-	}
-	secret, err := ioutil.TempFile("", "")
-	if err != nil {
-		return err
-	}
-	if _, err = secret.WriteString(config); err != nil {
-		return err
-	}
-	if err := secret.Close(); err != nil {
-		return err
-	}
-	log.Infof("Created multi-cluster secret %q for cluster %v", secret.Name(), remoteKubeConfig)
-
-	if _, err := ShellMuteOutput("kubectl --kubeconfig=%v -n %v apply -f %v", localKubeConfig, namespace, secret.Name()); err != nil {
-		return err
-	}
-
-	log.Infof("Secret for cluster %v created in cluster %v\n", remoteKubeConfig, localKubeConfig)
-	return nil
-}
-
-// DeleteMultiClusterSecret delete the remote cluster secret
-func DeleteMultiClusterSecret(namespace string, remoteKubeConfig string, localKubeConfig string) error {
-	secretName := filepath.Base(remoteKubeConfig)
-	_, err := ShellMuteOutput("kubectl delete secret -n %s --kubeconfig=%s -l %v=true",
-		namespace, localKubeConfig, secretcontroller.MultiClusterSecretLabel)
-	if err != nil {
-		log.Errorf("Failed to delete secret %s: %v", secretName, err)
-	} else {
-		log.Infof("Deleted secret %s", secretName)
-	}
-	return err
-}
-
-// ReplaceInConfigMap will modify an existing configmap with the provided sed expression
-func ReplaceInConfigMap(namespace string, configmapName string, sedExpression string, kubeconfig string) error {
-	_, err := ShellMuteOutput("kubectl get configmap/%s -n %s --kubeconfig=%s -o yaml | sed \"%s\" | kubectl replace --kubeconfig=%s -f -",
-		configmapName, namespace, kubeconfig, sedExpression, kubeconfig)
-	if err != nil {
-		log.Errorf("Failed to edit the configmap %s: %v", configmapName, err)
-	} else {
-		log.Infof("Configmap %s updated with sed expression %s", configmapName, sedExpression)
-	}
-	return err
 }

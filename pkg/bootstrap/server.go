@@ -19,27 +19,22 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aeraki-framework/aeraki/plugin/dubbo"
-
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-
-	"k8s.io/client-go/kubernetes"
-
-	"istio.io/pkg/log"
-
-	"github.com/aeraki-framework/aeraki/pkg/config/serviceentry"
-
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
-
 	"github.com/aeraki-framework/aeraki/pkg/config"
+	"github.com/aeraki-framework/aeraki/pkg/config/serviceentry"
+	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/kube/controller"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-framework/aeraki/pkg/xds"
+	"github.com/aeraki-framework/aeraki/plugin/dubbo"
 	"github.com/aeraki-framework/aeraki/plugin/redis"
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	"istio.io/pkg/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -54,6 +49,8 @@ type Server struct {
 	configController       *config.Controller
 	serviceEntryController *serviceentry.Controller
 	envoyFilterController  *envoyfilter.Controller
+	routeController        *xds.Controller
+	xdsServer              *xds.Server
 	crdController          manager.Manager
 	stopCRDController      func()
 }
@@ -71,21 +68,26 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	}
 
 	configController := config.NewController(args.IstiodAddr)
+	serviceEntryController := serviceentry.NewController(ic)
 	envoyFilterController := envoyfilter.NewController(ic, configController.Store, args.Protocols)
-	crdController := controller.NewManager(kubeConfig, args.Namespace, args.ElectionID, func() error {
-		envoyFilterController.ConfigUpdate(model.EventUpdate)
-		return nil
-	})
-
-	cfg := crdController.GetConfig()
-	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(cfg)
-	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
-
 	configController.RegisterEventHandler(args.Protocols, func(_, curr istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdate(event)
 	})
 
-	serviceEntryController := serviceentry.NewController(ic)
+	crdController := controller.NewManager(kubeConfig, args.Namespace, args.ElectionID, func() error {
+		envoyFilterController.ConfigUpdate(model.EventUpdate)
+		return nil
+	})
+	cfg := crdController.GetConfig()
+	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(cfg)
+	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
+
+	routeController := xds.NewController(ic, configController.Store)
+	configController.RegisterEventHandler(args.Protocols, func(prev istioconfig.Config, curr istioconfig.Config,
+		event model.Event) {
+		routeController.ConfigUpdate(prev, curr, event)
+	})
+	xdsServer := xds.NewServer(args.XdsAddr, routeController)
 
 	return &Server{
 		args:                   args,
@@ -93,27 +95,39 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		envoyFilterController:  envoyFilterController,
 		crdController:          crdController,
 		serviceEntryController: serviceEntryController,
+		routeController:        routeController,
+		xdsServer:              xdsServer,
 	}, nil
 }
 
 // Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop channel.
 // This method won't block
 func (s *Server) Start(stop <-chan struct{}) {
-	aerakiLog.Info("Staring Aeraki Server")
+	aerakiLog.Info("staring Aeraki Server")
 
 	go func() {
-		aerakiLog.Infof("Starting Envoy Filter Controller")
+		aerakiLog.Infof("starting Envoy Filter Controller")
 		s.envoyFilterController.Run(stop)
 	}()
 
 	go func() {
-		aerakiLog.Infof("Watching xDS resource changes at %s", s.args.IstiodAddr)
+		aerakiLog.Infof("watching xDS resource changes at %s", s.args.IstiodAddr)
 		s.configController.Run(stop)
 	}()
 
 	go func() {
-		aerakiLog.Infof("Starting ServiceEntry controller")
+		aerakiLog.Infof("starting ServiceEntry controller")
 		s.serviceEntryController.Run(stop)
+	}()
+
+	go func() {
+		aerakiLog.Infof("starting route controller")
+		s.routeController.Run(stop)
+	}()
+
+	go func() {
+		aerakiLog.Infof("starting xDS server, listening on %d", s.args.XdsAddr)
+		s.xdsServer.Run(stop)
 	}()
 
 	ctx, cancel := context.WithCancel(context.Background())

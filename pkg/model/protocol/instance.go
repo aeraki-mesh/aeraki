@@ -36,6 +36,8 @@ const (
 	Kafka Instance = "Kafka"
 	// Zookeeper declares that the port carries Zookeeper traffic.
 	Zookeeper Instance = "Zookeeper"
+	// MetaProtocol declares that the port carries MetaProtocol traffic.
+	MetaProtocol Instance = "MetaProtocol"
 	// Unsupported - value to signify that the protocol is unsupported.
 	Unsupported Instance = "UnsupportedProtocol"
 )
@@ -57,6 +59,8 @@ func Parse(s string) Instance {
 		return Kafka
 	case "zookeeper":
 		return Zookeeper
+	case "metaprotocol":
+		return MetaProtocol
 	}
 
 	return Unsupported

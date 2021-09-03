@@ -94,14 +94,14 @@ func NewController(
 			}
 
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			controllerLog.Infof("Processing update: %s", key)
+			controllerLog.Infof("processing update: %s", key)
 			if err == nil {
 				queue.Add(key)
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
 			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			controllerLog.Infof("Processing delete: %s", key)
+			controllerLog.Infof("processing delete: %s", key)
 			if err == nil {
 				queue.Add(key)
 			}
@@ -144,10 +144,10 @@ func (c *Controller) processNextItem() bool {
 		// No error, reset the ratelimit counters
 		c.queue.Forget(key)
 	} else if c.queue.NumRequeues(key) < maxRetries {
-		controllerLog.Errorf("Error processing %s (will retry): %v", key, err)
+		controllerLog.Errorf("error processing %s (will retry): %v", key, err)
 		c.queue.AddRateLimited(key)
 	} else {
-		controllerLog.Errorf("Error processing %s (giving up): %v", key, err)
+		controllerLog.Errorf("error processing %s (giving up): %v", key, err)
 		c.queue.Forget(key)
 		utilruntime.HandleError(err)
 	}

@@ -110,7 +110,7 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 			service, ok := curr.Spec.(*networking.ServiceEntry)
 			if !ok {
 				// This should never happen
-				controllerLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
+				controllerLog.Errorf("failed in getting a virtual service: %v", curr.Name)
 				return
 			}
 			for _, port := range service.Ports {
@@ -120,16 +120,16 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 				handler(prev, curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
-			controllerLog.Infof("Virtual Service changed: %s %s", event.String(), curr.Name)
+			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
 			vs, ok := curr.Spec.(*networking.VirtualService)
 			if !ok {
 				// This should never happen
-				controllerLog.Errorf("Failed in getting a virtual service: %v", event.String(), curr.Name)
+				controllerLog.Errorf("failed in getting a virtual service: %v", event.String(), curr.Name)
 				return
 			}
 			serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 			if err != nil {
-				controllerLog.Errorf("Failed to list configs: %v", err)
+				controllerLog.Errorf("failed to list configs: %v", err)
 				return
 			}
 			for _, config := range serviceEntries {

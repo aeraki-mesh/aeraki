@@ -21,6 +21,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/aeraki-framework/aeraki/plugin/metaprotocol"
+
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/plugin/kafka"
 	"github.com/aeraki-framework/aeraki/plugin/thrift"
@@ -32,10 +34,11 @@ import (
 )
 
 const (
-	defaultIstiodAddr        = "istiod.istio-system:15010"
-	defaultNamespace         = "istio-system"
-	defaultElectionID        = "aeraki-controller"
-	defaultLogLevel          = "default:info"
+	defaultIstiodAddr = "istiod.istio-system:15010"
+	defaultNamespace  = "istio-system"
+	defaultXdsAddr    = ":15010"
+	defaultElectionID = "aeraki-controller"
+	defaultLogLevel   = "all:info"
 	defaultConfigStoreSecret = ""
 )
 
@@ -43,11 +46,16 @@ func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
 	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The current namespace where Aeraki is deployed")
+	flag.StringVar(&args.XdsAddr, "xds-listen-address", defaultXdsAddr, "Istiod xds server port")
 	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultConfigStoreSecret,
 		"The secret to store the Istio kube config store, use the in cluster API server if it's not specified")
 	flag.StringVar(&args.ElectionID, "electionID", defaultElectionID, "ElectionID to elect master controller")
 	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
 	flag.Parse()
+
+	flag.VisitAll(func(flag *flag.Flag) {
+		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
+	})
 
 	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.
@@ -67,9 +75,10 @@ func main() {
 
 func initGenerators() map[protocol.Instance]envoyfilter.Generator {
 	return map[protocol.Instance]envoyfilter.Generator{
-		protocol.Thrift:    thrift.NewGenerator(),
-		protocol.Kafka:     kafka.NewGenerator(),
-		protocol.Zookeeper: zookeeper.NewGenerator(),
+		protocol.Thrift:       thrift.NewGenerator(),
+		protocol.Kafka:        kafka.NewGenerator(),
+		protocol.Zookeeper:    zookeeper.NewGenerator(),
+		protocol.MetaProtocol: metaprotocol.NewGenerator(),
 	}
 }
 
