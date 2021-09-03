@@ -95,7 +95,7 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 	for {
 		select {
 		case e := <-c.pushChannel:
-			controllerLog.Debugf("Receive event from push chanel : %v", e)
+			controllerLog.Debugf("receive event from push chanel : %v", e)
 			debouncer.Bounce()
 		case <-stop:
 			break
@@ -116,7 +116,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 
 	for _, oldEnvoyFilter := range existingEnvoyFilters.Items {
 		if newEnvoyFilter, ok := generatedEnvoyFilters[oldEnvoyFilter.Name]; !ok {
-			controllerLog.Infof("Deleting EnvoyFilter: %v", model.Struct2JSON(oldEnvoyFilter))
+			controllerLog.Infof("deleting EnvoyFilter: %v", model.Struct2JSON(oldEnvoyFilter))
 			err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name,
 				v1.DeleteOptions{})
 			if err != nil {
@@ -124,7 +124,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 			}
 		} else {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
-				controllerLog.Infof("Updating EnvoyFilter: %v", model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
+				controllerLog.Infof("updating EnvoyFilter: %v", model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
 				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Update(context.TODO(),
 					c.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
 					v1.UpdateOptions{FieldManager: aerakiFieldManager})
@@ -132,7 +132,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 					err = fmt.Errorf("failed to update EnvoyFilter: %v", err)
 				}
 			} else {
-				controllerLog.Infof("EnvoyFilter: %s unchanged", oldEnvoyFilter.Name)
+				controllerLog.Infof("envoyFilter: %s unchanged", oldEnvoyFilter.Name)
 			}
 			delete(generatedEnvoyFilters, oldEnvoyFilter.Name)
 		}
@@ -142,7 +142,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Create(context.TODO(), c.toEnvoyFilterCRD(wrapper,
 			nil),
 			v1.CreateOptions{FieldManager: aerakiFieldManager})
-		controllerLog.Infof("Creating EnvoyFilter: %v", model.Struct2JSON(*wrapper.Envoyfilter))
+		controllerLog.Infof("creating EnvoyFilter: %v", model.Struct2JSON(*wrapper.Envoyfilter))
 		if err != nil {
 			err = fmt.Errorf("failed to create EnvoyFilter: %v", err)
 		}
@@ -209,6 +209,8 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 					envoyFilters[wrapper.Name] = wrapper
 				}
 				break
+			} else {
+				controllerLog.Infof("no generator found for port: %s", port.Name)
 			}
 		}
 	}

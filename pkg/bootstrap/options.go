@@ -22,6 +22,7 @@ import (
 // AerakiArgs provides all of the configuration parameters for the Aeraki service.
 type AerakiArgs struct {
 	IstiodAddr        string
+	XdsAddr           string
 	Namespace         string
 	ConfigStoreSecret string
 	ElectionID        string
