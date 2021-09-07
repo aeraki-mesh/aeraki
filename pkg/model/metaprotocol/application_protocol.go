@@ -24,8 +24,8 @@ import (
 
 var lock sync.Mutex
 var applicationProtocols = map[string]string{
-	//"dubbo":  "aeraki.meta_protocol.codec.dubbo",
-	//"thrift": "aeraki.meta_protocol.codec.thrift",
+	"dubbo":  "aeraki.meta_protocol.codec.dubbo",
+	"thrift": "aeraki.meta_protocol.codec.thrift",
 }
 
 // SetApplicationProtocolCodec sets the codec for a specific protocol
