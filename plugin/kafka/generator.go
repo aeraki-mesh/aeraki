@@ -29,11 +29,11 @@ func NewGenerator() *Generator {
 }
 
 // Generate create EnvoyFilters for Dubbo services
-func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
+func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	return envoyfilter.GenerateInsertBeforeNetworkFilter(
 		context.ServiceEntry,
 		buildOutboundProxy(context),
 		buildInboundProxy(context),
 		"envoy.filters.network.kafka_broker",
-		"type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker")
+		"type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker"), nil
 }

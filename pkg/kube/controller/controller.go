@@ -49,6 +49,10 @@ func NewManager(kubeConfig *rest.Config, namespace string, electionID string,
 	if err != nil {
 		controllerLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
 	}
+	err = addApplicationProtocolController(m, triggerPush)
+	if err != nil {
+		controllerLog.Fatalf("could not add ApplicationProtocolController: %e", err)
+	}
 	err = scheme.AddToScheme(m.GetScheme())
 	if err != nil {
 		controllerLog.Fatalf("could not add schema: %e", err)

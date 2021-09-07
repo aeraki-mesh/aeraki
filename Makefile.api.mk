@@ -80,6 +80,7 @@ protoc_gen_k8s_support_plugins := --jsonshim_out=$(gogo_mapping):$(out_path) --d
 
 gen: generate-redis \
      generate-dubbo \
+     generate-metaprotocol \
      generate-openapi-schema \
      generate-openapi-crd \
      generate-k8s-client
@@ -133,14 +134,38 @@ clean-dubbo:
 
 
 #####################
+# api/metaprotocol/v1alpha1/...
+#####################
+
+metaprotocol_path := api/metaprotocol/v1alpha1
+metaprotocol_protos := $(wildcard $(metaprotocol_path)/*.proto)
+metaprotocol_pb_gos := $(metaprotocol_protos:.proto=.pb.go)
+metaprotocol_pb_docs := $(metaprotocol_protos:.proto=.pb.html)
+metaprotocol_openapi := $(metaprotocol_protos:.proto=.gen.json)
+metaprotocol_k8s_gos := \
+	$(patsubst $(metaprotocol_path)/%.proto,$(metaprotocol_path)/%_json.gen.go,$(shell grep -l "^ *oneof " $(metaprotocol_protos))) \
+	$(patsubst $(metaprotocol_path)/%.proto,$(metaprotocol_path)/%_deepcopy.gen.go,$(shell grep -l "+kubetype-gen" $(metaprotocol_protos)))
+
+$(metaprotocol_pb_gos) $(metaprotocol_pb_docs) $(metaprotocol_k8s_gos): $(metaprotocol_protos)
+	@$(protolock) status
+	@$(protoc) $(gogofast_plugin) $(protoc_gen_k8s_support_plugins) $(protoc_gen_docs_plugin)$(metaprotocol_path) $^
+	@cp -r $(out_path)/$(module_name)/api/metaprotocol/v1alpha1/* api/metaprotocol/v1alpha1 && rm -rf $(out_path)/$(module_name)/api/metaprotocol/v1alpha1
+
+generate-metaprotocol: $(metaprotocol_pb_gos) $(metaprotocol_pb_docs)
+
+clean-metaprotocol:
+	@rm -fr $(metaprotocol_pb_gos) $(metaprotocol_pb_docs)
+
+
+#####################
 # OpenAPI Schema
 #####################
 
 all_protos := \
-	$(redis_protos) $(dubbo_protos)
+	$(redis_protos) $(dubbo_protos) $(metaprotocol_protos)
 
 all_openapi := \
-	$(redis_openapi) $(dubbo_openapi)
+	$(redis_openapi) $(dubbo_openapi) $(metaprotocol_openapi)
 
 all_openapi_crd :=./crd/kubernetes/customresourcedefinitions.gen.yaml
 
@@ -179,6 +204,7 @@ comma := ,
 kube_source_packages = $(subst $(space),$(empty), \
 	$(module_name)/api/redis/v1alpha1 \
 	$(space), $(module_name)/api/dubbo/v1alpha1 \
+	$(space), $(module_name)/api/metaprotocol/v1alpha1 \
 	)
 
 # base output package for generated files
@@ -190,6 +216,7 @@ kube_api_base_package = $(kube_base_output_package)/apis
 kube_api_packages = $(subst $(space),$(empty), \
 	$(kube_api_base_package)/redis/v1alpha1 \
 	$(space), $(kube_api_base_package)/dubbo/v1alpha1 \
+	$(space), $(kube_api_base_package)/metaprotocol/v1alpha1 \
 	)
 # base output package used by kubernetes client-gen
 kube_clientset_package = $(kube_base_output_package)/clientset

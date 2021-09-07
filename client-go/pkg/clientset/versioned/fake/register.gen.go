@@ -18,6 +18,7 @@ package fake
 
 import (
 	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	metaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -31,6 +32,7 @@ var codecs = serializer.NewCodecFactory(scheme)
 
 var localSchemeBuilder = runtime.SchemeBuilder{
 	dubbov1alpha1.AddToScheme,
+	metaprotocolv1alpha1.AddToScheme,
 	redisv1alpha1.AddToScheme,
 }
 

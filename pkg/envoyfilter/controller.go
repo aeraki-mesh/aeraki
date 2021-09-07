@@ -204,9 +204,15 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := c.generators[instance]; ok {
-				envoyFilterWrappers := generator.Generate(context)
-				for _, wrapper := range envoyFilterWrappers {
-					envoyFilters[wrapper.Name] = wrapper
+				envoyFilterWrappers, err := generator.Generate(context)
+				if err != nil {
+					controllerLog.Errorf("failed to generate envoy filter: service: %s, port: %s, error: %v",
+						config.Name,
+						port.Name, err)
+				} else {
+					for _, wrapper := range envoyFilterWrappers {
+						envoyFilters[wrapper.Name] = wrapper
+					}
 				}
 				break
 			} else {
