@@ -55,7 +55,7 @@ func setup() {
 	util.KubeApply("redis", "testdata/redisdestination.yaml", "")
 	util.WaitForDeploymentsReady("redis-client", 10*time.Minute, "")
 	// wait for sidecar sync xds from pilot
-	time.Sleep(30 * time.Second)
+	time.Sleep(10 * time.Second)
 }
 
 func shutdown() {

@@ -75,23 +75,23 @@ var (
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			switch old := e.ObjectOld.(type) {
 			case *v1alpha1.RedisService:
-				new, ok := e.ObjectNew.(*v1alpha1.RedisService)
+				newSvc, ok := e.ObjectNew.(*v1alpha1.RedisService)
 				if !ok {
 					return false
 				}
-				if !reflect.DeepEqual(old.Spec, new.Spec) ||
-					old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if !reflect.DeepEqual(old.Spec, newSvc.Spec) ||
+					old.GetDeletionTimestamp() != newSvc.GetDeletionTimestamp() ||
+					old.GetGeneration() != newSvc.GetGeneration() {
 					return true
 				}
 			case *v1alpha1.RedisDestination:
-				newFilter, ok := e.ObjectNew.(*v1alpha1.RedisDestination)
+				newDst, ok := e.ObjectNew.(*v1alpha1.RedisDestination)
 				if !ok {
 					return false
 				}
-				if !reflect.DeepEqual(old.Spec, newFilter.Spec) ||
-					old.GetDeletionTimestamp() != newFilter.GetDeletionTimestamp() ||
-					old.GetGeneration() != newFilter.GetGeneration() {
+				if !reflect.DeepEqual(old.Spec, newDst.Spec) ||
+					old.GetDeletionTimestamp() != newDst.GetDeletionTimestamp() ||
+					old.GetGeneration() != newDst.GetGeneration() {
 					return true
 				}
 			default:
