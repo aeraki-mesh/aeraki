@@ -126,7 +126,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting xDS server, listening on %d", s.args.XdsAddr)
+		aerakiLog.Infof("starting xDS server, listening on %s", s.args.XdsAddr)
 		s.xdsServer.Run(stop)
 	}()
 
