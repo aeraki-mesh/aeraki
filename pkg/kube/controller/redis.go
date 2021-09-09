@@ -73,25 +73,25 @@ var (
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
-			switch oldFilter := e.ObjectOld.(type) {
+			switch old := e.ObjectOld.(type) {
 			case *v1alpha1.RedisService:
-				newFilter, ok := e.ObjectNew.(*v1alpha1.RedisService)
+				new, ok := e.ObjectNew.(*v1alpha1.RedisService)
 				if !ok {
 					return false
 				}
-				if !reflect.DeepEqual(oldFilter.Spec, newFilter.Spec) ||
-					oldFilter.GetDeletionTimestamp() != newFilter.GetDeletionTimestamp() ||
-					oldFilter.GetGeneration() != newFilter.GetGeneration() {
+				if !reflect.DeepEqual(old.Spec, new.Spec) ||
+					old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+					old.GetGeneration() != new.GetGeneration() {
 					return true
 				}
 			case *v1alpha1.RedisDestination:
-				newFilter, ok := e.ObjectNew.(*v1alpha1.RedisDestination)
+				new, ok := e.ObjectNew.(*v1alpha1.RedisDestination)
 				if !ok {
 					return false
 				}
-				if !reflect.DeepEqual(oldFilter.Spec, newFilter.Spec) ||
-					oldFilter.GetDeletionTimestamp() != newFilter.GetDeletionTimestamp() ||
-					oldFilter.GetGeneration() != newFilter.GetGeneration() {
+				if !reflect.DeepEqual(old.Spec, new.Spec) ||
+					old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+					old.GetGeneration() != new.GetGeneration() {
 					return true
 				}
 			default:
