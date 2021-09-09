@@ -54,7 +54,9 @@ e2e-kafka-zookeeper:
 	go test -v github.com/aeraki-framework/aeraki/test/e2e/kafka/...
 e2e-redis:
 	go test -v github.com/aeraki-framework/aeraki/test/e2e/redis/...
-e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e-redis
+e2e-metaprotocol:
+	go test -v github.com/aeraki-framework/aeraki/test/e2e/metaprotocol/...
+e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e-redis e2e-metaprotocol
 .PHONY: build docker-build docker-push clean style-check lint e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e
 
 # lazyxds

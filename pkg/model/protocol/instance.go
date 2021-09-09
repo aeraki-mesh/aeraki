@@ -86,6 +86,16 @@ func (i Instance) IsThrift() bool {
 	}
 }
 
+// IsMetaProtocol is true for protocols that use MetaProtocol as transport protocol
+func (i Instance) IsMetaProtocol() bool {
+	switch i {
+	case MetaProtocol:
+		return true
+	default:
+		return false
+	}
+}
+
 // IsUnsupported is true for protocols that are not supported
 func (i Instance) IsUnsupported() bool {
 	return i == Unsupported

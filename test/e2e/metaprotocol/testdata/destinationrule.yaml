@@ -1,0 +1,20 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dubbo-sample-provider
+spec:
+  host: org.apache.dubbo.samples.basic.api.demoservice
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+  - labels:
+      service_group: batchjob
+    name: batchjob
+  - labels:
+      service_group: user
+    name: user

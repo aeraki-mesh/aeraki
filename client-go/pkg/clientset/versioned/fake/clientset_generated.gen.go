@@ -20,6 +20,8 @@ import (
 	clientset "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
 	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 	fakedubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1/fake"
+	metaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1"
+	fakemetaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1/fake"
 	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 	fakeredisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -79,6 +81,11 @@ var _ clientset.Interface = &Clientset{}
 // DubboV1alpha1 retrieves the DubboV1alpha1Client
 func (c *Clientset) DubboV1alpha1() dubbov1alpha1.DubboV1alpha1Interface {
 	return &fakedubbov1alpha1.FakeDubboV1alpha1{Fake: &c.Fake}
+}
+
+// MetaprotocolV1alpha1 retrieves the MetaprotocolV1alpha1Client
+func (c *Clientset) MetaprotocolV1alpha1() metaprotocolv1alpha1.MetaprotocolV1alpha1Interface {
+	return &fakemetaprotocolv1alpha1.FakeMetaprotocolV1alpha1{Fake: &c.Fake}
 }
 
 // RedisV1alpha1 retrieves the RedisV1alpha1Client

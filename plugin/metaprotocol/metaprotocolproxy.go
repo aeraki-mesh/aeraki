@@ -16,13 +16,21 @@ package metaprotocol
 
 import (
 	"github.com/aeraki-framework/aeraki/pkg/model"
+	metaprotocolmodel "github.com/aeraki-framework/aeraki/pkg/model/metaprotocol"
 	metaprotocol "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 )
 
-func buildOutboundProxy(context *model.EnvoyFilterContext) *metaprotocol.MetaProtocolProxy {
-	applicationProtocol := getApplicationProtocol(context.ServiceEntry.Spec.Ports[0].Name)
-	codec := getCodec(applicationProtocol)
+func buildOutboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaProtocolProxy, error) {
+	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(context.ServiceEntry.Spec.Ports[0].
+		Name)
+	if err != nil {
+		return nil, err
+	}
+	codec, err := metaprotocolmodel.GetApplicationProtocolCodec(applicationProtocol)
+	if err != nil {
+		return nil, err
+	}
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionOutbound, "",
 			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
@@ -54,17 +62,23 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) *metaprotocol.MetaPro
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
-	}
+	}, nil
 }
 
-func buildInboundProxy(context *model.EnvoyFilterContext) *metaprotocol.MetaProtocolProxy {
+func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaProtocolProxy, error) {
 	route, err := buildInboundRouteConfig(context)
 	if err != nil {
-		generatorLog.Errorf("Failed to generate MetaProtocol EnvoyFilter: %v, %v", context.ServiceEntry, err)
-		return nil
+		return nil, err
 	}
-	applicationProtocol := getApplicationProtocol(context.ServiceEntry.Spec.Ports[0].Name)
-	codec := getCodec(applicationProtocol)
+	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(context.ServiceEntry.Spec.Ports[0].
+		Name)
+	if err != nil {
+		return nil, err
+	}
+	codec, err := metaprotocolmodel.GetApplicationProtocolCodec(applicationProtocol)
+	if err != nil {
+		return nil, err
+	}
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
 			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
@@ -75,5 +89,5 @@ func buildInboundProxy(context *model.EnvoyFilterContext) *metaprotocol.MetaProt
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
-	}
+	}, nil
 }

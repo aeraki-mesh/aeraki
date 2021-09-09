@@ -88,7 +88,7 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 		if err != nil {
 			controllerLog.Errorf("%v", err)
 			// Retry if failed to push envoyFilters to AP IServer
-			c.ConfigUpdate(istiomodel.EventUpdate)
+			c.ConfigUpdated(istiomodel.EventUpdate)
 		}
 	}
 	debouncer := debounce.New(debounceAfter, debounceMax, callback, stop)
@@ -204,9 +204,15 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := c.generators[instance]; ok {
-				envoyFilterWrappers := generator.Generate(context)
-				for _, wrapper := range envoyFilterWrappers {
-					envoyFilters[wrapper.Name] = wrapper
+				envoyFilterWrappers, err := generator.Generate(context)
+				if err != nil {
+					controllerLog.Errorf("failed to generate envoy filter: service: %s, port: %s, error: %v",
+						config.Name,
+						port.Name, err)
+				} else {
+					for _, wrapper := range envoyFilterWrappers {
+						envoyFilters[wrapper.Name] = wrapper
+					}
 				}
 				break
 			} else {
@@ -243,7 +249,7 @@ func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry)
 	return nil, nil
 }
 
-// ConfigUpdate sends a config change event to the pushChannel of connections
-func (c *Controller) ConfigUpdate(event istiomodel.Event) {
+// ConfigUpdated sends a config change event to the pushChannel to trigger the generation of envoyfilters
+func (c *Controller) ConfigUpdated(event istiomodel.Event) {
 	c.pushChannel <- event
 }

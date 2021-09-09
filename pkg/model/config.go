@@ -1,6 +1,7 @@
 package model
 
 import (
+	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	networking "istio.io/api/networking/v1alpha3"
 	istioconfig "istio.io/istio/pkg/config"
 )
@@ -37,4 +38,9 @@ type EnvoyFilterContext struct {
 	// Only one VirtualService is allowed for a Service.
 	// The value of VirtualService is nil in case that no VirtualService defined for the service.
 	VirtualService *VirtualServiceWrapper
+
+	// VirtualService is the related VirtualService of the ServiceEntry, which defines the routing rules for the service.
+	// Only one VirtualService is allowed for a Service.
+	// The value of VirtualService is nil in case that no VirtualService defined for the service.
+	MetaRouter *metaprotocol.MetaRouter
 }

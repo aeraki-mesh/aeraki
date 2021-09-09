@@ -15,7 +15,6 @@
 package controller
 
 import (
-	"github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/scheme"
 	"istio.io/pkg/log"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -24,8 +23,7 @@ import (
 var controllerLog = log.RegisterScope("controller", "crd controller", 0)
 
 // NewManager create a manager to manager all crd controllers.
-func NewManager(kubeConfig *rest.Config, namespace string, electionID string,
-	triggerPush func() error) manager.Manager {
+func NewManager(kubeConfig *rest.Config, namespace string, electionID string) (manager.Manager, error) {
 	mgrOpt := manager.Options{
 		MetricsBindAddress:      "0",
 		LeaderElection:          true,
@@ -34,24 +32,32 @@ func NewManager(kubeConfig *rest.Config, namespace string, electionID string,
 	}
 	m, err := manager.New(kubeConfig, mgrOpt)
 	if err != nil {
-		controllerLog.Fatalf("could not create a controller manager: %v", err)
+		return nil, err
 	}
 
-	err = addRedisServiceController(m, triggerPush)
-	if err != nil {
-		controllerLog.Fatalf("could not add RedisServiceController: %e", err)
-	}
-	err = addRedisDestinationController(m, triggerPush)
-	if err != nil {
-		controllerLog.Fatalf("could not add RedisDestinationController: %e", err)
-	}
-	err = addDubboAuthorizationPolicyController(m, triggerPush)
-	if err != nil {
-		controllerLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
-	}
-	err = scheme.AddToScheme(m.GetScheme())
-	if err != nil {
-		controllerLog.Fatalf("could not add schema: %e", err)
-	}
-	return m
+	//err = addRedisServiceController(m, triggerPush)
+	//if err != nil {
+	//	controllerLog.Fatalf("could not add RedisServiceController: %e", err)
+	//}
+	//err = addRedisDestinationController(m, triggerPush)
+	//if err != nil {
+	//	controllerLog.Fatalf("could not add RedisDestinationController: %e", err)
+	//}
+	//err = addDubboAuthorizationPolicyController(m, triggerPush)
+	//if err != nil {
+	//	controllerLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
+	//}
+	//err = addApplicationProtocolController(m, triggerPush)
+	//if err != nil {
+	//	controllerLog.Fatalf("could not add ApplicationProtocolController: %e", err)
+	//}
+	//err = addMetaRouterController(m, triggerPush)
+	//if err != nil {
+	//	controllerLog.Fatalf("could not add MetaRouterController: %e", err)
+	//}
+	//err = scheme.AddToScheme(m.GetScheme())
+	//if err != nil {
+	//	controllerLog.Fatalf("could not add schema: %e", err)
+	//}
+	return m, nil
 }

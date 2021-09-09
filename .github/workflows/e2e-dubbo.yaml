@@ -1,5 +1,4 @@
 ---
-
 name: e2e-dubbo
 
 on:
@@ -21,7 +20,7 @@ env:
 
 jobs:
   TestSidecarOutboundConfig:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -50,7 +49,7 @@ jobs:
       - name: test
         run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestSidecarOutboundConfig
   TestSidecarInboundConfig:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -79,7 +78,7 @@ jobs:
       - name: test
         run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestSidecarInboundConfig
   TestVersionRouting:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -108,7 +107,7 @@ jobs:
       - name: test
         run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestVersionRouting
   TestMethodRouting:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true
@@ -137,7 +136,7 @@ jobs:
       - name: test
         run: go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/ -run TestMethodRouting
   TestMultipleInterfacesInAProcess:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
       fail-fast: true

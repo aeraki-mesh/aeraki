@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	v1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	metaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
@@ -54,6 +55,12 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=dubbo.aeraki.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("dubboauthorizationpolicies"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Dubbo().V1alpha1().DubboAuthorizationPolicies().Informer()}, nil
+
+		// Group=metaprotocol.aeraki.io, Version=v1alpha1
+	case metaprotocolv1alpha1.SchemeGroupVersion.WithResource("applicationprotocols"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Metaprotocol().V1alpha1().ApplicationProtocols().Informer()}, nil
+	case metaprotocolv1alpha1.SchemeGroupVersion.WithResource("metarouters"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Metaprotocol().V1alpha1().MetaRouters().Informer()}, nil
 
 		// Group=redis.aeraki.io, Version=v1alpha1
 	case redisv1alpha1.SchemeGroupVersion.WithResource("redisdestinations"):
