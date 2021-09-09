@@ -61,7 +61,7 @@ var (
 )
 
 // Generate redis envoy filter
-func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters []*model.EnvoyFilterWrapper) {
+func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters []*model.EnvoyFilterWrapper, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	defer cancel()
 	se := filterContext.ServiceEntry.Spec
@@ -73,7 +73,7 @@ func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters [
 			}
 		}
 	}
-	return filters
+	return filters, nil
 }
 
 func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext, targetPort *networking.Port) []*model.EnvoyFilterWrapper {

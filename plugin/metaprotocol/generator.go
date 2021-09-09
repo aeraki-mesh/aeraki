@@ -17,10 +17,7 @@ package metaprotocol
 import (
 	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-framework/aeraki/pkg/model"
-	"istio.io/pkg/log"
 )
-
-var generatorLog = log.RegisterScope("metaprotocol-generator", "metaprotocol generator", 0)
 
 // Generator defines a MetaProtocol envoyfilter Generator
 type Generator struct {
@@ -32,11 +29,19 @@ func NewGenerator() *Generator {
 }
 
 // Generate create EnvoyFilters for MetaProtocol services
-func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
+func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
+	outboundProxy, err := buildOutboundProxy(context)
+	if err != nil {
+		return nil, err
+	}
+	inboundProxy, err := buildInboundProxy(context)
+	if err != nil {
+		return nil, err
+	}
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry,
-		buildOutboundProxy(context),
-		buildInboundProxy(context),
+		outboundProxy,
+		inboundProxy,
 		"envoy.filters.network.meta_protocol_proxy",
-		"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy")
+		"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy"), nil
 }

@@ -29,11 +29,11 @@ func NewGenerator() *Generator {
 }
 
 // Generate create EnvoyFilters for Dubbo services
-func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
+func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	return envoyfilter.GenerateInsertBeforeNetworkFilter(
 		context.ServiceEntry,
 		buildOutboundProxy(context),
 		buildInboundProxy(context),
 		"envoy.filters.network.zookeeper_proxy",
-		"type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy")
+		"type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy"), nil
 }

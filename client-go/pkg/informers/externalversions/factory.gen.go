@@ -24,6 +24,7 @@ import (
 	versioned "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
 	dubbo "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/dubbo"
 	internalinterfaces "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
+	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/metaprotocol"
 	redis "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/redis"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -172,11 +173,16 @@ type SharedInformerFactory interface {
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
 	Dubbo() dubbo.Interface
+	Metaprotocol() metaprotocol.Interface
 	Redis() redis.Interface
 }
 
 func (f *sharedInformerFactory) Dubbo() dubbo.Interface {
 	return dubbo.New(f, f.namespace, f.tweakListOptions)
+}
+
+func (f *sharedInformerFactory) Metaprotocol() metaprotocol.Interface {
+	return metaprotocol.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Redis() redis.Interface {

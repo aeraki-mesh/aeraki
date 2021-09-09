@@ -1,0 +1,178 @@
+// Copyright Aeraki Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+syntax = "proto3";
+
+import "google/api/field_behavior.proto";
+
+// $schema: metaprotocol.aeraki.io.v1alpha1.MetaRouter
+// $title: MetaRouter
+// $description: MetaRouter defines route policies for MetaProtocol proxy.
+//
+// MetaRouter defines route policies for MetaProtocol proxy.
+//
+// ```yaml
+// apiVersion: metaprotocol.aeraki.io/v1alpha1
+// kind: MetaRouter
+// metadata:
+//   name: traffic-split
+//   namespace: istio-system
+// spec:
+//   hosts:
+//   - org.apache.dubbo.samples.basic.api.demoservice
+//   routes:
+//   - name: v1
+//     match:
+//       attributes:
+//         interface:
+//           exact: org.apache.dubbo.samples.basic.api.DemoService
+//         method:
+//           exact: sayHello
+//     route:
+//     - destination:
+//         host: org.apache.dubbo.samples.basic.api.demoservice
+//         subset: v1
+//
+// ```
+package metaprotocol.aeraki.io.v1alpha1;
+
+option go_package = "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1";
+
+// MetaRouter defines route policies for MetaProtocol proxy.
+//
+// <!-- crd generation tags
+// +cue-gen:MetaRouter:groupName:metaprotocol.aeraki.io
+// +cue-gen:MetaRouter:version:v1alpha1
+// +cue-gen:MetaRouter:storageVersion
+// +cue-gen:MetaRouter:annotations:helm.sh/resource-policy=keep
+// +cue-gen:MetaRouter:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
+// +cue-gen:MetaRouter:subresource:status
+// +cue-gen:MetaRouter:scope:Namespaced
+// +cue-gen:MetaRouter:resource:categories=aeraki-io,metaprotocol-aeraki-io
+// +cue-gen:MetaRouter:preserveUnknownFields:false
+// -->
+//
+// <!-- go code generation tags
+// +kubetype-gen
+// +kubetype-gen:groupVersion=metaprotocol.aeraki.io/v1alpha1
+// +genclient
+// +k8s:deepcopy-gen=true
+// -->
+message MetaRouter {
+  repeated string hosts = 1;
+  repeated MetaRoute routes = 3;
+}
+
+// Describes match conditions and actions for routing MetaProtocol.
+message MetaRoute {
+  // The name assigned to the route for debugging purposes.
+  string name = 1;
+
+  // Match conditions to be satisfied for the rule to be activated.
+  // All conditions inside a single match block have AND semantic.
+  MetaRouteMatch match = 2;
+
+  // A Route rule can forward (default) traffic. The forwarding target
+  // can be one of several versions of a service (see glossary in
+  // beginning of document). Weights associated with the service version
+  // determine the proportion of traffic it receives.
+  repeated MetaRouteDestination route = 3;
+
+  //MetaFaultInjection fault = 4;
+
+  //MetaDestination mirror = 5;
+
+  // Percentage of the traffic to be mirrored by the `mirror` field.
+  // If this field is absent, all the traffic (100%) will be mirrored.
+  // Max value is 100.
+  // Percent mirror_percentage = 6;
+  // Header manipulation rules
+  // Headers headers = 7;
+}
+
+message MetaRouteMatch {
+    // If the value is empty and only the name of attribute is specified, presence of the attribute is checked.
+    map<string, StringMatch> attributes = 1;
+}
+
+// Describes how to match a given string in HTTP headers. Match is
+// case-sensitive.
+message StringMatch {
+  oneof match_type {
+
+    // exact string match
+    string exact = 1;
+
+    // prefix-based match
+    string prefix = 2;
+
+    // RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+    string regex = 3;
+  }
+}
+
+message MetaRouteDestination {
+  // Destination uniquely identifies the instances of a service
+  // to which the request/connection should be forwarded to.
+  Destination destination = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The proportion of traffic to be forwarded to the service
+  // version. (0-100). Sum of weights across destinations SHOULD BE == 100.
+  // If there is only one destination in a rule, the weight value is assumed to
+  // be 100.
+  uint32 weight = 2;
+
+  // reserved 3 to 6;
+  // reserved "remove_response_headers", "append_response_headers", "remove_request_headers", "append_request_headers";
+
+  // Header manipulation rules
+  // Headers headers = 7;
+}
+
+message Destination {
+  // The name of a service from the service registry. Service
+  // names are looked up from the platform's service registry (e.g.,
+  // Kubernetes services, Consul services, etc.) and from the hosts
+  // declared by [ServiceEntry](https://istio.io/docs/reference/config/networking/service-entry/#ServiceEntry). Traffic
+  // forwarded to destinations that are not found in either of the two, will be dropped.
+  //
+  // *Note for Kubernetes users*: When short names are used (e.g. "reviews"
+  // instead of "reviews.default.svc.cluster.local"), Istio will interpret
+  // the short name based on the namespace of the rule, not the service. A
+  // rule in the "default" namespace containing a host "reviews will be
+  // interpreted as "reviews.default.svc.cluster.local", irrespective of
+  // the actual namespace associated with the reviews service. To avoid
+  // potential misconfiguration, it is recommended to always use fully
+  // qualified domain names over short names.
+  string host = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The name of a subset within the service. Applicable only to services
+  // within the mesh. The subset must be defined in a corresponding
+  // DestinationRule.
+  string subset = 2;
+
+  // Specifies the port on the host that is being addressed. If a service
+  // exposes only a single port it is not required to explicitly select the
+  // port.
+  PortSelector port = 3;
+}
+
+// PortSelector specifies the number of a port to be used for
+// matching or selection for final routing.
+message PortSelector {
+  // Valid port number
+  uint32 number = 1;
+
+  reserved 2;
+  reserved "name";
+}

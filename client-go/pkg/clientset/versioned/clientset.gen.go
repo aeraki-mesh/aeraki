@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	metaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1"
 	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -29,6 +30,7 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	DubboV1alpha1() dubbov1alpha1.DubboV1alpha1Interface
+	MetaprotocolV1alpha1() metaprotocolv1alpha1.MetaprotocolV1alpha1Interface
 	RedisV1alpha1() redisv1alpha1.RedisV1alpha1Interface
 }
 
@@ -36,13 +38,19 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	dubboV1alpha1 *dubbov1alpha1.DubboV1alpha1Client
-	redisV1alpha1 *redisv1alpha1.RedisV1alpha1Client
+	dubboV1alpha1        *dubbov1alpha1.DubboV1alpha1Client
+	metaprotocolV1alpha1 *metaprotocolv1alpha1.MetaprotocolV1alpha1Client
+	redisV1alpha1        *redisv1alpha1.RedisV1alpha1Client
 }
 
 // DubboV1alpha1 retrieves the DubboV1alpha1Client
 func (c *Clientset) DubboV1alpha1() dubbov1alpha1.DubboV1alpha1Interface {
 	return c.dubboV1alpha1
+}
+
+// MetaprotocolV1alpha1 retrieves the MetaprotocolV1alpha1Client
+func (c *Clientset) MetaprotocolV1alpha1() metaprotocolv1alpha1.MetaprotocolV1alpha1Interface {
+	return c.metaprotocolV1alpha1
 }
 
 // RedisV1alpha1 retrieves the RedisV1alpha1Client
@@ -75,6 +83,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.metaprotocolV1alpha1, err = metaprotocolv1alpha1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 	cs.redisV1alpha1, err = redisv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
@@ -92,6 +104,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.dubboV1alpha1 = dubbov1alpha1.NewForConfigOrDie(c)
+	cs.metaprotocolV1alpha1 = metaprotocolv1alpha1.NewForConfigOrDie(c)
 	cs.redisV1alpha1 = redisv1alpha1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
@@ -102,6 +115,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.dubboV1alpha1 = dubbov1alpha1.New(c)
+	cs.metaprotocolV1alpha1 = metaprotocolv1alpha1.New(c)
 	cs.redisV1alpha1 = redisv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

@@ -32,11 +32,11 @@ func NewGenerator() *Generator {
 }
 
 // Generate create EnvoyFilters for Dubbo services
-func (*Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
+func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry,
 		buildOutboundProxy(context),
 		buildInboundProxy(context),
 		"envoy.filters.network.thrift_proxy",
-		"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy")
+		"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy"), nil
 }

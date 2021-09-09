@@ -20,5 +20,5 @@ import (
 
 // Generator generates protocol specified envoyfilters
 type Generator interface {
-	Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper
+	Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error)
 }

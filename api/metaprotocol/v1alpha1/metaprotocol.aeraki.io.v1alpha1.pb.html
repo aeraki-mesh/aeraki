@@ -1,0 +1,358 @@
+---
+title: metaprotocol.aeraki.io.v1alpha1
+layout: protoc-gen-docs
+generator: protoc-gen-docs
+number_of_entries: 8
+---
+<p>$schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
+$title: Application Protocol
+$description: ApplicationProtocol defines an application protocol built on top of MetaProtocol.</p>
+
+<p>ApplicationProtocol defines an application protocol built on top of MetaProtocol.</p>
+
+<pre><code class="language-yaml">apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: ApplicationProtocol
+metadata:
+  name: dubbo
+  namespace: istio-system
+spec:
+  protocol: dubbo
+  codec: aeraki.meta_protocol.codec.dubbo
+</code></pre>
+
+<h2 id="ApplicationProtocol">ApplicationProtocol</h2>
+<section>
+<p>ApplicationProtocol defines an application protocol built on top of MetaProtocol.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="ApplicationProtocol-protocol">
+<td><code>protocol</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="ApplicationProtocol-codec">
+<td><code>codec</code></td>
+<td><code>string</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MetaRouter">MetaRouter</h2>
+<section>
+<p>MetaRouter defines route policies for MetaProtocol proxy.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MetaRouter-hosts">
+<td><code>hosts</code></td>
+<td><code>string[]</code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRouter-routes">
+<td><code>routes</code></td>
+<td><code><a href="#MetaRoute">MetaRoute[]</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MetaRoute">MetaRoute</h2>
+<section>
+<p>Describes match conditions and actions for routing MetaProtocol.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MetaRoute-name">
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>
+<p>The name assigned to the route for debugging purposes.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRoute-match">
+<td><code>match</code></td>
+<td><code><a href="#MetaRouteMatch">MetaRouteMatch</a></code></td>
+<td>
+<p>Match conditions to be satisfied for the rule to be activated.
+All conditions inside a single match block have AND semantic.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRoute-route">
+<td><code>route</code></td>
+<td><code><a href="#MetaRouteDestination">MetaRouteDestination[]</a></code></td>
+<td>
+<p>A Route rule can forward (default) traffic. The forwarding target
+can be one of several versions of a service (see glossary in
+beginning of document). Weights associated with the service version
+determine the proportion of traffic it receives.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MetaRouteMatch">MetaRouteMatch</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MetaRouteMatch-attributes">
+<td><code>attributes</code></td>
+<td><code>map&lt;string,&nbsp;<a href="#StringMatch">StringMatch</a>&gt;</code></td>
+<td>
+<p>If the value is empty and only the name of attribute is specified, presence of the attribute is checked.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="StringMatch">StringMatch</h2>
+<section>
+<p>Describes how to match a given string in HTTP headers. Match is
+case-sensitive.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="StringMatch-exact" class="oneof oneof-start">
+<td><code>exact</code></td>
+<td><code>string (oneof)</code></td>
+<td>
+<p>exact string match</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="StringMatch-prefix" class="oneof">
+<td><code>prefix</code></td>
+<td><code>string (oneof)</code></td>
+<td>
+<p>prefix-based match</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="StringMatch-regex" class="oneof">
+<td><code>regex</code></td>
+<td><code>string (oneof)</code></td>
+<td>
+<p>RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="MetaRouteDestination">MetaRouteDestination</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="MetaRouteDestination-destination">
+<td><code>destination</code></td>
+<td><code><a href="#Destination">Destination</a></code></td>
+<td>
+<p>Destination uniquely identifies the instances of a service
+to which the request/connection should be forwarded to.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="MetaRouteDestination-weight">
+<td><code>weight</code></td>
+<td><code>uint32</code></td>
+<td>
+<p>The proportion of traffic to be forwarded to the service
+version. (0-100). Sum of weights across destinations SHOULD BE == 100.
+If there is only one destination in a rule, the weight value is assumed to
+be 100.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Destination">Destination</h2>
+<section>
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Destination-host">
+<td><code>host</code></td>
+<td><code>string</code></td>
+<td>
+<p>The name of a service from the service registry. Service
+names are looked up from the platform&rsquo;s service registry (e.g.,
+Kubernetes services, Consul services, etc.) and from the hosts
+declared by <a href="https://istio.io/docs/reference/config/networking/service-entry/#ServiceEntry">ServiceEntry</a>. Traffic
+forwarded to destinations that are not found in either of the two, will be dropped.</p>
+
+<p><em>Note for Kubernetes users</em>: When short names are used (e.g. &ldquo;reviews&rdquo;
+instead of &ldquo;reviews.default.svc.cluster.local&rdquo;), Istio will interpret
+the short name based on the namespace of the rule, not the service. A
+rule in the &ldquo;default&rdquo; namespace containing a host &ldquo;reviews will be
+interpreted as &ldquo;reviews.default.svc.cluster.local&rdquo;, irrespective of
+the actual namespace associated with the reviews service. To avoid
+potential misconfiguration, it is recommended to always use fully
+qualified domain names over short names.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="Destination-subset">
+<td><code>subset</code></td>
+<td><code>string</code></td>
+<td>
+<p>The name of a subset within the service. Applicable only to services
+within the mesh. The subset must be defined in a corresponding
+DestinationRule.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="Destination-port">
+<td><code>port</code></td>
+<td><code><a href="#PortSelector">PortSelector</a></code></td>
+<td>
+<p>Specifies the port on the host that is being addressed. If a service
+exposes only a single port it is not required to explicitly select the
+port.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="PortSelector">PortSelector</h2>
+<section>
+<p>PortSelector specifies the number of a port to be used for
+matching or selection for final routing.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="PortSelector-number">
+<td><code>number</code></td>
+<td><code>uint32</code></td>
+<td>
+<p>Valid port number</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>

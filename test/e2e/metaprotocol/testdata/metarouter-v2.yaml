@@ -1,0 +1,18 @@
+---
+apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: MetaRouter
+metadata:
+  name: test-metaprotocol-route
+spec:
+  hosts:
+    - org.apache.dubbo.samples.basic.api.demoservice
+  routes:
+    - match:
+        attributes:
+          method:
+            exact: sayHello
+      name: v2
+      route:
+        - destination:
+            host: org.apache.dubbo.samples.basic.api.demoservice
+            subset: v2

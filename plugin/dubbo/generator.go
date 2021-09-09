@@ -44,11 +44,11 @@ func NewGenerator(cfg *rest.Config) *Generator {
 }
 
 // Generate create EnvoyFilters for Dubbo services
-func (g *Generator) Generate(context *model.EnvoyFilterContext) []*model.EnvoyFilterWrapper {
+func (g *Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry,
 		buildOutboundProxy(context),
 		buildInboundProxy(context, g.client),
 		"envoy.filters.network.dubbo_proxy",
-		"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy")
+		"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy"), nil
 }
