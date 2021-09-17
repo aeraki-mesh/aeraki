@@ -42,9 +42,9 @@ jobs:
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
-      - name: Install aeraki
-        run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: Install Istio
         run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: test
         run: make e2e-redis

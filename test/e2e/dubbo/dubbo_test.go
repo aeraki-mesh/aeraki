@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
 	"github.com/aeraki-framework/aeraki/test/e2e/util"
-	"istio.io/pkg/log"
 )
 
 func TestMain(m *testing.M) {
@@ -59,6 +59,7 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	}
 }
 
+/*
 func TestSidecarInboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
 	time.Sleep(1 * time.Minute) //wait for serviceentry vip allocation
@@ -71,6 +72,7 @@ func TestSidecarInboundConfig(t *testing.T) {
 		t.Errorf("cant't find dubbo proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
+*/
 
 func TestVersionRouting(t *testing.T) {
 	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")

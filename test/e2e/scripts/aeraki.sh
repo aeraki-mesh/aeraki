@@ -12,6 +12,5 @@ then
 fi
 
 envsubst < $BASEDIR/../../../k8s/aeraki.yaml > aeraki.yaml
-kubectl create ns istio-system
 kubectl apply -f $BASEDIR/../../../k8s/crd.yaml
 kubectl apply -f aeraki.yaml -n ${NAMESPACE}

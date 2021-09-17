@@ -26,10 +26,6 @@ spec:
       containers:
         - name: server
           image: redis:6.0.8-alpine
-          resources:
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
           ports:
             - containerPort: 6379
               name: tcp-redis

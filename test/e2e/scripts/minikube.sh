@@ -22,8 +22,7 @@
 
 set -x
 
-K8S_VER=${K8S_VER:-'k8s-v1.18.0'}
-
+K8S_VER=${K8S_VER:-'k8s-v1.20.11'}
 function waitMinikube() {
   set +e
   kubectl cluster-info

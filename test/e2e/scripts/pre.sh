@@ -23,8 +23,8 @@
 set -ex
 
 HELMVERSION=${HELMVERSION:-'helm-v3.0.0'}
-MINIKUBEVERESION=${MINIKUBEVERESION:-'minikube-v1.13.1'}
-K8SVERSION=${K8SVERSION:-'k8s-v1.19.2'}
+MINIKUBEVERESION=${MINIKUBEVERESION:-'minikube-v1.23.1'}
+K8SVERSION=${K8SVERSION:-'k8s-v1.20.11'}
 
 curl -sSL https://get.helm.sh/${HELMVERSION}-linux-amd64.tar.gz | \
     sudo tar xz -C /usr/local/bin --strip-components=1 linux-amd64/helm
