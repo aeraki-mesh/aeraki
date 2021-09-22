@@ -26,7 +26,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.2.1"
+      "version": "7.4.3"
     },
     {
       "type": "panel",
@@ -98,7 +98,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -193,7 +193,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -203,7 +203,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))",
+          "expr": "sum(rate(envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -289,7 +289,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -385,7 +385,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -395,7 +395,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket[5m])) by (le))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -446,10 +446,7 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
+          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -485,9 +482,10 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true
+        "showUnfilled": true,
+        "text": {}
       },
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
@@ -523,10 +521,7 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
+          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -562,30 +557,31 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true
+        "showUnfilled": true,
+        "text": {}
       },
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
           "interval": "",
           "legendFormat": "Less than 10 ms",
           "refId": "A"
         },
         {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"100\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"100\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
           "interval": "",
           "legendFormat": "Less than 100 ms",
           "refId": "B"
         },
         {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"1000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
           "interval": "",
           "legendFormat": "Less than 1 s",
           "refId": "C"
         },
         {
-          "expr": "envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_bucket{le=\"10000\",app=\"dubbo-sample-consumer\"}/ignoring (le) envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request_time_ms_count *100",
           "interval": "",
           "legendFormat": "Less than 10 s",
           "refId": "D"
@@ -636,9 +632,10 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))*100",
@@ -691,12 +688,13 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_response_success[5m]))/sum(rate(envoy_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))*100",
+          "expr": "sum(rate(envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_response_success[5m]))/sum(rate(envoy_meta_protocol_dubbo_outbound_20880__org_apache_dubbo_samples_basic_api_demoservice_request[5m]))*100",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -747,9 +745,10 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true
+        "showUnfilled": true,
+        "text": {}
       },
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_bucket{le=\"1\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_getdata_resp_latency_count *100",
@@ -821,9 +820,10 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true
+        "showUnfilled": true,
+        "text": {}
       },
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "targets": [
         {
           "expr": "envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_bucket{le=\"1\", statefulset_kubernetes_io_pod_name=\"my-release-kafka-0\"} / ignoring (le) envoy_outbound_2181__my_release_zookeeper_kafka_svc_cluster_local_zookeeper_create_resp_latency_count *100",
@@ -896,7 +896,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -991,7 +991,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.2.1",
+      "pluginVersion": "7.4.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1050,7 +1050,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -1064,5 +1064,5 @@
   "timezone": "",
   "title": "Aeraki Demo",
   "uid": "pgz7wp-Gz",
-  "version": 23
+  "version": 6
 }

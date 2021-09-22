@@ -17,11 +17,13 @@ spec:
           - thrift
           - dubbo
           - kafka
+          - meta_protocol
         inclusionRegexps:
           - .*dubbo.*
           - .*thrift.*
           - .*kafka.*
           - .*zookeeper.*
+          - .*meta_protocol.*
   components:
     pilot:
       hub: aeraki

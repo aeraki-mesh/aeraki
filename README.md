@@ -130,10 +130,13 @@ Recored Demo: Dubbo and Thrift Traffic Management
 git clone https://github.com/aeraki-framework/aeraki.git
 ```
 
-### Install Aeraki and demo applications
+### Install Istio, Aeraki and demo applications
 ```bash
 aeraki/demo/install-demo.sh
 ```
+
+Note: Aeraki needs to configure Istio with smart dns. If you already have an Istio installed and don't know how to
+ turn on smart dns, please uninstall it. install-demo.sh will install Istio for you.
 
 ### Open the following URLs in your browser to play with Aeraki and view service metrics
 * Kaili `http://{istio-ingressgateway_external_ip}:20001`
