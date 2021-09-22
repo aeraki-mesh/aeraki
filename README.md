@@ -12,13 +12,6 @@
 ---
 Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC. We hope that this breeze can help Istio sail a little further.
 
-In a nutshell, you can think of Aeraki as the [Operator pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) in Istio to automate the envoy configuration for layer 7 protocols.
-
-IstioCon2021 Talk: [How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
-
-## Architecture
-![ Aeraki ](docs/aeraki-architecture.png)
-
 ## Problems to solve
 
 We are facing some challenges in service mesh:
@@ -31,13 +24,13 @@ We are facing some challenges in service mesh:
 ## Aeraki's approach
 
 To address these problems, Aeraki Framework providing a non-intrusive, extendable way to manage any layer 7 traffic in a service mesh.
-
+![ Aeraki ](docs/aeraki-architecture.png)
 Aeraki Framework consists of the following components:
 * Aeraki: [Aeraki](https://github.com/aeraki-framework/aeraki) provides high-level, user-friendly traffic management rules 
 to operations, translates the rules to envoy filter configurations, and leverages Istio's EnvoyFilter API to push the 
 configurations to the sidecar proxies. Aeraki also serves as the RDS server for metaprotocol proxies in the data plane. 
-Contrary to Envoy RDS, which focuses on HTTP, Aeraki RDS is aimed to provide general dynamic route capabilities for all 
-layer-7 protocols. 
+Contrary to Envoy RDS, which focuses on HTTP, [Aeraki RDS](https://github.com/aeraki-framework/aeraki/blob/master/docs/metaprotocol.md#traffic-management) is aimed to provide general dynamic route capabilities for
+ all layer-7 protocols. 
 * MetaProtocol: [MetaProtocol](https://github.com/aeraki-framework/meta-protocol-proxy) provides common capabilities for
  Layer-7 protocols, such as load balancing, circuit breaker, load balancing, routing, rate limiting, fault injection, and 
  auth. Layer-7 protocols can be built on top of MetaProtocol. To add a new protocol into the service mesh, the only thing 
@@ -144,6 +137,11 @@ Note: Aeraki needs to configure Istio with smart dns. If you already have an Ist
 * Prometheus `http://{istio-ingressgateway_external_ip}:9090`
 
 You can import Aeraika demo dashboard from file `demo/aeraki-demo.json` into the Grafana.
+
+## Talks
+
+* Istio meetup China(中文): [全栈服务网格 - Aeraki 助你在 Istio 服务网格中管理任何七层流量](https://www.youtube.com/watch?v=Bq5T3OR3iTM) 
+* IstioCon 2021: [How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
 
 ## Contact
 * Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
