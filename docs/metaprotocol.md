@@ -34,8 +34,9 @@ tcp-metaprotocol-{layer-7-protocol}-xxx. For example, a Dubbo service port could
 
 ## Traffic management
 
-You can change the route via MataRouter CRD. For example, route all the traffic to v2:
+You can change the route via MataRouter CRD. For example:
 
+* Route the Dubbo requests calling method sayHello to v2:
 ```yaml
 apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: MetaRouter
@@ -45,13 +46,31 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   routes:
+    - name: v2
     - match:
         attributes:
           method:
             exact: sayHello
-      name: v2
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice
             subset: v2
 ```
+
+* Send 20% of the requests to v1 and 80% to v2:
+```yaml
+apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: MetaRouter
+metadata:
+  name: test-metaprotocol-route
+spec:
+  hosts:
+    - org.apache.dubbo.samples.basic.api.demoservice
+  routes:
+    - 
+      route:
+        - destination:
+            host: org.apache.dubbo.samples.basic.api.demoservice
+            subset: v2
+```
+

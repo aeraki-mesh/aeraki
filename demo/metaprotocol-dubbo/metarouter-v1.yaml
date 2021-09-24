@@ -7,11 +7,11 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   routes:
+    - name: v1
     - match:
         attributes:
           method:
             exact: sayHello
-      name: v1
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice

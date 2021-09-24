@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
 	"github.com/aeraki-framework/aeraki/test/e2e/util"
-	"istio.io/pkg/log"
 )
 
 func TestMain(m *testing.M) {
@@ -40,13 +40,12 @@ func setup() {
 	util.KubeApply("metaprotocol", "testdata/destinationrule.yaml", "")
 }
 
-/*
 func shutdown() {
 	util.KubeDelete("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
 	util.KubeDelete("metaprotocol", "testdata/serviceentry.yaml", "")
 	util.KubeDelete("metaprotocol", "testdata/destinationrule.yaml", "")
 	util.DeleteNamespace("metaprotocol", "")
-}*/
+}
 
 func TestSidecarOutboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
@@ -98,18 +97,17 @@ func testVersion(version string, t *testing.T) {
 	}
 }
 
-/*
 func TestPercentageRouting(t *testing.T) {
-	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
-	util.KubeApply("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
-	defer util.KubeDelete("dubbo", "testdata/virtualservice-traffic-splitting.yaml", "")
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-traffic-splitting.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-traffic-splitting.yaml", "")
 
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
-	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
 	v1 := 0
 	for i := 0; i < 40; i++ {
-		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
 			"curl -s 127.0.0.1:9009/hello", false, "")
 		responseV1 := "response from dubbo-sample-provider-v1"
 		log.Info(dubboResponse)
@@ -125,62 +123,25 @@ func TestPercentageRouting(t *testing.T) {
 	}
 }
 
-func TestMethodRouting(t *testing.T) {
-	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
-	testMethodMatch("exact", t)
-	testMethodMatch("prefix", t)
-	testMethodMatch("regex", t)
+func TestAttributeRouting(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	testAttributeMatch("exact", t)
+	testAttributeMatch("prefix", t)
+	testAttributeMatch("regex", t)
 }
 
-func testMethodMatch(matchPattern string, t *testing.T) {
-	util.KubeApply("dubbo", "testdata/virtualservice-method-"+matchPattern+".yaml", "")
+func testAttributeMatch(matchPattern string, t *testing.T) {
+	util.KubeApply("metaprotocol", "testdata/metarouter-attribute-"+matchPattern+".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
-	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
 	for i := 0; i < 5; i++ {
-		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
 			"curl -s 127.0.0.1:9009/hello", false, "")
 		want := "response from dubbo-sample-provider-v2"
 		log.Info(dubboResponse)
 		if !strings.Contains(dubboResponse, want) {
-			t.Errorf("method routing failed, want: %s, got %s", want, dubboResponse)
+			t.Errorf("attribute routing failed, want: %s, got %s", want, dubboResponse)
 		}
 	}
 }
-
-func TestHeaderMatch(t *testing.T) {
-	util.KubeApply("dubbo", "testdata/virtualservice-header-exact.yaml", "")
-	log.Info("Waiting for rules to propagate ...")
-	time.Sleep(1 * time.Minute)
-	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
-	for i := 0; i < 5; i++ {
-		dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
-			"curl -s 127.0.0.1:9009/hello", false, "")
-		want := "response from dubbo-sample-provider-v2"
-		log.Info(dubboResponse)
-		if !strings.Contains(dubboResponse, want) {
-			t.Errorf("method routing failed, want: %s, got %s", want, dubboResponse)
-		}
-	}
-}
-
-func TestMultipleInterfacesInAProcess(t *testing.T) {
-	util.WaitForDeploymentsReady("dubbo", 10*time.Minute, "")
-	consumerPod, _ := util.GetPodName("dubbo", "app=dubbo-sample-consumer", "")
-	dubboResponse, _ := util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
-		"curl -s 127.0.0.1:9009/hello", false, "")
-	want := "response from dubbo-sample-provider-"
-	log.Info(dubboResponse)
-	if !strings.Contains(dubboResponse, want) {
-		t.Errorf("call dubbo interface failed, want: %s, got %s", want, dubboResponse)
-	}
-
-	dubboResponse, _ = util.PodExec("dubbo", consumerPod, "dubbo-sample-consumer",
-		"curl -s 127.0.0.1:9009/test", false, "")
-	want = "response from dubbo-sample-provider-"
-	log.Info(dubboResponse)
-	if !strings.Contains(dubboResponse, want) {
-		t.Errorf("call dubbo interface failed, want: %s, got %s", want, dubboResponse)
-	}
-}
-*/

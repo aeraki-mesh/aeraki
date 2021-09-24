@@ -25,7 +25,7 @@ import "google/api/field_behavior.proto";
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
 // kind: MetaRouter
 // metadata:
-//   name: traffic-split
+//   name: attribute-based-route
 //   namespace: istio-system
 // spec:
 //   hosts:
@@ -44,6 +44,26 @@ import "google/api/field_behavior.proto";
 //         subset: v1
 //
 // ```
+//
+// ```yaml
+// apiVersion: metaprotocol.aeraki.io/v1alpha1
+// kind: MetaRouter
+// metadata:
+//   name: traffic-splitting
+// spec:
+//   hosts:
+//     - org.apache.dubbo.samples.basic.api.demoservice
+//   routes:
+//     - name: traffic-spilt
+//       route:
+//         - destination:
+//             host: org.apache.dubbo.samples.basic.api.demoservice
+//             subset: v1
+//           weight: 20
+//         - destination:
+//             host: org.apache.dubbo.samples.basic.api.demoservice
+//             subset: v2
+//           weight: 80
 package metaprotocol.aeraki.io.v1alpha1;
 
 option go_package = "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1";
