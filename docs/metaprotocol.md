@@ -67,10 +67,15 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   routes:
-    - 
+    - name: traffic-spilt
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice
+            subset: v1
+          weight: 20
+        - destination:
+            host: org.apache.dubbo.samples.basic.api.demoservice
             subset: v2
+          weight: 80
 ```
 
