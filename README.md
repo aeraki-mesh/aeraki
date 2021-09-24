@@ -1,5 +1,6 @@
 # Aeraki
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/aeraki-framework/aeraki)](https://goreportcard.com/report/github.com/aeraki-framework/aeraki)
 [![CI Tests](https://github.com/aeraki-framework/aeraki/workflows/ci/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22ci%22)
 [![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-metaprotocol/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-metaprotocol%22)
 [![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-dubbo/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-dubbo%22)
