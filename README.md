@@ -26,13 +26,14 @@ We are facing some challenges in service mesh:
 
 To address these problems, Aeraki Framework providing a non-intrusive, extendable way to manage any layer 7 traffic in a service mesh.
 ![ Aeraki ](docs/aeraki-architecture.png)
+
 Aeraki Framework consists of the following components:
 * Aeraki: [Aeraki](https://github.com/aeraki-framework/aeraki) provides high-level, user-friendly traffic management rules 
 to operations, translates the rules to envoy filter configurations, and leverages Istio's EnvoyFilter API to push the 
 configurations to the sidecar proxies. Aeraki also serves as the RDS server for metaprotocol proxies in the data plane. 
 Contrary to Envoy RDS, which focuses on HTTP, [Aeraki RDS](https://github.com/aeraki-framework/aeraki/blob/master/docs/metaprotocol.md#traffic-management) is aimed to provide general dynamic route capabilities for
  all layer-7 protocols. 
-* MetaProtocol: [MetaProtocol](https://github.com/aeraki-framework/meta-protocol-proxy) provides common capabilities for
+* MetaProtocol Proxy: [MetaProtocol Proxy](https://github.com/aeraki-framework/meta-protocol-proxy) provides common capabilities for
  Layer-7 protocols, such as load balancing, circuit breaker, load balancing, routing, rate limiting, fault injection, and 
  auth. Layer-7 protocols can be built on top of MetaProtocol. To add a new protocol into the service mesh, the only thing 
  you need to do is implementing the [codec interface](https://github.com/aeraki-framework/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118). 
@@ -45,6 +46,8 @@ Contrary to Envoy RDS, which focuses on HTTP, [Aeraki RDS](https://github.com/ae
   
   Need to manage proprietary protocols in Istio service mesh? All you need to do is just implementing the
     [codec interface](https://github.com/aeraki-framework/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118). Aeraki Framework will take care all the others for you. It's so easy!
+    
+Aeraki also has plugins for the protocols which are too special to be fit into the MetaProtocol framework, such as [Redis](docs/zh/redis.md) and Kafka, so these protocols can be managed in Istio service mesh. 
 
 ## Reference
 * [Create plugins for proprietary protocols](docs/metaprotocol.md)
