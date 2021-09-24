@@ -7,7 +7,20 @@ spec:
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   routes:
+    - name: v1
+      match:
+        attributes:
+          method:
+            prefix: sayHello01
+      route:
+        - destination:
+            host: org.apache.dubbo.samples.basic.api.demoservice
+            subset: v1
     - name: v2
+      match:
+        attributes:
+          method:
+            prefix: say
       route:
         - destination:
             host: org.apache.dubbo.samples.basic.api.demoservice

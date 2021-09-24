@@ -53,6 +53,8 @@ const (
 	debounceMax = 10 * time.Second
 )
 
+var regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
+
 // CacheMgr contains the runtime configuration for the envoyFilter controller.
 type CacheMgr struct {
 	istioClientset   *istioclient.Clientset
@@ -188,41 +190,40 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry, metaRouter *
 
 func (c *CacheMgr) constructMatch(route *metaprotocolapi.MetaRoute) *metaroute.RouteMatch {
 	var metadata []*httproute.HeaderMatcher
-	var stringMatch *matcher.StringMatcher
-	for _, attribute := range route.Match.Attributes {
-		switch attribute.GetMatchType().(type) {
-		case *metaprotocolapi.StringMatch_Exact:
-			stringMatch = &matcher.StringMatcher{
-				MatchPattern: &matcher.StringMatcher_Exact{
-					Exact: attribute.GetExact(),
-				},
-			}
-		case *metaprotocolapi.StringMatch_Prefix:
-			stringMatch = &matcher.StringMatcher{
-				MatchPattern: &matcher.StringMatcher_Prefix{
-					Prefix: attribute.GetPrefix(),
-				},
-			}
-		case *metaprotocolapi.StringMatch_Regex:
-			stringMatch = &matcher.StringMatcher{
-				MatchPattern: &matcher.StringMatcher_SafeRegex{
-					SafeRegex: &matcher.RegexMatcher{
-						EngineType: &matcher.RegexMatcher_GoogleRe2{
-							GoogleRe2: &matcher.RegexMatcher_GoogleRE2{},
-						},
-						Regex: attribute.GetRegex(),
+
+	if route.Match != nil {
+		var headerMatcher *httproute.HeaderMatcher
+		for name, attribute := range route.Match.Attributes {
+			switch attribute.GetMatchType().(type) {
+			case *metaprotocolapi.StringMatch_Exact:
+				headerMatcher = &httproute.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &httproute.HeaderMatcher_ExactMatch{
+						ExactMatch: attribute.GetExact(),
 					},
-				},
+				}
+			case *metaprotocolapi.StringMatch_Prefix:
+				headerMatcher = &httproute.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &httproute.HeaderMatcher_PrefixMatch{
+						PrefixMatch: attribute.GetPrefix(),
+					},
+				}
+			case *metaprotocolapi.StringMatch_Regex:
+				headerMatcher = &httproute.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &httproute.HeaderMatcher_SafeRegexMatch{
+						SafeRegexMatch: &matcher.RegexMatcher{
+							EngineType: regexEngine,
+							Regex:      attribute.GetPrefix(),
+						},
+					},
+				}
+			default:
+				continue
 			}
-		default:
-			continue
+			metadata = append(metadata, headerMatcher)
 		}
-		metadata = append(metadata, &httproute.HeaderMatcher{
-			Name: route.Name,
-			HeaderMatchSpecifier: &httproute.HeaderMatcher_StringMatch{
-				StringMatch: stringMatch,
-			},
-		})
 	}
 	return &metaroute.RouteMatch{
 		Metadata: metadata,
