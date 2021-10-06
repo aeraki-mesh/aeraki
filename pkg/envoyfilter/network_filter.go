@@ -187,13 +187,21 @@ func generateValue(proxy proto.Message, filterName string, filterType string) (*
 		return nil, err
 	}
 
-	var out = &types.Struct{}
-	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
+	var value = &types.Struct{}
+	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), value); err != nil {
 		return nil, err
 	}
 
+	var out = &types.Struct{}
+	out.Fields = map[string]*types.Value{}
 	out.Fields["@type"] = &types.Value{Kind: &types.Value_StringValue{
+		StringValue: "type.googleapis.com/udpa.type.v1.TypedStruct",
+	}}
+	out.Fields["type_url"] = &types.Value{Kind: &types.Value_StringValue{
 		StringValue: filterType,
+	}}
+	out.Fields["value"] = &types.Value{Kind: &types.Value_StructValue{
+		StructValue: value,
 	}}
 
 	return &types.Struct{
