@@ -39,9 +39,9 @@ func setup() {
 }
 
 func shutdown() {
-	util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
-	util.KubeDelete("thrift", "testdata/destinationrule.yaml", "")
-	util.DeleteNamespace("thrift", "")
+	//util.KubeDelete("thrift", "testdata/thrift-sample.yaml", "")
+	//util.KubeDelete("thrift", "testdata/destinationrule.yaml", "")
+	//util.DeleteNamespace("thrift", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -49,7 +49,7 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-client", "")
 	config, _ := util.PodExec("thrift", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
-	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"stat_prefix\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"route_config\":{\n\"name\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
+	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"value\":{\n\"stat_prefix\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"route_config\":{\n\"name\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
 		t.Errorf("cant't find thrift proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
@@ -61,7 +61,7 @@ func TestSidecarInboundConfig(t *testing.T) {
 	consumerPod, _ := util.GetPodName("thrift", "app=thrift-sample-server", "")
 	config, _ := util.PodExec("thrift", consumerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", true, "")
 	config = strings.Join(strings.Fields(config), "")
-	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"stat_prefix\":\"inbound|9090||\",\n\"route_config\":{\n\"name\":\"inbound|9090||\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"inbound|9090||\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
+	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"value\":{\n\"stat_prefix\":\"inbound|9090||\",\n\"route_config\":{\n\"name\":\"inbound|9090||\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"inbound|9090||\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
 		t.Errorf("cant't find thrift proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)

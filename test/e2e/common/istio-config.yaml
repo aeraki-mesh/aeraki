@@ -26,5 +26,5 @@ spec:
           - .*meta_protocol.*
   components:
     pilot:
-      hub: aeraki
-      tag: 1.10.0-meta-protocol
+      hub: istio
+      tag: 1.10.0
