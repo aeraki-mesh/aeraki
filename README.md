@@ -15,7 +15,7 @@ Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microse
 
 ## Problems to solve
 
-We are facing some challenges in service mesh:
+We are facing some challenges in service meshes:
 * Istio and other popular service mesh implementations have very limited support for layer 7 protocols other than HTTP and gRPC.
 * Envoy RDS(Route Discovery Service) is solely designed for HTTP. Other protocols such as Dubbo and Thrift can only use listener in-line routes for traffic management, which breaks existing connections when routes change.
 * It takes a lot of effort to introduce a proprietary protocol into a service mesh. You’ll need to write an Envoy filter to handle the traffic in the data plane, and a control plane to manage those Envoys.
