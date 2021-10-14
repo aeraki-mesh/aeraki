@@ -42,27 +42,29 @@ const (
 	Unsupported Instance = "UnsupportedProtocol"
 )
 
+var protocolMap = make(map[string]Instance)
+
+func init() {
+	protocolMap["dubbo"] = Dubbo
+	protocolMap["thrift"] = Thrift
+	protocolMap["mongo"] = Mongo
+	protocolMap["redis"] = Redis
+	protocolMap["mysql"] = MySQL
+	protocolMap["kafka"] = Kafka
+	protocolMap["zookeeper"] = Zookeeper
+	protocolMap["metaprotocol"] = MetaProtocol
+}
+
+// RegisterProtocol register custom protocol
+func RegisterProtocol(name string, protocol Instance) {
+	protocolMap[name] = protocol
+}
+
 // Parse from string ignoring case
 func Parse(s string) Instance {
-	switch strings.ToLower(s) {
-	case "dubbo":
-		return Dubbo
-	case "thrift":
-		return Thrift
-	case "mongo":
-		return Mongo
-	case "redis":
-		return Redis
-	case "mysql":
-		return MySQL
-	case "kafka":
-		return Kafka
-	case "zookeeper":
-		return Zookeeper
-	case "metaprotocol":
-		return MetaProtocol
+	if instance, ok := protocolMap[strings.ToLower(s)]; ok {
+		return instance
 	}
-
 	return Unsupported
 }
 

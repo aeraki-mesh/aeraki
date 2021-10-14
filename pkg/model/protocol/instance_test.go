@@ -48,3 +48,26 @@ func TestIsDubbo(t *testing.T) {
 		t.Errorf("Dubbo is not Thrift")
 	}
 }
+
+func TestRegisterCustomProtocol(t *testing.T) {
+	const customProtocol protocol.Instance = "custom_protocol"
+	protocol.RegisterProtocol("custom", customProtocol)
+
+	tests := []struct {
+		testName string
+		portName string
+		want     protocol.Instance
+	}{
+		{testName: "tcp-custom", portName: "tcp-custom", want: customProtocol},
+		{testName: "tcp-Custom", portName: "tcp-Custom", want: customProtocol},
+		{testName: "Custom", portName: "Custom", want: protocol.Unsupported},
+		{testName: "tcp-unknown", portName: "tcp-unknown", want: protocol.Unsupported},
+	}
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			if got := protocol.GetLayer7ProtocolFromPortName(tt.portName); got != tt.want {
+				t.Errorf("getLayer7ProtocolFromPortName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
