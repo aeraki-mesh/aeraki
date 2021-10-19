@@ -142,6 +142,10 @@ You can import Aeraika demo dashboard from file `demo/aeraki-demo.json` into the
 * Istio meetup China(中文): [全栈服务网格 - Aeraki 助你在 Istio 服务网格中管理任何七层流量](https://www.youtube.com/watch?v=Bq5T3OR3iTM) 
 * IstioCon 2021: [How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
 
+## Who is using Aeraki?
+
+Sincerely thank everyone for choosing, contributing, and using Aeraki. We created this issue to collect the use cases so we can drive the Aeraki community to evolve in the right direction and better serve your real-world scenarios. We encourage you to submit a comment on this issue to include your use case：https://github.com/aeraki-framework/aeraki/issues/105
+
 ## Contact
 * Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
 * Wechat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
