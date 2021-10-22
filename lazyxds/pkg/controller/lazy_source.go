@@ -79,6 +79,13 @@ func (c *AggregationController) reconcileAllLazyServices(ctx context.Context) er
 }
 
 func (c *AggregationController) deleteLazyService(ctx context.Context, id string) error {
+	defer func() {
+		v, ok := c.services.Load(id)
+		if ok {
+			svc := v.(*model.Service)
+			svc.FinishReconcileLazy()
+		}
+	}()
 	name, namespace := utils.ParseID(id)
 
 	if err := c.removeEnvoyFilter(ctx, name, namespace); err != nil {
