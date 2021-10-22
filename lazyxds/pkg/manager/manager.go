@@ -29,7 +29,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-// LazyXdsManager ...
+// LazyXdsManager defines the high-level interface of multiCluster management.
 type LazyXdsManager interface {
 	AddCluster(name string, client *kubernetes.Clientset) error
 	DeleteCluster(name string) error
@@ -95,7 +95,7 @@ func (m *Manager) Run() error {
 	return nil
 }
 
-// AddCluster ...
+// AddCluster add new cluster to the mesh
 func (m *Manager) AddCluster(name string, client *kubernetes.Clientset) error {
 	if m.conf.AutoCreateEgress {
 		klog.Info("Starting create lazyxds egress", "cluster", name)
@@ -107,7 +107,8 @@ func (m *Manager) AddCluster(name string, client *kubernetes.Clientset) error {
 	return m.controller.AddCluster(name, client)
 }
 
-// DeleteCluster ...
+// DeleteCluster remove cluster from the mesh
+// todo need implement
 func (m *Manager) DeleteCluster(name string) error {
 	return nil
 }

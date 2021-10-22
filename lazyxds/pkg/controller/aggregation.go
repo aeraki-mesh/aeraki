@@ -65,7 +65,9 @@ type AggregationController struct {
 	serviceEntryController   *serviceentry.Controller
 	lazyServiceController    *lazyservice.Controller
 
-	services     sync.Map // {svcID: *model.svc}
+	// all services of all k8s clusters
+	services sync.Map // format: {svcID: *model.svc}
+	// all lazy services
 	lazyServices map[string]*model.Service
 
 	namespaces sync.Map
