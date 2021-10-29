@@ -8,7 +8,7 @@ spec:
     - org.apache.dubbo.samples.basic.api.demoservice
   routes:
     - name: v1
-    - match:
+      match:
         attributes:
           method:
             exact: sayHello
