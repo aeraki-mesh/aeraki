@@ -10,6 +10,8 @@ spec:
     - name: v1
       match:
         attributes:
+          foo:
+            exact: bar
           method:
             exact: sayHello
       route:
