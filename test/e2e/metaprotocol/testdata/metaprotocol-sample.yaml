@@ -75,5 +75,8 @@ spec:
       containers:
         - name: dubbo-sample-consumer
           image: aeraki/dubbo-sample-consumer
+          env:
+            - name: mode
+              value: demo
           ports:
             - containerPort: 9009
