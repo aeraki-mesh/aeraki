@@ -3,6 +3,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
   name: dubbo-demoservice
+  namespace: meta-dubbo
   annotations:
     interface: org.apache.dubbo.samples.basic.api.DemoService
 spec:

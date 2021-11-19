@@ -1,0 +1,24 @@
+---
+apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: MetaRouter
+metadata:
+  name: test-metaprotocol-thrift-route
+  namespace: meta-thrift
+spec:
+  hosts:
+    - thrift-sample-server.meta-thrift.svc.cluster.local
+  routes:
+    - name: traffic-split
+      match:
+        attributes:
+          method:
+            exact: sayHello
+      route:
+        - destination:
+            host: thrift-sample-server.meta-thrift.svc.cluster.local
+            subset: v1
+          weight: 20
+        - destination:
+            host: thrift-sample-server.meta-thrift.svc.cluster.local
+            subset: v2
+          weight: 80

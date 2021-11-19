@@ -23,9 +23,9 @@ helm install \
 kubectl apply -f $BASEDIR/demo/gateway/demo-ingress.yaml -n istio-system
 kubectl apply -f $BASEDIR/demo/gateway/istio-ingressgateway.yaml -n istio-system
 
-if [ $? -ne 0 ]
+if [ $# == 0 ]
 then
     bash $BASEDIR/demo/metaprotocol-dubbo/install.sh
-    bash $BASEDIR/demo/thrift/install.sh
+    bash $BASEDIR/demo/metaprotocol-thrift/install.sh
     bash ${BASEDIR}/demo/kafka/install.sh
 fi

@@ -3,6 +3,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: dubbo-sample-provider
+  namespace: meta-dubbo
 spec:
   host: org.apache.dubbo.samples.basic.api.demoservice
   subsets:
