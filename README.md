@@ -135,7 +135,7 @@ Note: Aeraki needs to configure Istio with smart dns. If you already have an Ist
 * Grafana `http://{istio-ingressgateway_external_ip}:3000`
 * Prometheus `http://{istio-ingressgateway_external_ip}:9090`
 
-You can import Aeraika demo dashboard from file `demo/aeraki-demo.json` into the Grafana.
+You can import Aeraki demo dashboard from file `demo/aeraki-demo.json` into the Grafana.
 
 ## Talks
 
