@@ -25,7 +25,11 @@
 [![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
 
 # Manage **any** layer 7 traffic in Istio service mesh!
-![ Aeraki ](docs/aeraki&istio.png)
+
+<div align="center">
+<img src="docs/aeraki&istio.png">
+</div>
+
 ---
 Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC. We hope that this breeze can help Istio sail a little further.
 
