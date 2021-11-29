@@ -13,25 +13,26 @@
 # limitations under the License.
 
 ---
-apiVersion: metaprotocol.aeraki.io/v1alpha1
-kind: MetaRouter
-metadata:
-  name: test-metaprotocol-dubbo-route
-  namespace: meta-dubbo
-spec:
-  hosts:
-    - org.apache.dubbo.samples.basic.api.demoservice
-  routes:
-    - name: v1
-      match:
-        attributes:
-          interface:
-            exact: org.apache.dubbo.samples.basic.api.DemoService
-          method:
-            exact: sayHello
-          foo:
-            exact: bar
-      route:
-        - destination:
-            host: org.apache.dubbo.samples.basic.api.demoservice
-            subset: v1
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Aeraki
+
+  paths-ignore:
+    - '.gitignore'
+    - 'LICENSE'
+    - 'NOTICE'
+    - '**/*.json'
+    - '.github/'
+    - 'go.mod'
+    - 'go.sum'
+    - '**/*.gen.go'
+    - '**/*.pb.go'
+    - '**/*.pb.html'
+    - '**/*.proto'
+    - '**/*.dic'
+    - '**/*.aff'
+    - 'test/'
+    - 'crd/'
+    - '.ci/'
+    - 'k8s/crd.yaml'
