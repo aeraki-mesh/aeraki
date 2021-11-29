@@ -70,7 +70,7 @@ type Generator struct {
 }
 
 var (
-	// Timeout is the default timeout for list object from apiserver
+	// Timeout is the default timeout for listing object from apiserver
 	Timeout = time.Second * 10
 )
 
