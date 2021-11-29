@@ -9,8 +9,9 @@ pull_request_rules:
         strict: true
   - name: ask the maintainer team to review PR
     conditions:
-      - label!=invalid
-      - draft=false
+      - and:
+        - label!=invalid
+        - draft=false
     actions:
       request_reviews:
         users:
