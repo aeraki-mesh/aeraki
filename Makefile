@@ -22,10 +22,16 @@ GOGET?=$(GOCMD) get
 GOBIN?=$(GOPATH)/bin
 
 # Build parameters
+IMAGE_TAG := $(tag)
+
+ifeq ($(IMAGE_TAG),)
+IMAGE_TAG := latest
+endif
+
 OUT?=./out
 DOCKER_TMP?=$(OUT)/docker_temp/
 DOCKER_TAG_E2E?=aeraki/aeraki:`git log --format="%H" -n 1`
-DOCKER_TAG?=aeraki/aeraki:latest
+DOCKER_TAG?=aeraki/aeraki:$(IMAGE_TAG)
 BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
 MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
@@ -74,15 +80,16 @@ e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e-redis e2e-metaprotocol
 .PHONY: build docker-build docker-push clean style-check lint e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e
 
 # lazyxds
-LAZYXDS_DOCKER_TAG?=aeraki/lazyxds:latest
+LAZYXDS_DOCKER_TAG?=aeraki/lazyxds:$(IMAGE_TAG)
 LAZYXDS_DOCKER_TAG_E2E?=aeraki/lazyxds:`git log --format="%H" -n 1`
 LAZYXDS_BINARY_NAME?=$(OUT)/lazyxds
 LAZYXDS_BINARY_NAME_DARWIN?=$(LAZYXDS_BINARY_NAME)-darwin
+LAZYXDS_MAIN?=./lazyxds/cmd/lazyxds/main.go
 
-build.lazyxds:
-	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(LAZYXDS_BINARY_NAME) ./lazyxds/cmd/lazyxds/main.go
-build-mac.lazyxds:
-	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(LAZYXDS_BINARY_NAME_DARWIN) ./lazyxds/cmd/lazyxds/main.go
+build.lazyxds: test
+	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(LAZYXDS_BINARY_NAME) $(LAZYXDS_MAIN)
+build-mac.lazyxds: test
+	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(LAZYXDS_BINARY_NAME_DARWIN) $(LAZYXDS_MAIN)
 docker-build.lazyxds: build.lazyxds
 	rm -rf $(DOCKER_TMP)
 	mkdir $(DOCKER_TMP)
