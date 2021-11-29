@@ -4,10 +4,12 @@ name: e2e-redis
 on:
   pull_request:
     paths-ignore:
+      - '.github/**'
       - 'docs/**'
       - '**/*.md'
   push:
     paths-ignore:
+      - '.github/**'
       - 'docs/**'
       - '**/*.md'
     branches:
