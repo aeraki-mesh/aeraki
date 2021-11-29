@@ -27,7 +27,7 @@ Quickly build an Envoy Filter for a proprietary protocol on top of MetaProtocol:
                     [Thrift codec](https://github.com/aeraki-framework/meta-protocol-proxy/tree/master/src/application_protocols/thrift) as writing your own implementation.
 
 * Define the protocol with Aeraki ApplicationProtocol CRD.
-Below is an example of Dubbo protocol:
+Below is an example of the Dubbo protocol:
 ```yaml
 apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
