@@ -1,6 +1,6 @@
 # LazyXds
 
-LazyXds enables Istio only push needed xds to sidecars to reduce resource consumption and speed up xds configuration propagation.
+**LazyXds** enables Istio only push needed xds to sidecars to reduce resource consumption and speed up xds configuration propagation.
 
 ## Problems to solve
 
