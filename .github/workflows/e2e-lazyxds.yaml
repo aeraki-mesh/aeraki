@@ -4,12 +4,12 @@ name: e2e-lazyxds
 on:
   pull_request:
     paths-ignore:
-      - '**.md'
       - 'docs/**'
+      - '**/*.md'
   push:
     paths-ignore:
-      - '**.md'
       - 'docs/**'
+      - '**/*.md'
     branches:
       - '*'
 
