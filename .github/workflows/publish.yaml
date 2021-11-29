@@ -1,5 +1,5 @@
 # Auto build and push docker image to docker hub when releasing tags
-
+---
 name: Auto Build and Push image
 
 on:
@@ -44,7 +44,7 @@ jobs:
         if: ${{ startsWith(steps.tag_type.outputs.version, 'lazyxds/') }}
         run: |
           make docker-build.lazyxds tag=${{ steps.tag_env.outputs.version }}
-      
+
       - name: Push Aeraki Docker image
         if: ${{ startsWith(steps.tag_type.outputs.version, 'aeraki/') }}
         run: |
