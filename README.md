@@ -1,3 +1,19 @@
+<!--
+# Copyright Aeraki Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-->
+
 # Aeraki
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/aeraki-framework/aeraki)](https://goreportcard.com/report/github.com/aeraki-framework/aeraki)
@@ -9,9 +25,13 @@
 [![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
 
 # Manage **any** layer 7 traffic in Istio service mesh!
-![ Aeraki ](docs/aeraki&istio.png)
+
+<div align="center">
+<img src="docs/aeraki&istio.png">
+</div>
+
 ---
-Aeraki [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC. We hope that this breeze can help Istio sail a little further.
+**Aeraki** [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC. We hope that this breeze can help Istio sail a little further.
 
 ## Problems to solve
 
@@ -135,7 +155,59 @@ Note: Aeraki needs to configure Istio with smart dns. If you already have an Ist
 * Grafana `http://{istio-ingressgateway_external_ip}:3000`
 * Prometheus `http://{istio-ingressgateway_external_ip}:9090`
 
-You can import Aeraika demo dashboard from file `demo/aeraki-demo.json` into the Grafana.
+You can import Aeraki demo dashboard from file `demo/aeraki-demo.json` into the Grafana.
+
+## Build
+
+### Pre-requirements:
+* Golang Version >= 1.16, and related golang tools installed like `goimports`, `gofmt`, etc.
+* Docker and Docker-Compose installed
+
+### Build Aeraki Binary
+
+```bash
+# build aeraki binary on linux
+make build
+
+# build aeraki binary on darwin
+make build-mac
+```
+
+### Build LazyXDS Binary
+
+```bash
+# build lazyxds binary on linux
+make build.lazyxds
+
+# build lazyxds binary on darwin
+make build-mac.lazyxds
+```
+
+### Build Aeraki Image
+
+```bash
+# build aeraki docker image with the default latest tag
+make docker-build
+
+# build aeraki docker image with xxx tag
+make docker-build tag=xxx
+
+# build aeraki e2e docker image
+make docker-build-e2e
+```
+
+### Build LazyXDS Image
+
+```bash
+# build lazyxds docker image with the default latest tag
+make docker-build.lazyxds
+
+# build lazyxds docker image with xxx tag
+make docker-build.lazyxds tag=xxx
+
+# build lazyxds e2e docker image
+make docker-build-e2e.lazyxds
+```
 
 ## Talks
 

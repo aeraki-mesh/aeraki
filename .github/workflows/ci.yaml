@@ -58,9 +58,7 @@ jobs:
           go version
           go get golang.org/x/tools/cmd/goimports
       - name: gofmt and goimports
-        run: |
-          gofmt -l -d ./
-          goimports -l -d ./
+        run: make style-check
   checkgomod:
     name: check go.mod and go.sum
     runs-on: ubuntu-latest

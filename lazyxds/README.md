@@ -1,6 +1,22 @@
+<!--
+# Copyright Aeraki Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-->
+
 # LazyXds
 
-LazyXds enables Istio only push needed xds to sidecars to reduce resource consumption and speed up xds configuration propagation.
+LazyXds enables Istio only push needed xDS to sidecars to reduce resource consumption and speed up xDS configuration propagation.
 
 ## Problems to solve
 
@@ -17,7 +33,7 @@ LazyXds enables Istio only push needed xds to sidecars to reduce resource consum
 * A running Kubernetes cluster, and istio(version >= 1.10.0) installed
 * Kubectl installed, and the `~/.kube/conf` points to the cluster in the first step
 
-### Install Lazyxds egress and controller
+### Install Lazyxds Egress and Controller
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-egress.yaml

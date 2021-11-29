@@ -1,4 +1,20 @@
-With the help of Aeraki Framework, you can manage proprietary protocols in Istio service mesh. Just follow the 
+<!--
+# Copyright Aeraki Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-->
+
+With the help of Aeraki Framework, you can manage proprietary protocols in Istio Service Mesh. Just follow the 
 below steps:
 
 ## Data Plane
@@ -10,7 +26,7 @@ Quickly build an Envoy Filter for a proprietary protocol on top of MetaProtocol:
                     [Thrift codec](https://github.com/aeraki-framework/meta-protocol-proxy/tree/master/src/application_protocols/thrift) as writing your own implementation.
 
 * Define the protocol with Aeraki ApplicationProtocol CRD.
-Below is an example of Dubbo protocol:
+Below is an example of the Dubbo protocol:
 ```yaml
 apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
