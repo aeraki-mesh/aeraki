@@ -4,12 +4,16 @@ name: e2e-dubbo
 on:
   pull_request:
     paths-ignore:
-      - '**.md'
+      - '.github/**'
       - 'docs/**'
+      - '**/*.md'
+      - '.ci/**'
   push:
     paths-ignore:
-      - '**.md'
+      - '.github/**'
       - 'docs/**'
+      - '**/*.md'
+      - '.ci/**'
     branches:
       - '*'
 

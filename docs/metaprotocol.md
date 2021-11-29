@@ -14,7 +14,7 @@
 # limitations under the License.
 -->
 
-With the help of Aeraki Framework, you can manage proprietary protocols in Istio service mesh. Just follow the 
+With the help of Aeraki Framework, you can manage proprietary protocols in Istio Service Mesh. Just follow the 
 below steps:
 
 ## Data Plane
