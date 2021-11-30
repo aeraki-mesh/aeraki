@@ -1,21 +1,7 @@
 ---
 name: e2e-redis
 
-on:
-  pull_request:
-    paths-ignore:
-      - '.github/**'
-      - 'docs/**'
-      - '**/*.md'
-      - '.ci/**'
-  push:
-    paths-ignore:
-      - '.github/**'
-      - 'docs/**'
-      - '**/*.md'
-      - '.ci/**'
-    branches:
-      - '*'
+on: [push, pull_request]
 
 env:
   ISTIO_VERSION: 1.10.0
