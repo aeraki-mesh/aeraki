@@ -36,6 +36,8 @@ BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
 MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
 
+install:
+	bash demo/install-demo.sh
 test: style-check
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
 build: test
