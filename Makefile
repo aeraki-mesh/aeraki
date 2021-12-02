@@ -39,7 +39,7 @@ MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
 install:
 	bash demo/install-demo.sh
 uninstall:
-        bash demo/uninstall-demo.sh
+	bash demo/uninstall-demo.sh
 test: style-check
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
 build: test
