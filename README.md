@@ -150,6 +150,11 @@ make install
 Note: Aeraki needs to configure Istio with smart dns. If you already have an Istio installed and don't know how to
  turn on smart dns, please uninstall it. install-demo.sh will install Istio for you.
 
+### Uninstall Istio, Aeraki and demo applications
+```bash
+make uninstall
+```
+
 ### Open the following URLs in your browser to play with Aeraki and view service metrics
 * Kaili `http://{istio-ingressgateway_external_ip}:20001`
 * Grafana `http://{istio-ingressgateway_external_ip}:3000`
