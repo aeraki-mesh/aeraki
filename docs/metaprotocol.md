@@ -50,7 +50,7 @@ tcp-metaprotocol-{layer-7-protocol}-xxx. For example, a Dubbo service port could
 
 ## Traffic management
 
-You can change the route via MataRouter CRD. For example:
+You can change the route via MetaRouter CRD. For example:
 
 * Route the Dubbo requests calling method sayHello to v2:
 ```yaml
