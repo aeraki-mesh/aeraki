@@ -8,6 +8,8 @@ then
   export BUILD_TAG=`git log --format="%H" -n 1`
 fi
 
-envsubst < $BASEDIR/../common/lazyxds-controller.yaml > lazyxds-controller.yaml
-kubectl apply -f lazyxds-controller.yaml
+envsubst < $BASEDIR/../common/lazyxds-controller.yaml > $BASEDIR/../common/lazyxds-controller-tmp.yaml
+kubectl apply -f $BASEDIR/../common/lazyxds-controller-tmp.yaml
 kubectl apply -f $BASEDIR/../../../lazyxds/install/lazyxds-egress.yaml
+
+rm $BASEDIR/../common/lazyxds-controller-tmp.yaml
