@@ -20,6 +20,7 @@ GOCLEAN?=$(GOCMD) clean
 GOTEST?=$(GOCMD) test
 GOGET?=$(GOCMD) get
 GOBIN?=$(GOPATH)/bin
+GOMOD?=$(GOCMD) mod
 
 # Build parameters
 IMAGE_TAG := $(tag)
@@ -41,6 +42,7 @@ install:
 uninstall:
 	bash demo/uninstall-demo.sh
 test: style-check
+	$(GOMOD) tidy
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
 build: test
 	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_CONSUL_MCP)
