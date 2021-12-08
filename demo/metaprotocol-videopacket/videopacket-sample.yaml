@@ -1,0 +1,130 @@
+# Copyright Aeraki Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videopacket-sample-server-v1
+  labels:
+    app: videopacket-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: videopacket-sample-server
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-videopacket
+      labels:
+        app: videopacket-sample-server
+        version: v1
+    spec:
+      containers:
+        - name: videopacket-sample-server
+          image: aeraki/videopacket-sample-server
+          env:
+            - name: version
+              value: add
+          ports:
+            - containerPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videopacket-sample-server-v2
+  labels:
+    app: videopacket-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: videopacket-sample-server
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-videopacket
+      labels:
+        app: videopacket-sample-server
+        version: v2
+    spec:
+      containers:
+        - name: videopacket-sample-server
+          image: aeraki/videopacket-sample-server
+          env:
+            - name: version
+              value: multication
+          ports:
+            - containerPort: 8000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: videopacket-sample-client
+  labels:
+    app: videopacket-sample-client
+spec:
+  selector:
+    matchLabels:
+      app: videopacket-sample-client
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-videopacket
+      labels:
+        app: videopacket-sample-client
+    spec:
+      containers:
+        - name: videopacket-sample-client
+          image: aeraki/videopacket-sample-client
+          env:
+            - name: server_addr
+              value: "videopacket-sample-server:8000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: videopacket-sample-server
+spec:
+  selector:
+    app: videopacket-sample-server
+  ports:
+    - name: tcp-metaprotocol-videopacket-server
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+# network-tool is used for debugging purpose
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#  name: network-tool
+# spec:
+#  selector:
+#    matchLabels:
+#      app: network-tool
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        app: network-tool
+#    spec:
+#      containers:
+#        - name: network-tool
+#          image: praqma/network-multitool
