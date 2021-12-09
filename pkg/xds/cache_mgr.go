@@ -215,7 +215,7 @@ func (c *CacheMgr) constructMatch(route *metaprotocolapi.MetaRoute) *metaroute.R
 					HeaderMatchSpecifier: &httproute.HeaderMatcher_SafeRegexMatch{
 						SafeRegexMatch: &matcher.RegexMatcher{
 							EngineType: regexEngine,
-							Regex:      attribute.GetPrefix(),
+							Regex:      attribute.GetRegex(),
 						},
 					},
 				}
