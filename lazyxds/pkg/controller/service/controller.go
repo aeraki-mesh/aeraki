@@ -17,6 +17,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
+	"k8s.io/apimachinery/pkg/labels"
 	"reflect"
 	"time"
 
@@ -77,6 +79,26 @@ func NewController(
 	})
 
 	return c
+}
+
+// ReconcileAllServices reconcile all the services
+func (c *Controller) ReconcileAllServices() {
+	services, _ := c.lister.List(labels.Everything())
+	for _, service := range services {
+		c.log.V(4).Info("Adding Service", "name", service.Name)
+		c.enqueue(service)
+	}
+}
+
+// ReconcileServices reconcile services in a certain namespace
+func (c *Controller) ReconcileServices(ns *model.Namespace) {
+	services, _ := c.lister.List(labels.Everything())
+	for _, service := range services {
+		if service.Namespace == ns.Name {
+			c.log.V(4).Info("Adding Service", "name", service.Name)
+			c.enqueue(service)
+		}
+	}
 }
 
 func (c *Controller) add(obj interface{}) {
