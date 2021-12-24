@@ -38,6 +38,8 @@ type Namespace struct {
 	Distribution map[string]bool
 	UserSidecar  map[string]struct{}
 
+	Labels map[string]string
+
 	LazyStatus NSLazyStatus
 }
 
@@ -47,6 +49,7 @@ func NewNamespace(namespace *corev1.Namespace) *Namespace {
 		Name:         namespace.Name,
 		Distribution: make(map[string]bool),
 		UserSidecar:  make(map[string]struct{}),
+		Labels:       namespace.Labels,
 	}
 }
 
@@ -68,6 +71,7 @@ func (ns *Namespace) LazyEnabled(clusterName string) bool {
 // Update update one namespace of the multiCluster
 func (ns *Namespace) Update(clusterName string, namespace *corev1.Namespace) {
 	ns.Distribution[clusterName] = utils.IsLazyEnabled(namespace.Annotations)
+	ns.Labels = namespace.Labels
 	ns.updateLazyStatus()
 }
 

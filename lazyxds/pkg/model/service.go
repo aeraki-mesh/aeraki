@@ -182,9 +182,8 @@ func (svc *Service) updateSpec() {
 				spec.LazyEnabled = false
 			} else if svc.NSLazy == NSLazyStatusEnabled {
 				spec.LazyEnabled = true
-			} else {
-				spec.LazyEnabled = spec.LazyEnabled || cs.LazyEnabled
 			}
+			spec.LazyEnabled = spec.LazyEnabled || cs.LazyEnabled
 		}
 
 		// if cs.LazyEnabled {

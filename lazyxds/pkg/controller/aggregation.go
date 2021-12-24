@@ -17,6 +17,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"github.com/aeraki-framework/aeraki/lazyxds/pkg/controller/discoveryselector"
+	"k8s.io/apimachinery/pkg/labels"
 	"sync"
 
 	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
@@ -50,7 +52,7 @@ type AggregationController struct {
 	log  logr.Logger
 	stop <-chan struct{}
 
-	KubeClient    *kubernetes.Clientset // todo need remove
+	KubeClient    *kubernetes.Clientset
 	istioClient   *istioclient.Clientset
 	istioInformer istioinformer.SharedInformerFactory
 	multiCluster  map[string]*Cluster
@@ -63,11 +65,14 @@ type AggregationController struct {
 	sidecarController        *sidecar.Controller
 	serviceEntryController   *serviceentry.Controller
 	lazyServiceController    *lazyservice.Controller
+	configMapController      *discoveryselector.Controller
 
 	// all services of all k8s clusters
 	services sync.Map // format: {svcID: *model.svc}
 	// all lazy services
 	lazyServices map[string]*model.Service
+	// istio discovery namespace selector
+	selectors []labels.Selector
 
 	namespaces sync.Map
 	endpoints  sync.Map
@@ -78,10 +83,11 @@ type AggregationController struct {
 }
 
 // NewController ...
-func NewController(istioClient *istioclient.Clientset, stop <-chan struct{}) *AggregationController {
+func NewController(istioClient *istioclient.Clientset, kubeClient *kubernetes.Clientset, stop <-chan struct{}) *AggregationController {
 	c := &AggregationController{
 		log:           klogr.New().WithName("AggregationController"),
 		istioClient:   istioClient,
+		KubeClient:    kubeClient,
 		istioInformer: istioinformer.NewSharedInformerFactory(istioClient, 0),
 		stop:          stop,
 		multiCluster:  make(map[string]*Cluster),
@@ -108,6 +114,12 @@ func NewController(istioClient *istioclient.Clientset, stop <-chan struct{}) *Ag
 
 	c.lazyServiceController = lazyservice.NewController(
 		c.syncLazyService,
+	)
+
+	c.configMapController = discoveryselector.NewController(
+		c.KubeClient,
+		c.updateDiscoverySelector,
+		c.reconcileAllNamespaces,
 	)
 
 	return c
@@ -164,6 +176,7 @@ func (c *AggregationController) Run() {
 	go c.sidecarController.Run(2, c.stop)
 	go c.serviceEntryController.Run(2, c.stop)
 	go c.lazyServiceController.Run(4, c.stop)
+	go c.configMapController.Run(c.stop)
 
 	c.istioInformer.Start(c.stop)
 }
