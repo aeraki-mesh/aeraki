@@ -42,6 +42,9 @@ func (c *AggregationController) syncServiceRuleOfEgress(ctx context.Context, svc
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      config.EgressVirtualServiceName,
 				Namespace: config.IstioNamespace,
+				Labels: map[string]string{
+					config.ManagedByLabel: config.LazyXdsManager,
+				},
 			},
 			Spec: networking.VirtualService{
 				Hosts:    []string{"*"},
@@ -145,6 +148,9 @@ func (c *AggregationController) syncEnvoyFilterOfLazySource(ctx context.Context,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      envoyFilterName,
 				Namespace: lazySvc.Namespace,
+				Labels: map[string]string{
+					config.ManagedByLabel: config.LazyXdsManager,
+				},
 			},
 		}
 	} else if err != nil {
@@ -214,6 +220,9 @@ func (c *AggregationController) syncSidecarOfLazySource(ctx context.Context, laz
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      sidecarName,
 				Namespace: lazySvc.Namespace,
+				Labels: map[string]string{
+					config.ManagedByLabel: config.LazyXdsManager,
+				},
 			},
 		}
 	} else if err != nil {

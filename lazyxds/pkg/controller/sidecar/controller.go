@@ -107,6 +107,12 @@ func (c *Controller) delete(obj interface{}) {
 }
 
 func (c *Controller) isSidecarConfigManagedByLazyXds(sidecar *istio.Sidecar) bool {
+	// old kubernetes versions not support ManagedFields, so need use label
+	// todo: first create a sidecar without the label(so the ns is disabled), then add the label to the sidecar,
+	// now we need make the ns enabled, but seems it's not a normal process, ignore now.
+	if sidecar.Labels[config.ManagedByLabel] == config.LazyXdsManager {
+		return true
+	}
 	for _, mangedFiled := range sidecar.ManagedFields {
 		if mangedFiled.Manager == config.LazyXdsManager {
 			return true
