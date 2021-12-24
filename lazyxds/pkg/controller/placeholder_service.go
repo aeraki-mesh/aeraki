@@ -121,6 +121,9 @@ func (c *AggregationController) createPlaceholderService(ctx context.Context, se
 	newGlobalService := &coreV1.Service{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: PlaceHolderService,
+			Labels: map[string]string{
+				config.ManagedByLabel: config.LazyXdsManager,
+			},
 		},
 		Spec: coreV1.ServiceSpec{
 			Selector: map[string]string{

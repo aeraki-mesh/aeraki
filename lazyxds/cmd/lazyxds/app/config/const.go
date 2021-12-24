@@ -33,6 +33,8 @@ const (
 	EgressVirtualServiceName = "lazyxds-egress"
 	// LazyLoadingAnnotation is the annotation name which use to enable/disable lazy xds feature
 	LazyLoadingAnnotation = "lazy-xds"
+	// ManagedByLabel is the common label indicate the component is managed by which controller
+	ManagedByLabel = "app.kubernetes.io/managed-by"
 )
 
 // GetEgressCluster returns the egress xds cluster string
