@@ -69,7 +69,7 @@ func NewManager(conf *config.Config, stop <-chan struct{}) (*Manager, error) {
 		stop:         stop,
 		masterClient: kubeClient,
 		istioClient:  istioClient,
-		controller:   controller.NewController(istioClient, stop),
+		controller:   controller.NewController(istioClient, kubeClient, stop),
 	}
 	singleton.accessLogServer = accesslog.NewAccessLogServer(singleton.controller)
 

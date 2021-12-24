@@ -16,20 +16,52 @@ package controller
 
 import (
 	"context"
-
+	"fmt"
 	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
 	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func (c *AggregationController) syncService(ctx context.Context, clusterName string, service *corev1.Service) (err error) {
+	selectors := c.selectors
 	id := utils.FQDN(service.Name, service.Namespace)
+
+	matched, err := c.matchDiscoverySelector(selectors, service)
+	if err != nil {
+		return err
+	}
+	if !matched {
+		c.services.Delete(id)
+		c.log.Info("Namespace label of service not match DiscoverySelector, delete it", "service", service.Name, "namespace", service.Namespace)
+		return nil
+	}
 
 	v, _ := c.services.LoadOrStore(id, model.NewService(service))
 	svc := v.(*model.Service)
 	svc.UpdateClusterService(clusterName, service)
 
 	return c.doSyncService(ctx, svc)
+}
+
+func (c *AggregationController) matchDiscoverySelector(selectors []labels.Selector, service *corev1.Service) (bool, error) {
+	isNsLabelsMatch := false
+	if len(selectors) > 0 {
+		v, ok := c.namespaces.Load(service.Namespace)
+		if !ok {
+			return false, fmt.Errorf("namespace %s not found", service.Namespace)
+		}
+		ns := v.(*model.Namespace)
+		for _, selector := range selectors {
+			if selector.Matches(labels.Set(ns.Labels)) {
+				isNsLabelsMatch = true
+			}
+		}
+	} else {
+		// omitting discoverySelectors indicates discovering all namespaces
+		isNsLabelsMatch = true
+	}
+	return isNsLabelsMatch, nil
 }
 
 func (c *AggregationController) deleteService(ctx context.Context, clusterName, svcID string) (err error) {

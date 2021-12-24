@@ -52,19 +52,15 @@ func (c *AggregationController) deleteNamespace(ctx context.Context, clusterName
 
 	return c.reconcileNamespace(ctx, ns)
 }
+
+// reconcileAllNamespace do this when namespace labels updated
 func (c *AggregationController) reconcileNamespace(ctx context.Context, ns *model.Namespace) (err error) {
-	c.services.Range(func(key, value interface{}) bool {
-		svc := value.(*model.Service)
-		if svc.Namespace != ns.Name {
-			return true
-		}
+	c.serviceController.ReconcileServices(ns)
+	return c.reconcileAllLazyServices(ctx)
+}
 
-		e := c.tryReconcileLazyService(ctx, svc)
-		if e != nil {
-			err = e
-		}
-		return true
-	})
-
-	return
+// reconcileAllNamespace do this when discoverySelector updated
+func (c *AggregationController) reconcileAllNamespaces(ctx context.Context) (err error) {
+	c.serviceController.ReconcileAllServices()
+	return c.reconcileAllLazyServices(ctx)
 }

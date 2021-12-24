@@ -93,7 +93,7 @@ func (c *Controller) update(oldObj, curObj interface{}) {
 }
 
 func (c *Controller) needsUpdate(old *corev1.Namespace, new *corev1.Namespace) bool {
-	return !reflect.DeepEqual(old.Annotations, new.Annotations) || new.GetDeletionTimestamp() != nil
+	return !reflect.DeepEqual(old.Annotations, new.Annotations) || !reflect.DeepEqual(old.Labels, new.Labels) || new.GetDeletionTimestamp() != nil
 }
 
 func (c *Controller) delete(obj interface{}) {
