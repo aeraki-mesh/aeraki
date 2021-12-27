@@ -20,7 +20,9 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"github.com/aeraki-framework/aeraki/pkg/model"
 	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
 	"github.com/zhaohuabing/debounce"
@@ -56,9 +58,10 @@ var (
 
 // Controller contains the runtime configuration for the envoyFilter controller.
 type Controller struct {
-	istioClientset *istioclient.Clientset
-	configStore    istiomodel.ConfigStore
-	generators     map[protocol.Instance]Generator
+	istioClientset             *istioclient.Clientset
+	MetaRouterControllerClient client.Client
+	configStore                istiomodel.ConfigStore
+	generators                 map[protocol.Instance]Generator
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 }
@@ -194,12 +197,17 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		if err != nil {
 			return envoyFilters, fmt.Errorf("failed in finding the related virtual service : %s: %v", config.Name, err)
 		}
+		relatedMr, err := c.findRelatedMetaRouter(service)
+		if err != nil {
+			return envoyFilters, fmt.Errorf("failed in finding the related meta router : %s: %v", config.Name, err)
+		}
 		context := &model.EnvoyFilterContext{
 			ServiceEntry: &model.ServiceEntryWrapper{
 				Meta: config.Meta,
 				Spec: service,
 			},
 			VirtualService: relatedVs,
+			MetaRouter:     relatedMr,
 		}
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
@@ -242,6 +250,23 @@ func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry)
 					Meta: vsConfig.Meta,
 					Spec: vs,
 				}, nil
+			}
+		}
+	}
+	return nil, nil
+}
+
+func (c *Controller) findRelatedMetaRouter(service *networking.ServiceEntry) (*metaprotocol.MetaRouter, error) {
+	metaRouterList := metaprotocol.MetaRouterList{}
+	err := c.MetaRouterControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, metaRouter := range metaRouterList.Items {
+		for _, host := range metaRouter.Spec.Hosts {
+			if host == service.Hosts[0] {
+				return &metaRouter, nil
 			}
 		}
 	}

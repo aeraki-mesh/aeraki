@@ -18,11 +18,16 @@ import (
 	"strconv"
 	"time"
 
+	userapi "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1"
+	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+
 	metaroute "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 )
+
+var regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 
 //We use Envoy RDS(HTTP RouteConfiguration) to transmit Meta Protocol Configuration from the RDS server to the Proxy
 func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httproute.RouteConfiguration {
@@ -91,4 +96,44 @@ func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) cache.Snapshot
 		[]types.Resource{}, // secrets
 		[]types.Resource{}, // extensionconfig
 	)
+}
+
+func MetaMatch2HttpHeaderMatch(matchCrd *userapi.MetaRouteMatch) []*httproute.HeaderMatcher {
+	var headerMatchers []*httproute.HeaderMatcher
+
+	if matchCrd != nil {
+		var headerMatcher *httproute.HeaderMatcher
+		for name, attribute := range matchCrd.Attributes {
+			switch attribute.GetMatchType().(type) {
+			case *userapi.StringMatch_Exact:
+				headerMatcher = &httproute.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &httproute.HeaderMatcher_ExactMatch{
+						ExactMatch: attribute.GetExact(),
+					},
+				}
+			case *userapi.StringMatch_Prefix:
+				headerMatcher = &httproute.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &httproute.HeaderMatcher_PrefixMatch{
+						PrefixMatch: attribute.GetPrefix(),
+					},
+				}
+			case *userapi.StringMatch_Regex:
+				headerMatcher = &httproute.HeaderMatcher{
+					Name: name,
+					HeaderMatchSpecifier: &httproute.HeaderMatcher_SafeRegexMatch{
+						SafeRegexMatch: &matcher.RegexMatcher{
+							EngineType: regexEngine,
+							Regex:      attribute.GetRegex(),
+						},
+					},
+				}
+			default:
+				continue
+			}
+			headerMatchers = append(headerMatchers, headerMatcher)
+		}
+	}
+	return headerMatchers
 }

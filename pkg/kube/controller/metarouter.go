@@ -64,14 +64,14 @@ var (
 // MetaRouterController control ApplicationProtocol
 type MetaRouterController struct {
 	client.Client
-	updateRouteCache func() error
+	metaRouterCallback func() error
 }
 
 // Reconcile will try to trigger once mcp push.
 func (r *MetaRouterController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	metaRouterLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
-	if r.updateRouteCache != nil {
-		err := r.updateRouteCache()
+	if r.metaRouterCallback != nil {
+		err := r.metaRouterCallback()
 		if err != nil {
 			return reconcile.Result{Requeue: true}, err
 		}
@@ -81,7 +81,7 @@ func (r *MetaRouterController) Reconcile(ctx context.Context, request reconcile.
 
 // AddMetaRouterController adds MetaRouterController
 func AddMetaRouterController(mgr manager.Manager, triggerPush func() error) error {
-	metaProtocolCtrl := &MetaRouterController{Client: mgr.GetClient(), updateRouteCache: triggerPush}
+	metaProtocolCtrl := &MetaRouterController{Client: mgr.GetClient(), metaRouterCallback: triggerPush}
 	c, err := controller.New("aeraki-meta-protocol-meta-router-controller", mgr,
 		controller.Options{Reconciler: metaProtocolCtrl})
 	if err != nil {

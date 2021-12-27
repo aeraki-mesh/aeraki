@@ -62,6 +62,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPr
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
+		MetaProtocolFilters: buildOutboundFilters(context.MetaRouter),
 	}, nil
 }
 
@@ -89,5 +90,6 @@ func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPro
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
+		MetaProtocolFilters: buildInboundFilters(context.MetaRouter),
 	}, nil
 }
