@@ -31,6 +31,6 @@ func (c *AggregationController) updateDiscoverySelector(discoverySelector []*met
 		selectors = append(selectors, ls)
 	}
 
-	c.selectors = selectors
+	c.discoverySelectors = selectors
 	return nil
 }

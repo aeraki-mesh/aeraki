@@ -57,7 +57,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	c.log.Info("starting discoveryselector controller...")
 	ctx := log.WithContext(context.Background(), c.log)
 	configMapWatcher, err := c.clientset.CoreV1().ConfigMaps("istio-system").Watch(ctx, metav1.ListOptions{
-		LabelSelector: "release=istio",
+		FieldSelector: "metadata.name=istio",
 	})
 	if err != nil {
 		c.log.Error(err, "watch configMap <istio> failed")

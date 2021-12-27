@@ -72,7 +72,7 @@ type AggregationController struct {
 	// all lazy services
 	lazyServices map[string]*model.Service
 	// istio discovery namespace selector
-	selectors []labels.Selector
+	discoverySelectors []labels.Selector
 
 	namespaces sync.Map
 	endpoints  sync.Map
