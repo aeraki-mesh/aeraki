@@ -80,7 +80,7 @@ func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 
 func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 	filters []*mpdataplane.MetaProtocolFilter) []*mpdataplane.MetaProtocolFilter {
-	return append(filters)
+	return filters
 }
 
 func crd2Descriptors(descriptorCrds []*userapi.RateLimitDescriptor) []*ratelimit.LocalRateLimitDescriptor {

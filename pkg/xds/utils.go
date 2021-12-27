@@ -98,6 +98,7 @@ func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) cache.Snapshot
 	)
 }
 
+// MetaMatch2HttpHeaderMatch converts MetaMatch to HttpHeaderMatch
 func MetaMatch2HttpHeaderMatch(matchCrd *userapi.MetaRouteMatch) []*httproute.HeaderMatcher {
 	var headerMatchers []*httproute.HeaderMatcher
 
