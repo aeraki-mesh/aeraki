@@ -147,8 +147,12 @@ func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
 	}
 	err = controller.AddMetaRouterController(crdCtrlMgr, func() error {
-		updateEnvoyFilter() //MetaRouter Rate limit config will cause update on EnvoyFilters
-		updateCache()       //MetaRouter route config will cause update on RDS cache
+		if err := updateEnvoyFilter(); err != nil { //MetaRouter Rate limit config will cause update on EnvoyFilters
+			return err
+		}
+		if err := updateCache(); err != nil { //MetaRouter route config will cause update on RDS cache
+			return err
+		}
 		return nil
 	})
 	if err != nil {

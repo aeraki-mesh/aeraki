@@ -80,6 +80,12 @@ func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPro
 	if err != nil {
 		return nil, err
 	}
+
+	filters, err := buildInboundFilters(context.MetaRouter)
+	if err != nil {
+		return nil, err
+	}
+
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
 			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
@@ -90,6 +96,6 @@ func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPro
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
-		MetaProtocolFilters: buildInboundFilters(context.MetaRouter),
+		MetaProtocolFilters: filters,
 	}, nil
 }

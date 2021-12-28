@@ -22,10 +22,6 @@ spec:
   hosts:
   - thrift-sample-server.meta-thrift.svc.cluster.local
   localRateLimit:
-    tokenBucket:
-      fillInterval: 30s
-      maxTokens: 50
-      tokensPerFill: 50
     descriptors:
     - entries:
       - key: method

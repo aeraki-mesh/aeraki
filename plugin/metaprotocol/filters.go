@@ -15,6 +15,8 @@
 package metaprotocol
 
 import (
+	"fmt"
+
 	userapi "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1"
 	mpclient "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"github.com/aeraki-framework/aeraki/pkg/xds"
@@ -33,14 +35,19 @@ func buildOutboundFilters(metaRouter *mpclient.MetaRouter) []*mpdataplane.MetaPr
 	return filters
 }
 
-func buildInboundFilters(metaRouter *mpclient.MetaRouter) []*mpdataplane.MetaProtocolFilter {
+func buildInboundFilters(metaRouter *mpclient.MetaRouter) ([]*mpdataplane.MetaProtocolFilter, error) {
 	var filters []*mpdataplane.MetaProtocolFilter
+	var err error
 	if metaRouter != nil {
-		filters = appendLocalRateLimitFilter(metaRouter, filters)
+		if metaRouter.Spec.LocalRateLimit != nil {
+			if filters, err = appendLocalRateLimitFilter(metaRouter, filters); err != nil {
+				return filters, err
+			}
+		}
 		filters = appendGlobalRateLimitFilter(metaRouter, filters)
 	}
-	filters = appendRouter(filters)
-	return filters
+
+	return appendRouter(filters), nil
 }
 
 func appendRouter(filters []*mpdataplane.MetaProtocolFilter) []*mpdataplane.MetaProtocolFilter {
@@ -51,19 +58,23 @@ func appendRouter(filters []*mpdataplane.MetaProtocolFilter) []*mpdataplane.Meta
 }
 
 func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
-	filters []*mpdataplane.MetaProtocolFilter) []*mpdataplane.MetaProtocolFilter {
-	if metaRouter.Spec.LocalRateLimit == nil {
-		return filters
-	}
-
+	filters []*mpdataplane.MetaProtocolFilter) ([]*mpdataplane.MetaProtocolFilter, error) {
 	localRateLimit := metaRouter.Spec.LocalRateLimit
+
+	if localRateLimit.TokenBucket == nil && len(localRateLimit.Descriptors) == 0 {
+		return nil, fmt.Errorf("either tokenBucket or descriptors should be specified")
+	}
 	lrt := &lrldataplane.LocalRateLimit{
 		StatPrefix: metaRouter.Spec.Hosts[0],
 		Match: &lrldataplane.LocalRatelimitMatch{
 			Metadata: xds.MetaMatch2HttpHeaderMatch(localRateLimit.Match),
 		},
-		TokenBucket: crd2kenBucket(localRateLimit.TokenBucket),
-		Descriptors: crd2Descriptors(localRateLimit.Descriptors),
+	}
+	if localRateLimit.TokenBucket != nil {
+		lrt.TokenBucket = crd2kenBucket(localRateLimit.TokenBucket)
+	}
+	if len(localRateLimit.Descriptors) > 0 {
+		lrt.Descriptors = crd2Descriptors(localRateLimit.Descriptors)
 	}
 
 	config, err := anypb.New(lrt)
@@ -75,7 +86,8 @@ func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 		Name:   "aeraki.meta_protocol.filters.local_ratelimit",
 		Config: config,
 	}
-	return append(filters, &localRateLimitFilter)
+	filters = append(filters, &localRateLimitFilter)
+	return filters, nil
 }
 
 func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
