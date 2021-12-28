@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-qza
+        sidecar.istio.io/proxyImage: aeraki/proxyv2-qza
       labels:
         app: qza-sample-server
         version: v1
@@ -57,7 +57,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-qza
+        sidecar.istio.io/proxyImage: aeraki/proxyv2-qza
       labels:
         app: qza-sample-server
         version: v2
@@ -86,7 +86,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-qza
+        sidecar.istio.io/proxyImage: aeraki/proxyv2-qza
       labels:
         app: qza-sample-client
     spec:

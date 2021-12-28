@@ -114,3 +114,4 @@ docker-build-e2e.lazyxds: build.lazyxds
 	rm -rf $(DOCKER_TMP)
 e2e-lazyxds:
 	ginkgo -v ./test/e2e/lazyxds/lazyxds/
+.DEFAULT_GOAL := docker-build

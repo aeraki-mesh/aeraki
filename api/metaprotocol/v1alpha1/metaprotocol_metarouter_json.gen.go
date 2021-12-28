@@ -11,7 +11,7 @@
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
 // kind: MetaRouter
 // metadata:
-//   name: traffic-split
+//   name: attribute-based-route
 //   namespace: istio-system
 // spec:
 //   hosts:
@@ -30,6 +30,26 @@
 //         subset: v1
 //
 // ```
+//
+// ```yaml
+// apiVersion: metaprotocol.aeraki.io/v1alpha1
+// kind: MetaRouter
+// metadata:
+//   name: traffic-splitting
+// spec:
+//   hosts:
+//     - org.apache.dubbo.samples.basic.api.demoservice
+//   routes:
+//     - name: traffic-spilt
+//       route:
+//         - destination:
+//             host: org.apache.dubbo.samples.basic.api.demoservice
+//             subset: v1
+//           weight: 20
+//         - destination:
+//             host: org.apache.dubbo.samples.basic.api.demoservice
+//             subset: v2
+//           weight: 80
 
 package v1alpha1
 
@@ -38,6 +58,7 @@ import (
 	fmt "fmt"
 	github_com_gogo_protobuf_jsonpb "github.com/gogo/protobuf/jsonpb"
 	proto "github.com/gogo/protobuf/proto"
+	_ "github.com/gogo/protobuf/types"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	math "math"
 )
@@ -121,6 +142,50 @@ func (this *PortSelector) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for PortSelector
 func (this *PortSelector) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for LocalRateLimit
+func (this *LocalRateLimit) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for LocalRateLimit
+func (this *LocalRateLimit) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for TokenBucket
+func (this *TokenBucket) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for TokenBucket
+func (this *TokenBucket) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for RateLimitDescriptor
+func (this *RateLimitDescriptor) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for RateLimitDescriptor
+func (this *RateLimitDescriptor) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for RateLimitDescriptor_Entry
+func (this *RateLimitDescriptor_Entry) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for RateLimitDescriptor_Entry
+func (this *RateLimitDescriptor_Entry) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

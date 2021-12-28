@@ -35,6 +35,8 @@ func NewManager(kubeConfig *rest.Config, namespace string, electionID string) (m
 		return nil, err
 	}
 
+	m.Elected()
+
 	//err = addRedisServiceController(m, triggerPush)
 	//if err != nil {
 	//	controllerLog.Fatalf("could not add RedisServiceController: %e", err)

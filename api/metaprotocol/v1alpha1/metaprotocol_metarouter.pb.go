@@ -11,7 +11,7 @@
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
 // kind: MetaRouter
 // metadata:
-//   name: traffic-split
+//   name: attribute-based-route
 //   namespace: istio-system
 // spec:
 //   hosts:
@@ -30,12 +30,33 @@
 //         subset: v1
 //
 // ```
+//
+// ```yaml
+// apiVersion: metaprotocol.aeraki.io/v1alpha1
+// kind: MetaRouter
+// metadata:
+//   name: traffic-splitting
+// spec:
+//   hosts:
+//     - org.apache.dubbo.samples.basic.api.demoservice
+//   routes:
+//     - name: traffic-spilt
+//       route:
+//         - destination:
+//             host: org.apache.dubbo.samples.basic.api.demoservice
+//             subset: v1
+//           weight: 20
+//         - destination:
+//             host: org.apache.dubbo.samples.basic.api.demoservice
+//             subset: v2
+//           weight: 80
 
 package v1alpha1
 
 import (
 	fmt "fmt"
 	proto "github.com/gogo/protobuf/proto"
+	types "github.com/gogo/protobuf/types"
 	io "io"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
 	math "math"
@@ -74,11 +95,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // +k8s:deepcopy-gen=true
 // -->
 type MetaRouter struct {
-	Hosts                []string     `protobuf:"bytes,1,rep,name=hosts,proto3" json:"hosts,omitempty"`
-	Routes               []*MetaRoute `protobuf:"bytes,3,rep,name=routes,proto3" json:"routes,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	Hosts                []string        `protobuf:"bytes,1,rep,name=hosts,proto3" json:"hosts,omitempty"`
+	Routes               []*MetaRoute    `protobuf:"bytes,2,rep,name=routes,proto3" json:"routes,omitempty"`
+	LocalRateLimit       *LocalRateLimit `protobuf:"bytes,3,opt,name=local_rate_limit,json=localRateLimit,proto3" json:"local_rate_limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
 func (m *MetaRouter) Reset()         { *m = MetaRouter{} }
@@ -124,6 +146,13 @@ func (m *MetaRouter) GetHosts() []string {
 func (m *MetaRouter) GetRoutes() []*MetaRoute {
 	if m != nil {
 		return m.Routes
+	}
+	return nil
+}
+
+func (m *MetaRouter) GetLocalRateLimit() *LocalRateLimit {
+	if m != nil {
+		return m.LocalRateLimit
 	}
 	return nil
 }
@@ -544,6 +573,271 @@ func (m *PortSelector) GetNumber() uint32 {
 	return 0
 }
 
+type LocalRateLimit struct {
+	// Match conditions to be satisfied for the rule to be activated.
+	// All conditions inside a single match block have AND semantic.
+	// If the match is not specified, then all the incoming requests will be considered matched.
+	Match *MetaRouteMatch `protobuf:"bytes,1,opt,name=match,proto3" json:"match,omitempty"`
+	// The default token bucket configuration to use for rate limiting requests that are processed by
+	// this filter.
+	// Local rate limiter will first check the descriptors, if a descriptor matches, then the token
+	// bucket within that descriptor will be applied to the incoming request. All the other requests
+	// that don't match the descriptors will be rate limited by the default token bucket.
+	// If the default token bucket is not specified, then the requests that don't match the descriptors
+	// will not be rate limited.
+	TokenBucket *TokenBucket `protobuf:"bytes,2,opt,name=token_bucket,json=tokenBucket,proto3" json:"token_bucket,omitempty"`
+	// The rate limit descriptor list to use in the local rate limit.
+	// The rate limit descriptor is selected by the first full match from the request descriptors.
+	// At least one of token_bucket and descriptors should be set. If both of the token_bucket and
+	// descriptors are set, the descriptors will be matched against the requests first. If no matching
+	// found, then fallback to the default token bucket.
+	// The descriptors must match verbatim for rate limiting to apply. There is no partial
+	// match by a subset of descriptor entries in the current implementation.
+	Descriptors          []*RateLimitDescriptor `protobuf:"bytes,3,rep,name=descriptors,proto3" json:"descriptors,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *LocalRateLimit) Reset()         { *m = LocalRateLimit{} }
+func (m *LocalRateLimit) String() string { return proto.CompactTextString(m) }
+func (*LocalRateLimit) ProtoMessage()    {}
+func (*LocalRateLimit) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1e2715e051935576, []int{7}
+}
+func (m *LocalRateLimit) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *LocalRateLimit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_LocalRateLimit.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *LocalRateLimit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LocalRateLimit.Merge(m, src)
+}
+func (m *LocalRateLimit) XXX_Size() int {
+	return m.Size()
+}
+func (m *LocalRateLimit) XXX_DiscardUnknown() {
+	xxx_messageInfo_LocalRateLimit.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LocalRateLimit proto.InternalMessageInfo
+
+func (m *LocalRateLimit) GetMatch() *MetaRouteMatch {
+	if m != nil {
+		return m.Match
+	}
+	return nil
+}
+
+func (m *LocalRateLimit) GetTokenBucket() *TokenBucket {
+	if m != nil {
+		return m.TokenBucket
+	}
+	return nil
+}
+
+func (m *LocalRateLimit) GetDescriptors() []*RateLimitDescriptor {
+	if m != nil {
+		return m.Descriptors
+	}
+	return nil
+}
+
+// Configures a token bucket which is used for rate limiting.
+type TokenBucket struct {
+	// The maximum tokens that the bucket can hold. This is also the number of tokens that the bucket
+	// initially contains. The value must be greater than 1.
+	MaxTokens uint32 `protobuf:"varint,1,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"`
+	// The number of tokens added to the bucket during each fill interval. The value must be greater than 1.
+	//If not specified, defaults to a single token.
+	TokensPerFill *types.UInt32Value `protobuf:"bytes,2,opt,name=tokens_per_fill,json=tokensPerFill,proto3" json:"tokens_per_fill,omitempty"`
+	// The fill interval that tokens are added to the bucket. During each fill interval
+	// `tokens_per_fill` are added to the bucket. The bucket will never contain more than
+	// `max_tokens` tokens.
+	FillInterval         *types.Duration `protobuf:"bytes,3,opt,name=fill_interval,json=fillInterval,proto3" json:"fill_interval,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *TokenBucket) Reset()         { *m = TokenBucket{} }
+func (m *TokenBucket) String() string { return proto.CompactTextString(m) }
+func (*TokenBucket) ProtoMessage()    {}
+func (*TokenBucket) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1e2715e051935576, []int{8}
+}
+func (m *TokenBucket) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *TokenBucket) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_TokenBucket.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *TokenBucket) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TokenBucket.Merge(m, src)
+}
+func (m *TokenBucket) XXX_Size() int {
+	return m.Size()
+}
+func (m *TokenBucket) XXX_DiscardUnknown() {
+	xxx_messageInfo_TokenBucket.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TokenBucket proto.InternalMessageInfo
+
+func (m *TokenBucket) GetMaxTokens() uint32 {
+	if m != nil {
+		return m.MaxTokens
+	}
+	return 0
+}
+
+func (m *TokenBucket) GetTokensPerFill() *types.UInt32Value {
+	if m != nil {
+		return m.TokensPerFill
+	}
+	return nil
+}
+
+func (m *TokenBucket) GetFillInterval() *types.Duration {
+	if m != nil {
+		return m.FillInterval
+	}
+	return nil
+}
+
+type RateLimitDescriptor struct {
+	// Descriptor entries.
+	Entries []*RateLimitDescriptor_Entry `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	// Token Bucket algorithm for local rate limiting.
+	TokenBucket          *TokenBucket `protobuf:"bytes,2,opt,name=token_bucket,json=tokenBucket,proto3" json:"token_bucket,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *RateLimitDescriptor) Reset()         { *m = RateLimitDescriptor{} }
+func (m *RateLimitDescriptor) String() string { return proto.CompactTextString(m) }
+func (*RateLimitDescriptor) ProtoMessage()    {}
+func (*RateLimitDescriptor) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1e2715e051935576, []int{9}
+}
+func (m *RateLimitDescriptor) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RateLimitDescriptor) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RateLimitDescriptor.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RateLimitDescriptor) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RateLimitDescriptor.Merge(m, src)
+}
+func (m *RateLimitDescriptor) XXX_Size() int {
+	return m.Size()
+}
+func (m *RateLimitDescriptor) XXX_DiscardUnknown() {
+	xxx_messageInfo_RateLimitDescriptor.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RateLimitDescriptor proto.InternalMessageInfo
+
+func (m *RateLimitDescriptor) GetEntries() []*RateLimitDescriptor_Entry {
+	if m != nil {
+		return m.Entries
+	}
+	return nil
+}
+
+func (m *RateLimitDescriptor) GetTokenBucket() *TokenBucket {
+	if m != nil {
+		return m.TokenBucket
+	}
+	return nil
+}
+
+type RateLimitDescriptor_Entry struct {
+	// Descriptor key.
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	// Descriptor value.
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RateLimitDescriptor_Entry) Reset()         { *m = RateLimitDescriptor_Entry{} }
+func (m *RateLimitDescriptor_Entry) String() string { return proto.CompactTextString(m) }
+func (*RateLimitDescriptor_Entry) ProtoMessage()    {}
+func (*RateLimitDescriptor_Entry) Descriptor() ([]byte, []int) {
+	return fileDescriptor_1e2715e051935576, []int{9, 0}
+}
+func (m *RateLimitDescriptor_Entry) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RateLimitDescriptor_Entry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RateLimitDescriptor_Entry.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RateLimitDescriptor_Entry) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RateLimitDescriptor_Entry.Merge(m, src)
+}
+func (m *RateLimitDescriptor_Entry) XXX_Size() int {
+	return m.Size()
+}
+func (m *RateLimitDescriptor_Entry) XXX_DiscardUnknown() {
+	xxx_messageInfo_RateLimitDescriptor_Entry.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RateLimitDescriptor_Entry proto.InternalMessageInfo
+
+func (m *RateLimitDescriptor_Entry) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *RateLimitDescriptor_Entry) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*MetaRouter)(nil), "metaprotocol.aeraki.io.v1alpha1.MetaRouter")
 	proto.RegisterType((*MetaRoute)(nil), "metaprotocol.aeraki.io.v1alpha1.MetaRoute")
@@ -553,6 +847,10 @@ func init() {
 	proto.RegisterType((*MetaRouteDestination)(nil), "metaprotocol.aeraki.io.v1alpha1.MetaRouteDestination")
 	proto.RegisterType((*Destination)(nil), "metaprotocol.aeraki.io.v1alpha1.Destination")
 	proto.RegisterType((*PortSelector)(nil), "metaprotocol.aeraki.io.v1alpha1.PortSelector")
+	proto.RegisterType((*LocalRateLimit)(nil), "metaprotocol.aeraki.io.v1alpha1.LocalRateLimit")
+	proto.RegisterType((*TokenBucket)(nil), "metaprotocol.aeraki.io.v1alpha1.TokenBucket")
+	proto.RegisterType((*RateLimitDescriptor)(nil), "metaprotocol.aeraki.io.v1alpha1.RateLimitDescriptor")
+	proto.RegisterType((*RateLimitDescriptor_Entry)(nil), "metaprotocol.aeraki.io.v1alpha1.RateLimitDescriptor.Entry")
 }
 
 func init() {
@@ -560,40 +858,57 @@ func init() {
 }
 
 var fileDescriptor_1e2715e051935576 = []byte{
-	// 527 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0xcf, 0x6a, 0xdb, 0x4c,
-	0x14, 0xc5, 0xbf, 0xb1, 0x6c, 0xf3, 0xf9, 0x2a, 0x69, 0xc3, 0x10, 0x52, 0x91, 0x85, 0x63, 0xb4,
-	0x32, 0xa5, 0x91, 0x88, 0x4b, 0x69, 0x29, 0x85, 0x62, 0xd3, 0x40, 0x49, 0x09, 0x94, 0xf1, 0xae,
-	0x1b, 0x33, 0x72, 0xae, 0xa5, 0xc1, 0x92, 0x46, 0x8c, 0xc6, 0x8e, 0xbd, 0x2c, 0x7d, 0xa4, 0xbe,
-	0x44, 0x97, 0x7d, 0x82, 0x12, 0xfc, 0x24, 0x45, 0x23, 0xc5, 0x55, 0x4a, 0x8b, 0xdd, 0xdd, 0x9c,
-	0x7b, 0x39, 0xe7, 0x77, 0xe7, 0xea, 0x0f, 0xbc, 0xe4, 0x99, 0xf0, 0x13, 0xd4, 0x3c, 0x53, 0x52,
-	0xcb, 0xa9, 0x8c, 0xfd, 0xe5, 0x05, 0x8f, 0xb3, 0x88, 0x5f, 0x3c, 0xa8, 0x4e, 0x0a, 0xa1, 0xe4,
-	0x42, 0xa3, 0xf2, 0x4c, 0x8d, 0x9e, 0xd5, 0xdb, 0x1e, 0x47, 0xc5, 0xe7, 0xc2, 0x13, 0xd2, 0xbb,
-	0xb7, 0x9f, 0x9e, 0x85, 0x52, 0x86, 0x31, 0xfa, 0x05, 0x60, 0x26, 0x30, 0xbe, 0x99, 0x04, 0x18,
-	0xf1, 0xa5, 0x90, 0x55, 0x82, 0x3b, 0x03, 0xb8, 0x46, 0xcd, 0x99, 0x49, 0xa5, 0xc7, 0xd0, 0x8a,
-	0x64, 0xae, 0x73, 0x87, 0xf4, 0xac, 0x7e, 0x87, 0x95, 0x82, 0x8e, 0xa0, 0x6d, 0xa8, 0xb9, 0x63,
-	0xf5, 0xac, 0xbe, 0x3d, 0x78, 0xea, 0xed, 0xc0, 0x7a, 0xdb, 0x48, 0x56, 0x39, 0xdd, 0xaf, 0x04,
-	0x3a, 0xdb, 0x2a, 0xa5, 0xd0, 0x4c, 0x79, 0x82, 0x0e, 0xe9, 0x91, 0x7e, 0x87, 0x99, 0x33, 0xbd,
-	0x84, 0x56, 0xc2, 0xf5, 0x34, 0x72, 0x1a, 0x3d, 0xd2, 0xb7, 0x07, 0xfe, 0xfe, 0x90, 0xeb, 0xc2,
-	0xc6, 0x4a, 0x37, 0xfd, 0x00, 0x2d, 0x83, 0xac, 0x66, 0x7d, 0xb1, 0x7f, 0xcc, 0x3b, 0xcc, 0xb5,
-	0x48, 0xb9, 0x16, 0x32, 0x65, 0x65, 0x86, 0xfb, 0x83, 0xc0, 0xa3, 0x87, 0x18, 0x3a, 0x01, 0xe0,
-	0x5a, 0x2b, 0x11, 0x98, 0x85, 0x10, 0x03, 0x79, 0xfb, 0x8f, 0xb3, 0x7a, 0xc3, 0x6d, 0xc2, 0x65,
-	0xaa, 0xd5, 0x9a, 0xd5, 0x22, 0x4f, 0xe7, 0xf0, 0xf8, 0xb7, 0x36, 0x3d, 0x02, 0x6b, 0x8e, 0xeb,
-	0x6a, 0x5b, 0xc5, 0x91, 0x8e, 0xa0, 0xb5, 0xe4, 0xf1, 0x02, 0xab, 0x65, 0x3d, 0xdb, 0x39, 0xc0,
-	0x58, 0x2b, 0x91, 0x86, 0xd5, 0xa6, 0x8c, 0xf5, 0x75, 0xe3, 0x15, 0x71, 0x11, 0xec, 0x5a, 0x87,
-	0x9e, 0x40, 0x0b, 0x57, 0x7c, 0xaa, 0x4b, 0xd4, 0xfb, 0xff, 0x58, 0x29, 0xa9, 0x03, 0xed, 0x4c,
-	0xe1, 0x4c, 0xac, 0x0c, 0xaf, 0x68, 0x54, 0xba, 0x70, 0x28, 0x0c, 0x71, 0xe5, 0x58, 0xf7, 0x0e,
-	0x23, 0x47, 0x07, 0x00, 0xe6, 0x79, 0x4c, 0xf4, 0x3a, 0x43, 0xf7, 0x0b, 0x81, 0xe3, 0x3f, 0xed,
-	0x99, 0x8e, 0xc1, 0xbe, 0xf9, 0x25, 0x0d, 0x76, 0x9f, 0xdb, 0xd4, 0x22, 0x46, 0xd6, 0xdd, 0xb0,
-	0xc1, 0xea, 0x29, 0xf4, 0x04, 0xda, 0xb7, 0x28, 0xc2, 0x48, 0x9b, 0x69, 0x0f, 0x59, 0xa5, 0xdc,
-	0xcf, 0x04, 0xec, 0x3a, 0xfc, 0x09, 0x34, 0x8b, 0x17, 0xbc, 0xbc, 0x6c, 0x99, 0x63, 0x0a, 0x45,
-	0x40, 0xbe, 0x08, 0x72, 0x2c, 0x03, 0x3a, 0xac, 0x52, 0x74, 0x08, 0xcd, 0x4c, 0x2a, 0x6d, 0xee,
-	0x6a, 0x0f, 0xce, 0x77, 0x8e, 0xf9, 0x51, 0x2a, 0x3d, 0xc6, 0x18, 0xa7, 0x5a, 0x2a, 0x66, 0xac,
-	0xee, 0x00, 0x0e, 0xea, 0xd5, 0x02, 0x95, 0x2e, 0x92, 0x00, 0x95, 0x99, 0xe2, 0x90, 0x55, 0xea,
-	0xaa, 0xf9, 0x7f, 0xe3, 0xc8, 0x2a, 0xbf, 0x8c, 0xd1, 0xd5, 0xb7, 0x4d, 0x97, 0x7c, 0xdf, 0x74,
-	0xc9, 0xdd, 0xa6, 0x4b, 0x3e, 0xbd, 0x09, 0x85, 0x8e, 0x16, 0x81, 0x37, 0x95, 0x89, 0x5f, 0x32,
-	0xcf, 0x67, 0x8a, 0x27, 0x78, 0x2b, 0xd5, 0xbc, 0x2a, 0xf8, 0x7f, 0xfd, 0x9f, 0x04, 0x6d, 0x53,
-	0x7a, 0xfe, 0x33, 0x00, 0x00, 0xff, 0xff, 0x7d, 0xcb, 0x6e, 0x76, 0x73, 0x04, 0x00, 0x00,
+	// 793 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x55, 0xdd, 0x6e, 0x1b, 0x45,
+	0x14, 0x66, 0xec, 0x38, 0xe0, 0xe3, 0x38, 0x8d, 0x86, 0xa8, 0x18, 0x0b, 0x5c, 0x6b, 0xaf, 0x2c,
+	0x44, 0x77, 0x55, 0x17, 0x04, 0xaa, 0x90, 0x50, 0x8c, 0x8b, 0x68, 0x69, 0x45, 0x35, 0x09, 0x95,
+	0xe0, 0x66, 0x35, 0xbb, 0x19, 0xdb, 0x23, 0xef, 0xee, 0xac, 0x66, 0x67, 0x1d, 0xe7, 0x0e, 0xc4,
+	0x23, 0x71, 0xc1, 0x35, 0x77, 0x5c, 0xf2, 0x04, 0xa8, 0xca, 0x23, 0xf0, 0x04, 0x68, 0x7e, 0xec,
+	0xac, 0xa1, 0x91, 0x4d, 0x73, 0xe7, 0x6f, 0xce, 0x7e, 0xdf, 0x77, 0xce, 0x99, 0x39, 0xc7, 0xf0,
+	0x19, 0xcd, 0x79, 0x90, 0x32, 0x45, 0x73, 0x29, 0x94, 0x88, 0x45, 0x12, 0x2c, 0x1e, 0xd0, 0x24,
+	0x9f, 0xd1, 0x07, 0x1b, 0xa7, 0xa1, 0x06, 0x52, 0x94, 0x8a, 0x49, 0xdf, 0x9c, 0xe1, 0x7b, 0xd5,
+	0xb0, 0x4f, 0x99, 0xa4, 0x73, 0xee, 0x73, 0xe1, 0xaf, 0xe8, 0xdd, 0x7b, 0x53, 0x21, 0xa6, 0x09,
+	0x0b, 0xb4, 0xc1, 0x84, 0xb3, 0xe4, 0x3c, 0x8c, 0xd8, 0x8c, 0x2e, 0xb8, 0x70, 0x0a, 0xdd, 0x9e,
+	0xfb, 0xc0, 0xa0, 0xa8, 0x9c, 0x04, 0xe7, 0xa5, 0xa4, 0x8a, 0x8b, 0xec, 0xa6, 0xf8, 0x85, 0xa4,
+	0x79, 0xce, 0x64, 0x61, 0xe3, 0xde, 0xef, 0x08, 0xe0, 0x39, 0x53, 0x94, 0x98, 0xb4, 0xf0, 0x31,
+	0x34, 0x66, 0xa2, 0x50, 0x45, 0x07, 0xf5, 0xeb, 0x83, 0x26, 0xb1, 0x00, 0x8f, 0x60, 0xdf, 0xa4,
+	0x5d, 0x74, 0x6a, 0xfd, 0xfa, 0xa0, 0x35, 0xfc, 0xc8, 0xdf, 0x92, 0xb7, 0xbf, 0x96, 0x24, 0x8e,
+	0x89, 0x7f, 0x80, 0xa3, 0x44, 0xc4, 0x34, 0x09, 0x25, 0x55, 0x2c, 0x4c, 0x78, 0xca, 0x55, 0xa7,
+	0xde, 0x47, 0x83, 0xd6, 0x30, 0xd8, 0xaa, 0xf6, 0x4c, 0x13, 0x09, 0x55, 0xec, 0x99, 0xa6, 0x91,
+	0xc3, 0x64, 0x03, 0x7b, 0xbf, 0x22, 0x68, 0xae, 0x0d, 0x31, 0x86, 0xbd, 0x8c, 0xa6, 0xac, 0x83,
+	0xfa, 0x68, 0xd0, 0x24, 0xe6, 0x37, 0x7e, 0x0c, 0x8d, 0x94, 0xaa, 0x78, 0xd6, 0xa9, 0xed, 0xe8,
+	0xb8, 0x96, 0x7b, 0xae, 0x69, 0xc4, 0xb2, 0xf1, 0xb7, 0xd0, 0x30, 0xd5, 0x74, 0xea, 0xa6, 0x0d,
+	0x9f, 0xee, 0x2e, 0x33, 0x66, 0x85, 0xe2, 0x99, 0xb9, 0x18, 0x62, 0x35, 0xbc, 0xbf, 0x10, 0x1c,
+	0x6e, 0xda, 0xe0, 0x10, 0x80, 0x2a, 0x25, 0x79, 0x64, 0x7a, 0x8d, 0x8c, 0xc9, 0x97, 0xff, 0x33,
+	0x57, 0xff, 0x64, 0xad, 0xf0, 0x38, 0x53, 0xf2, 0x92, 0x54, 0x24, 0xbb, 0x73, 0xb8, 0xf3, 0xaf,
+	0x30, 0x3e, 0x82, 0xfa, 0x9c, 0x5d, 0xba, 0x6e, 0xe9, 0x9f, 0x78, 0x04, 0x8d, 0x05, 0x4d, 0x4a,
+	0xe6, 0x9a, 0xf5, 0xf1, 0xd6, 0x04, 0x4e, 0x95, 0xe4, 0xd9, 0xd4, 0x75, 0xca, 0x50, 0x1f, 0xd5,
+	0x3e, 0x47, 0x1e, 0x83, 0x56, 0x25, 0x82, 0xef, 0x42, 0x83, 0x2d, 0x69, 0xac, 0xac, 0xd5, 0x37,
+	0x6f, 0x11, 0x0b, 0x71, 0x07, 0xf6, 0x73, 0xc9, 0x26, 0x7c, 0x69, 0xfc, 0x74, 0xc0, 0x61, 0xcd,
+	0x90, 0x6c, 0xca, 0x96, 0xe6, 0x9d, 0x18, 0x86, 0x81, 0xa3, 0x03, 0x00, 0x73, 0x1f, 0xa1, 0xba,
+	0xcc, 0x99, 0xf7, 0x0b, 0x82, 0xe3, 0xd7, 0xf5, 0x19, 0x9f, 0x42, 0xeb, 0xfc, 0x1a, 0x1a, 0xdb,
+	0x5d, 0xaa, 0xa9, 0x48, 0x8c, 0xea, 0xaf, 0x4e, 0x6a, 0xa4, 0xaa, 0x82, 0xef, 0xc2, 0xfe, 0x05,
+	0xe3, 0xd3, 0x99, 0x32, 0xd9, 0xb6, 0x89, 0x43, 0xde, 0xcf, 0x08, 0x5a, 0x55, 0xf3, 0xf7, 0x60,
+	0x4f, 0xcf, 0x8e, 0x2d, 0xd6, 0xea, 0x98, 0x03, 0x2d, 0x50, 0x94, 0x51, 0xc1, 0xac, 0x40, 0x93,
+	0x38, 0x84, 0x4f, 0x60, 0x2f, 0x17, 0x72, 0x35, 0x13, 0xf7, 0xb7, 0xa6, 0xf9, 0x42, 0x48, 0x75,
+	0xca, 0x12, 0x16, 0x2b, 0x21, 0x89, 0xa1, 0x7a, 0x43, 0x38, 0xa8, 0x9e, 0x6a, 0xab, 0xac, 0x4c,
+	0x23, 0x26, 0x4d, 0x16, 0x6d, 0xe2, 0xd0, 0xd3, 0xbd, 0x77, 0x6a, 0x47, 0x75, 0x3b, 0x19, 0xde,
+	0x4f, 0x35, 0x38, 0xdc, 0x1c, 0xaf, 0xeb, 0x61, 0x41, 0xb7, 0x1a, 0x96, 0xef, 0xe0, 0x40, 0x89,
+	0x39, 0xcb, 0xc2, 0xa8, 0x8c, 0xe7, 0xae, 0xdc, 0x5d, 0xfa, 0x7f, 0xa6, 0x49, 0x23, 0xc3, 0x21,
+	0x2d, 0x75, 0x0d, 0xf0, 0x4b, 0x73, 0x9f, 0xb1, 0xe4, 0xb9, 0x12, 0xb2, 0x70, 0x33, 0xf8, 0xc9,
+	0x56, 0xbd, 0x75, 0x61, 0xe3, 0x35, 0x99, 0x54, 0x85, 0xbc, 0xdf, 0x10, 0xb4, 0x2a, 0xa6, 0xf8,
+	0x43, 0xfd, 0xbc, 0x96, 0xa1, 0xb1, 0x2e, 0x5c, 0xeb, 0x9a, 0x29, 0x5d, 0x9a, 0x6f, 0x0a, 0x3c,
+	0x86, 0x3b, 0x36, 0x14, 0xe6, 0x4c, 0x86, 0x13, 0x9e, 0x24, 0xae, 0xb4, 0x0f, 0x7c, 0xbb, 0x6b,
+	0xfd, 0xd5, 0xae, 0xf5, 0xbf, 0x7f, 0x92, 0xa9, 0x87, 0xc3, 0x97, 0x7a, 0x22, 0x48, 0xdb, 0x92,
+	0x5e, 0x30, 0xf9, 0x35, 0x4f, 0x12, 0xfc, 0x15, 0xb4, 0x35, 0x35, 0xe4, 0x99, 0x62, 0x72, 0x41,
+	0x13, 0x77, 0xef, 0xef, 0xff, 0x47, 0x63, 0xec, 0xf6, 0xb9, 0x7d, 0x43, 0x07, 0x9a, 0xf4, 0xc4,
+	0x71, 0xbc, 0xbf, 0x11, 0xbc, 0xfb, 0x9a, 0xf2, 0xf0, 0x19, 0xbc, 0xcd, 0x32, 0x25, 0xf9, 0x7a,
+	0x89, 0x3c, 0x7a, 0x93, 0x2e, 0xf9, 0x76, 0x7f, 0xac, 0xa4, 0xf0, 0xd9, 0xed, 0x2f, 0xd4, 0x0d,
+	0x54, 0xe5, 0x56, 0xbb, 0x01, 0x34, 0x6e, 0x5a, 0x44, 0xc7, 0xd5, 0x45, 0xd4, 0x74, 0xab, 0x65,
+	0xf4, 0xf4, 0x8f, 0xab, 0x1e, 0xfa, 0xf3, 0xaa, 0x87, 0x5e, 0x5d, 0xf5, 0xd0, 0x8f, 0x5f, 0x4c,
+	0xb9, 0x9a, 0x95, 0x91, 0x1f, 0x8b, 0x34, 0xb0, 0xde, 0xf7, 0x27, 0x92, 0xa6, 0xec, 0x42, 0xc8,
+	0xb9, 0x3b, 0x08, 0x6e, 0xfc, 0x77, 0x8e, 0xf6, 0xcd, 0xd1, 0xc3, 0x7f, 0x02, 0x00, 0x00, 0xff,
+	0xff, 0x55, 0x14, 0x7e, 0x4e, 0xc1, 0x07, 0x00, 0x00,
 }
 
 func (m *MetaRouter) Marshal() (dAtA []byte, err error) {
@@ -620,6 +935,18 @@ func (m *MetaRouter) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
+	if m.LocalRateLimit != nil {
+		{
+			size, err := m.LocalRateLimit.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
 	if len(m.Routes) > 0 {
 		for iNdEx := len(m.Routes) - 1; iNdEx >= 0; iNdEx-- {
 			{
@@ -631,7 +958,7 @@ func (m *MetaRouter) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 				i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
 			}
 			i--
-			dAtA[i] = 0x1a
+			dAtA[i] = 0x12
 		}
 	}
 	if len(m.Hosts) > 0 {
@@ -966,6 +1293,221 @@ func (m *PortSelector) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *LocalRateLimit) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *LocalRateLimit) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *LocalRateLimit) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Descriptors) > 0 {
+		for iNdEx := len(m.Descriptors) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Descriptors[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.TokenBucket != nil {
+		{
+			size, err := m.TokenBucket.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.Match != nil {
+		{
+			size, err := m.Match.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *TokenBucket) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *TokenBucket) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *TokenBucket) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.FillInterval != nil {
+		{
+			size, err := m.FillInterval.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if m.TokensPerFill != nil {
+		{
+			size, err := m.TokensPerFill.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.MaxTokens != 0 {
+		i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(m.MaxTokens))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RateLimitDescriptor) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RateLimitDescriptor) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RateLimitDescriptor) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if m.TokenBucket != nil {
+		{
+			size, err := m.TokenBucket.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Entries) > 0 {
+		for iNdEx := len(m.Entries) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Entries[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *RateLimitDescriptor_Entry) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RateLimitDescriptor_Entry) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RateLimitDescriptor_Entry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.XXX_unrecognized != nil {
+		i -= len(m.XXX_unrecognized)
+		copy(dAtA[i:], m.XXX_unrecognized)
+	}
+	if len(m.Value) > 0 {
+		i -= len(m.Value)
+		copy(dAtA[i:], m.Value)
+		i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(len(m.Value)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintMetaprotocolMetarouter(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintMetaprotocolMetarouter(dAtA []byte, offset int, v uint64) int {
 	offset -= sovMetaprotocolMetarouter(v)
 	base := offset
@@ -994,6 +1536,10 @@ func (m *MetaRouter) Size() (n int) {
 			l = e.Size()
 			n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
 		}
+	}
+	if m.LocalRateLimit != nil {
+		l = m.LocalRateLimit.Size()
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -1155,6 +1701,97 @@ func (m *PortSelector) Size() (n int) {
 	return n
 }
 
+func (m *LocalRateLimit) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Match != nil {
+		l = m.Match.Size()
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	if m.TokenBucket != nil {
+		l = m.TokenBucket.Size()
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	if len(m.Descriptors) > 0 {
+		for _, e := range m.Descriptors {
+			l = e.Size()
+			n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+		}
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *TokenBucket) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.MaxTokens != 0 {
+		n += 1 + sovMetaprotocolMetarouter(uint64(m.MaxTokens))
+	}
+	if m.TokensPerFill != nil {
+		l = m.TokensPerFill.Size()
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	if m.FillInterval != nil {
+		l = m.FillInterval.Size()
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *RateLimitDescriptor) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Entries) > 0 {
+		for _, e := range m.Entries {
+			l = e.Size()
+			n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+		}
+	}
+	if m.TokenBucket != nil {
+		l = m.TokenBucket.Size()
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
+func (m *RateLimitDescriptor_Entry) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	l = len(m.Value)
+	if l > 0 {
+		n += 1 + l + sovMetaprotocolMetarouter(uint64(l))
+	}
+	if m.XXX_unrecognized != nil {
+		n += len(m.XXX_unrecognized)
+	}
+	return n
+}
+
 func sovMetaprotocolMetarouter(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
@@ -1222,7 +1859,7 @@ func (m *MetaRouter) Unmarshal(dAtA []byte) error {
 			}
 			m.Hosts = append(m.Hosts, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
-		case 3:
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Routes", wireType)
 			}
@@ -1253,6 +1890,42 @@ func (m *MetaRouter) Unmarshal(dAtA []byte) error {
 			}
 			m.Routes = append(m.Routes, &MetaRoute{})
 			if err := m.Routes[len(m.Routes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field LocalRateLimit", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.LocalRateLimit == nil {
+				m.LocalRateLimit = &LocalRateLimit{}
+			}
+			if err := m.LocalRateLimit.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2081,6 +2754,553 @@ func (m *PortSelector) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetaprotocolMetarouter(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *LocalRateLimit) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetaprotocolMetarouter
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: LocalRateLimit: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: LocalRateLimit: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Match", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Match == nil {
+				m.Match = &MetaRouteMatch{}
+			}
+			if err := m.Match.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenBucket", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.TokenBucket == nil {
+				m.TokenBucket = &TokenBucket{}
+			}
+			if err := m.TokenBucket.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Descriptors", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Descriptors = append(m.Descriptors, &RateLimitDescriptor{})
+			if err := m.Descriptors[len(m.Descriptors)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetaprotocolMetarouter(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *TokenBucket) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetaprotocolMetarouter
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: TokenBucket: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: TokenBucket: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxTokens", wireType)
+			}
+			m.MaxTokens = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxTokens |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokensPerFill", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.TokensPerFill == nil {
+				m.TokensPerFill = &types.UInt32Value{}
+			}
+			if err := m.TokensPerFill.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FillInterval", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.FillInterval == nil {
+				m.FillInterval = &types.Duration{}
+			}
+			if err := m.FillInterval.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetaprotocolMetarouter(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RateLimitDescriptor) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetaprotocolMetarouter
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RateLimitDescriptor: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RateLimitDescriptor: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Entries", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Entries = append(m.Entries, &RateLimitDescriptor_Entry{})
+			if err := m.Entries[len(m.Entries)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TokenBucket", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.TokenBucket == nil {
+				m.TokenBucket = &TokenBucket{}
+			}
+			if err := m.TokenBucket.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMetaprotocolMetarouter(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.XXX_unrecognized = append(m.XXX_unrecognized, dAtA[iNdEx:iNdEx+skippy]...)
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RateLimitDescriptor_Entry) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMetaprotocolMetarouter
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Entry: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Entry: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Value", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMetaprotocolMetarouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMetaprotocolMetarouter
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Value = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMetaprotocolMetarouter(dAtA[iNdEx:])

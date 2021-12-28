@@ -13,7 +13,7 @@
 // limitations under the License.
 syntax = "proto3";
 
-import "google/api/field_behavior.proto";
+//import "google/api/field_behavior.proto";
 
 // $schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
 // $title: Application Protocol

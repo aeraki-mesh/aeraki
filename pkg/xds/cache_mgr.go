@@ -23,7 +23,6 @@ import (
 	metaprotocolapi "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1"
 	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
-	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -37,7 +36,6 @@ import (
 	networking "istio.io/api/networking/v1alpha3"
 
 	"github.com/zhaohuabing/debounce"
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/config/schema/collections"
 )
@@ -53,25 +51,21 @@ const (
 	debounceMax = 10 * time.Second
 )
 
-var regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
-
 // CacheMgr contains the runtime configuration for the envoyFilter controller.
 type CacheMgr struct {
-	istioClientset   *istioclient.Clientset
-	ControllerClient client.Client
-	configStore      istiomodel.ConfigStore
-	routeCache       cachev3.SnapshotCache
+	MetaRouterControllerClient client.Client
+	configStore                istiomodel.ConfigStore
+	routeCache                 cachev3.SnapshotCache
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 }
 
 // NewCacheMgr creates a new controller instance based on the provided arguments.
-func NewCacheMgr(istioClientset *istioclient.Clientset, store istiomodel.ConfigStore) *CacheMgr {
+func NewCacheMgr(store istiomodel.ConfigStore) *CacheMgr {
 	controller := &CacheMgr{
-		istioClientset: istioClientset,
-		configStore:    store,
-		routeCache:     cachev3.NewSnapshotCache(false, cachev3.IDHash{}, logger{}),
-		pushChannel:    make(chan istiomodel.Event, 100),
+		configStore: store,
+		routeCache:  cachev3.NewSnapshotCache(false, cachev3.IDHash{}, logger{}),
+		pushChannel: make(chan istiomodel.Event, 100),
 	}
 	return controller
 }
@@ -151,7 +145,7 @@ func (c *CacheMgr) updateRouteCache() error {
 		if err != nil {
 			xdsLog.Errorf("failed to list meta router for service: %s", config.Name)
 		}
-		if metaRouter != nil {
+		if metaRouter != nil && len(metaRouter.Spec.Routes) > 0 {
 			xdsLog.Debugf("find meta router ：%s for : %s", metaRouter.Name, config.Name)
 			routes = append(routes, c.constructRoute(service, metaRouter))
 		} else {
@@ -176,8 +170,10 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry, metaRouter *
 	var routes []*metaroute.Route
 	for _, route := range metaRouter.Spec.Routes {
 		routes = append(routes, &metaroute.Route{
-			Name:  route.Name,
-			Match: c.constructMatch(route),
+			Name: route.Name,
+			Match: &metaroute.RouteMatch{
+				Metadata: MetaMatch2HttpHeaderMatch(route.Match),
+			},
 			Route: c.constructAction(service, route),
 		})
 	}
@@ -186,48 +182,6 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry, metaRouter *
 		Routes: routes,
 	}
 	return &metaRoute
-}
-
-func (c *CacheMgr) constructMatch(route *metaprotocolapi.MetaRoute) *metaroute.RouteMatch {
-	var metadata []*httproute.HeaderMatcher
-
-	if route.Match != nil {
-		var headerMatcher *httproute.HeaderMatcher
-		for name, attribute := range route.Match.Attributes {
-			switch attribute.GetMatchType().(type) {
-			case *metaprotocolapi.StringMatch_Exact:
-				headerMatcher = &httproute.HeaderMatcher{
-					Name: name,
-					HeaderMatchSpecifier: &httproute.HeaderMatcher_ExactMatch{
-						ExactMatch: attribute.GetExact(),
-					},
-				}
-			case *metaprotocolapi.StringMatch_Prefix:
-				headerMatcher = &httproute.HeaderMatcher{
-					Name: name,
-					HeaderMatchSpecifier: &httproute.HeaderMatcher_PrefixMatch{
-						PrefixMatch: attribute.GetPrefix(),
-					},
-				}
-			case *metaprotocolapi.StringMatch_Regex:
-				headerMatcher = &httproute.HeaderMatcher{
-					Name: name,
-					HeaderMatchSpecifier: &httproute.HeaderMatcher_SafeRegexMatch{
-						SafeRegexMatch: &matcher.RegexMatcher{
-							EngineType: regexEngine,
-							Regex:      attribute.GetRegex(),
-						},
-					},
-				}
-			default:
-				continue
-			}
-			metadata = append(metadata, headerMatcher)
-		}
-	}
-	return &metaroute.RouteMatch{
-		Metadata: metadata,
-	}
 }
 
 func (c *CacheMgr) constructAction(service *networking.ServiceEntry, route *metaprotocolapi.MetaRoute) *metaroute.RouteAction {
@@ -301,7 +255,7 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry) *metaroute.Rou
 
 func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*metaprotocol.MetaRouter, error) {
 	metaRouterList := metaprotocol.MetaRouterList{}
-	err := c.ControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})
+	err := c.MetaRouterControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
