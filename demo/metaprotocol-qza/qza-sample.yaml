@@ -17,6 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: qza-sample-server-v1
+  namespace: meta-qza
   labels:
     app: qza-sample-server
 spec:
@@ -46,6 +47,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: qza-sample-server-v2
+  namespace: meta-qza
   labels:
     app: qza-sample-server
 spec:
@@ -75,6 +77,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: qza-sample-client
+  namespace: meta-qza
   labels:
     app: qza-sample-client
 spec:
@@ -101,6 +104,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: qza-sample-server
+  namespace: meta-qza
 spec:
   selector:
     app: qza-sample-server
@@ -109,22 +113,3 @@ spec:
       protocol: TCP
       port: 8090
       targetPort: 8090
----
-# network-tool is used for debugging purpose
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#  name: network-tool
-# spec:
-#  selector:
-#    matchLabels:
-#      app: network-tool
-#  replicas: 1
-#  template:
-#    metadata:
-#      labels:
-#        app: network-tool
-#    spec:
-#      containers:
-#        - name: network-tool
-#          image: praqma/network-multitool

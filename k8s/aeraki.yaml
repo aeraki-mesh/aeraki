@@ -37,16 +37,14 @@ spec:
         - name: aeraki
           image: aeraki/aeraki:${BUILD_TAG}
           env:
-            - name: ISTIOD_ADDR
-              value: ${ISTIOD_ADDR}
-            - name: NAMESPACE
+            - name: AERAKI_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: ISTIO_CONFIG_STORE_SECRET
-              value: ${ISTIO_CONFIG_STORE_SECRET}
+            - name: AERAKI_ISTIO_CONFIG_STORE_SECRET
+              value: istio-master-secret-mesh-qxw3kpd7
             - name: AERAKI_ISTIOD_ADDR
-              value: "istiod.istio-system:15010"
+              value: "istiod-1-10-3:61000"
             - name: AERAKI_XDS_LISTEN_ADDR
               value: ":15010"
             - name: AERAKI_LOG_LEVEL
