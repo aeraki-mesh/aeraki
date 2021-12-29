@@ -167,25 +167,14 @@ func (this *TokenBucket) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for RateLimitDescriptor
-func (this *RateLimitDescriptor) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for LocalRateLimitCondition
+func (this *LocalRateLimitCondition) MarshalJSON() ([]byte, error) {
 	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for RateLimitDescriptor
-func (this *RateLimitDescriptor) UnmarshalJSON(b []byte) error {
-	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
-}
-
-// MarshalJSON is a custom marshaler for RateLimitDescriptor_Entry
-func (this *RateLimitDescriptor_Entry) MarshalJSON() ([]byte, error) {
-	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
-	return []byte(str), err
-}
-
-// UnmarshalJSON is a custom unmarshaler for RateLimitDescriptor_Entry
-func (this *RateLimitDescriptor_Entry) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for LocalRateLimitCondition
+func (this *LocalRateLimitCondition) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

@@ -20,9 +20,9 @@ import (
 	userapi "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1"
 	mpclient "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"github.com/aeraki-framework/aeraki/pkg/xds"
+	metaroute "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	lrldataplane "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
 	mpdataplane "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
-	ratelimit "github.com/envoyproxy/go-control-plane/envoy/extensions/common/ratelimit/v3"
 	commondataplane "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -61,20 +61,17 @@ func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 	filters []*mpdataplane.MetaProtocolFilter) ([]*mpdataplane.MetaProtocolFilter, error) {
 	localRateLimit := metaRouter.Spec.LocalRateLimit
 
-	if localRateLimit.TokenBucket == nil && len(localRateLimit.Descriptors) == 0 {
-		return nil, fmt.Errorf("either tokenBucket or descriptors should be specified")
+	if localRateLimit.TokenBucket == nil && len(localRateLimit.Conditions) == 0 {
+		return nil, fmt.Errorf("either tokenBucket or conditions should be specified")
 	}
 	lrt := &lrldataplane.LocalRateLimit{
 		StatPrefix: metaRouter.Spec.Hosts[0],
-		Match: &lrldataplane.LocalRatelimitMatch{
-			Metadata: xds.MetaMatch2HttpHeaderMatch(localRateLimit.Match),
-		},
 	}
 	if localRateLimit.TokenBucket != nil {
 		lrt.TokenBucket = crd2kenBucket(localRateLimit.TokenBucket)
 	}
-	if len(localRateLimit.Descriptors) > 0 {
-		lrt.Descriptors = crd2Descriptors(localRateLimit.Descriptors)
+	if len(localRateLimit.Conditions) > 0 {
+		lrt.Conditions = crd2Conditions(localRateLimit.Conditions)
 	}
 
 	config, err := anypb.New(lrt)
@@ -95,25 +92,18 @@ func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 	return filters
 }
 
-func crd2Descriptors(descriptorCrds []*userapi.RateLimitDescriptor) []*ratelimit.LocalRateLimitDescriptor {
-	var localDescriptors []*ratelimit.LocalRateLimitDescriptor
-	for _, descriptor := range descriptorCrds {
-		tokenBucket := crd2kenBucket(descriptor.TokenBucket)
-
-		var entries []*ratelimit.RateLimitDescriptor_Entry
-		for _, entry := range descriptor.Entries {
-			entries = append(entries,
-				&ratelimit.RateLimitDescriptor_Entry{
-					Key:   entry.Key,
-					Value: entry.Value,
-				})
-		}
-		localDescriptors = append(localDescriptors, &ratelimit.LocalRateLimitDescriptor{
-			Entries:     entries,
+func crd2Conditions(conditions []*userapi.LocalRateLimitCondition) []*lrldataplane.LocalRateLimitCondition {
+	var localConditions []*lrldataplane.LocalRateLimitCondition
+	for _, condition := range conditions {
+		tokenBucket := crd2kenBucket(condition.TokenBucket)
+		localConditions = append(localConditions, &lrldataplane.LocalRateLimitCondition{
 			TokenBucket: tokenBucket,
+			Match: &metaroute.RouteMatch{
+				Metadata: xds.MetaMatch2HttpHeaderMatch(condition.Match),
+			},
 		})
 	}
-	return localDescriptors
+	return localConditions
 }
 
 func crd2kenBucket(tbCrd *userapi.TokenBucket) *commondataplane.TokenBucket {
