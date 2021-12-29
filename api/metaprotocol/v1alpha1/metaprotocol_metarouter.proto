@@ -201,28 +201,18 @@ message PortSelector {
 }
 
 message LocalRateLimit {
-  // Match conditions to be satisfied for the rule to be activated.
-  // All conditions inside a single match block have AND semantic.
-  // If the match is not specified, then all the incoming requests will be considered matched.
-  MetaRouteMatch match = 1;
-
   // The default token bucket configuration to use for rate limiting requests that are processed by
   // this filter.
-  // Local rate limiter will first check the descriptors, if a descriptor matches, then the token
-  // bucket within that descriptor will be applied to the incoming request. All the other requests
-  // that don't match the descriptors will be rate limited by the default token bucket.
-  // If the default token bucket is not specified, then the requests that don't match the descriptors
+  // Local rate limiter will first check the conditions, if a specific condition matches, then the token
+  // bucket within that condition will be applied to the incoming request. All the other requests
+  // that don't match the conditions will be rate limited by the default token bucket.
+  // If the default token bucket is not specified, then the requests that don't match the conditions
   // will not be rate limited.
-  TokenBucket token_bucket = 2;
+  // At least one of token_bucket or conditions should have value.
+  TokenBucket token_bucket = 1;
 
-  // The rate limit descriptor list to use in the local rate limit.
-  // The rate limit descriptor is selected by the first full match from the request descriptors.
-  // At least one of token_bucket and descriptors should be set. If both of the token_bucket and
-  // descriptors are set, the descriptors will be matched against the requests first. If no matching
-  // found, then fallback to the default token bucket.
-  // The descriptors must match verbatim for rate limiting to apply. There is no partial
-  // match by a subset of descriptor entries in the current implementation.
-  repeated RateLimitDescriptor descriptors = 3;
+  // The more specific rate limit conditions, the first match will be used.
+  repeated LocalRateLimitCondition conditions = 2;
 }
 
 // Configures a token bucket which is used for rate limiting.
@@ -241,18 +231,12 @@ message TokenBucket {
   google.protobuf.Duration fill_interval = 3 [(google.api.field_behavior) = REQUIRED];
 }
 
-message RateLimitDescriptor {
-  message Entry {
-    // Descriptor key.
-    string key = 1;
+message LocalRateLimitCondition {
+  // Match conditions to be satisfied for the rate limit rule to be activated.
+  // All conditions inside a single match block have AND semantic.
+  // If the match is not specified, then all the incoming requests will be considered matched.
+  MetaRouteMatch match = 1 [(google.api.field_behavior) = REQUIRED];
 
-    // Descriptor value.
-    string value = 2;
-  }
-
-  // Descriptor entries.
-  repeated RateLimitDescriptor.Entry entries = 1;
-
-  // Token Bucket algorithm for local rate limiting.
+  // The token bucket for this particular condition
   TokenBucket token_bucket = 2 [(google.api.field_behavior) = REQUIRED];
 }

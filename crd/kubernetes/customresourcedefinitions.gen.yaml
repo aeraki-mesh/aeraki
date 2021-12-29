@@ -208,27 +208,50 @@ spec:
                 type: array
               localRateLimit:
                 properties:
-                  descriptors:
-                    description: The rate limit descriptor list to use in the local
-                      rate limit.
+                  conditions:
+                    description: The more specific rate limit conditions, the first
+                      match will be used.
                     items:
                       properties:
-                        entries:
-                          description: Descriptor entries.
-                          items:
-                            properties:
-                              key:
-                                description: Descriptor key.
-                                format: string
-                                type: string
-                              value:
-                                description: Descriptor value.
-                                format: string
-                                type: string
-                            type: object
-                          type: array
+                        match:
+                          description: Match conditions to be satisfied for the rate
+                            limit rule to be activated.
+                          properties:
+                            attributes:
+                              additionalProperties:
+                                oneOf:
+                                - not:
+                                    anyOf:
+                                    - required:
+                                      - exact
+                                    - required:
+                                      - prefix
+                                    - required:
+                                      - regex
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
+                                properties:
+                                  exact:
+                                    format: string
+                                    type: string
+                                  prefix:
+                                    format: string
+                                    type: string
+                                  regex:
+                                    description: RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+                                    format: string
+                                    type: string
+                                type: object
+                              description: If the value is empty and only the name
+                                of attribute is specified, presence of the attribute
+                                is checked.
+                              type: object
+                          type: object
                         tokenBucket:
-                          description: Token Bucket algorithm for local rate limiting.
                           properties:
                             fillInterval:
                               description: The fill interval that tokens are added
@@ -246,43 +269,6 @@ spec:
                           type: object
                       type: object
                     type: array
-                  match:
-                    description: Match conditions to be satisfied for the rule to
-                      be activated.
-                    properties:
-                      attributes:
-                        additionalProperties:
-                          oneOf:
-                          - not:
-                              anyOf:
-                              - required:
-                                - exact
-                              - required:
-                                - prefix
-                              - required:
-                                - regex
-                          - required:
-                            - exact
-                          - required:
-                            - prefix
-                          - required:
-                            - regex
-                          properties:
-                            exact:
-                              format: string
-                              type: string
-                            prefix:
-                              format: string
-                              type: string
-                            regex:
-                              description: RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
-                              format: string
-                              type: string
-                          type: object
-                        description: If the value is empty and only the name of attribute
-                          is specified, presence of the attribute is checked.
-                        type: object
-                    type: object
                   tokenBucket:
                     properties:
                       fillInterval:

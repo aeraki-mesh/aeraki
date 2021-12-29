@@ -22,11 +22,16 @@ spec:
   hosts:
   - thrift-sample-server.meta-thrift.svc.cluster.local
   localRateLimit:
-    descriptors:
-    - entries:
-      - key: method
-        value: sayHello
-      tokenBucket:
-        fillInterval: 30s
-        maxTokens: 5
-        tokensPerFill: 5
+    tokenBucket:
+      fillInterval: 60s
+      maxTokens: 5
+      tokensPerFill: 5
+    conditions:
+    - tokenBucket:
+        fillInterval: 10s
+        maxTokens: 2
+        tokensPerFill: 2
+      match:
+        attributes:
+          method:
+            exact: sayHello

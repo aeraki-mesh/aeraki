@@ -2,7 +2,7 @@
 title: metaprotocol.aeraki.io.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 13
+number_of_entries: 12
 ---
 <p>$schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
 $title: Application Protocol
@@ -377,47 +377,29 @@ No
 </tr>
 </thead>
 <tbody>
-<tr id="LocalRateLimit-match">
-<td><code>match</code></td>
-<td><code><a href="#MetaRouteMatch">MetaRouteMatch</a></code></td>
-<td>
-<p>Match conditions to be satisfied for the rule to be activated.
-All conditions inside a single match block have AND semantic.
-If the match is not specified, then all the incoming requests will be considered matched.</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
 <tr id="LocalRateLimit-token_bucket">
 <td><code>tokenBucket</code></td>
 <td><code><a href="#TokenBucket">TokenBucket</a></code></td>
 <td>
 <p>The default token bucket configuration to use for rate limiting requests that are processed by
 this filter.
-Local rate limiter will first check the descriptors, if a descriptor matches, then the token
-bucket within that descriptor will be applied to the incoming request. All the other requests
-that don&rsquo;t match the descriptors will be rate limited by the default token bucket.
-If the default token bucket is not specified, then the requests that don&rsquo;t match the descriptors
-will not be rate limited.</p>
+Local rate limiter will first check the conditions, if a specific condition matches, then the token
+bucket within that condition will be applied to the incoming request. All the other requests
+that don&rsquo;t match the conditions will be rate limited by the default token bucket.
+If the default token bucket is not specified, then the requests that don&rsquo;t match the conditions
+will not be rate limited.
+At least one of token_bucket or conditions should have value.</p>
 
 </td>
 <td>
 No
 </td>
 </tr>
-<tr id="LocalRateLimit-descriptors">
-<td><code>descriptors</code></td>
-<td><code><a href="#RateLimitDescriptor">RateLimitDescriptor[]</a></code></td>
+<tr id="LocalRateLimit-conditions">
+<td><code>conditions</code></td>
+<td><code><a href="#LocalRateLimitCondition">LocalRateLimitCondition[]</a></code></td>
 <td>
-<p>The rate limit descriptor list to use in the local rate limit.
-The rate limit descriptor is selected by the first full match from the request descriptors.
-At least one of token<em>bucket and descriptors should be set. If both of the token</em>bucket and
-descriptors are set, the descriptors will be matched against the requests first. If no matching
-found, then fallback to the default token bucket.
-The descriptors must match verbatim for rate limiting to apply. There is no partial
-match by a subset of descriptor entries in the current implementation.</p>
+<p>The more specific rate limit conditions, the first match will be used.</p>
 
 </td>
 <td>
@@ -481,7 +463,7 @@ Yes
 </tbody>
 </table>
 </section>
-<h2 id="RateLimitDescriptor">RateLimitDescriptor</h2>
+<h2 id="LocalRateLimitCondition">LocalRateLimitCondition</h2>
 <section>
 <table class="message-fields">
 <thead>
@@ -493,63 +475,28 @@ Yes
 </tr>
 </thead>
 <tbody>
-<tr id="RateLimitDescriptor-entries">
-<td><code>entries</code></td>
-<td><code><a href="#RateLimitDescriptor-Entry">Entry[]</a></code></td>
+<tr id="LocalRateLimitCondition-match">
+<td><code>match</code></td>
+<td><code><a href="#MetaRouteMatch">MetaRouteMatch</a></code></td>
 <td>
-<p>Descriptor entries.</p>
-
-</td>
-<td>
-No
-</td>
-</tr>
-<tr id="RateLimitDescriptor-token_bucket">
-<td><code>tokenBucket</code></td>
-<td><code><a href="#TokenBucket">TokenBucket</a></code></td>
-<td>
-<p>Token Bucket algorithm for local rate limiting.</p>
+<p>Match conditions to be satisfied for the rate limit rule to be activated.
+All conditions inside a single match block have AND semantic.
+If the match is not specified, then all the incoming requests will be considered matched.</p>
 
 </td>
 <td>
 Yes
 </td>
 </tr>
-</tbody>
-</table>
-</section>
-<h2 id="RateLimitDescriptor-Entry">RateLimitDescriptor.Entry</h2>
-<section>
-<table class="message-fields">
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr id="RateLimitDescriptor-Entry-key">
-<td><code>key</code></td>
-<td><code>string</code></td>
+<tr id="LocalRateLimitCondition-token_bucket">
+<td><code>tokenBucket</code></td>
+<td><code><a href="#TokenBucket">TokenBucket</a></code></td>
 <td>
-<p>Descriptor key.</p>
+<p>The token bucket for this particular condition</p>
 
 </td>
 <td>
-No
-</td>
-</tr>
-<tr id="RateLimitDescriptor-Entry-value">
-<td><code>value</code></td>
-<td><code>string</code></td>
-<td>
-<p>Descriptor value.</p>
-
-</td>
-<td>
-No
+Yes
 </td>
 </tr>
 </tbody>
