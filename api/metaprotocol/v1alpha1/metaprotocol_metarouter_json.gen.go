@@ -156,25 +156,47 @@ func (this *LocalRateLimit) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for TokenBucket
-func (this *TokenBucket) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for LocalRateLimit_TokenBucket
+func (this *LocalRateLimit_TokenBucket) MarshalJSON() ([]byte, error) {
 	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for TokenBucket
-func (this *TokenBucket) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for LocalRateLimit_TokenBucket
+func (this *LocalRateLimit_TokenBucket) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
-// MarshalJSON is a custom marshaler for LocalRateLimitCondition
-func (this *LocalRateLimitCondition) MarshalJSON() ([]byte, error) {
+// MarshalJSON is a custom marshaler for LocalRateLimit_Condition
+func (this *LocalRateLimit_Condition) MarshalJSON() ([]byte, error) {
 	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
 	return []byte(str), err
 }
 
-// UnmarshalJSON is a custom unmarshaler for LocalRateLimitCondition
-func (this *LocalRateLimitCondition) UnmarshalJSON(b []byte) error {
+// UnmarshalJSON is a custom unmarshaler for LocalRateLimit_Condition
+func (this *LocalRateLimit_Condition) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for GlobalRateLimit
+func (this *GlobalRateLimit) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for GlobalRateLimit
+func (this *GlobalRateLimit) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for GlobalRateLimit_Descriptor
+func (this *GlobalRateLimit_Descriptor) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for GlobalRateLimit_Descriptor
+func (this *GlobalRateLimit_Descriptor) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

@@ -201,6 +201,73 @@ spec:
           spec:
             description: MetaRouter defines route policies for MetaProtocol proxy.
             properties:
+              globalRateLimit:
+                properties:
+                  denyOnFail:
+                    type: boolean
+                  descriptors:
+                    items:
+                      properties:
+                        descriptorKey:
+                          format: string
+                          type: string
+                        property:
+                          format: string
+                          type: string
+                      type: object
+                    type: array
+                  domain:
+                    description: The rate limit domain to use when calling the rate
+                      limit service.
+                    format: string
+                    type: string
+                  match:
+                    description: Match conditions to be satisfied for the rate limit
+                      rule to be activated.
+                    properties:
+                      attributes:
+                        additionalProperties:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - exact
+                              - required:
+                                - prefix
+                              - required:
+                                - regex
+                          - required:
+                            - exact
+                          - required:
+                            - prefix
+                          - required:
+                            - regex
+                          properties:
+                            exact:
+                              format: string
+                              type: string
+                            prefix:
+                              format: string
+                              type: string
+                            regex:
+                              description: RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+                              format: string
+                              type: string
+                          type: object
+                        description: If the value is empty and only the name of attribute
+                          is specified, presence of the attribute is checked.
+                        type: object
+                    type: object
+                  rateLimitService:
+                    description: The cluster name of the external rate limit service
+                      provider.
+                    format: string
+                    type: string
+                  requestTimeout:
+                    description: The timeout in milliseconds for the rate limit service
+                      RPC.
+                    type: string
+                type: object
               hosts:
                 items:
                   format: string

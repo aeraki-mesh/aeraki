@@ -18,7 +18,7 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 //replace github.com/envoyproxy/go-control-plane => /Users/huabingzhao/workspace/go-control-plane
 
 require (
-	github.com/aeraki-framework/meta-protocol-control-plane-api v1.0.1
+	github.com/aeraki-framework/meta-protocol-control-plane-api v1.0.3
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210804155723-c55ac1656905
 	github.com/fatih/color v1.12.0

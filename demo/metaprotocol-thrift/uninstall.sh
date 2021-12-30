@@ -16,4 +16,6 @@ BASEDIR=$(dirname "$0")
 
 kubectl delete -f $BASEDIR/thrift-sample.yaml -n meta-thrift
 kubectl delete -f $BASEDIR/destinationrule.yaml -n meta-thrift
+kubectl delete cm rate-limit-config -n meta-thrift
+kubectl delete -f $BASEDIR/rate-limit-server/rate-limit-server.yaml -n meta-thrift
 kubectl delete ns meta-thrift
