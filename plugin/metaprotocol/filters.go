@@ -21,8 +21,11 @@ import (
 	mpclient "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"github.com/aeraki-framework/aeraki/pkg/xds"
 	metaroute "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
+	grldataplane "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/filters/global_ratelimit/v1alpha"
 	lrldataplane "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
 	mpdataplane "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
+	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	envoyrl "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
 	commondataplane "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/wrappers"
@@ -44,7 +47,11 @@ func buildInboundFilters(metaRouter *mpclient.MetaRouter) ([]*mpdataplane.MetaPr
 				return filters, err
 			}
 		}
-		filters = appendGlobalRateLimitFilter(metaRouter, filters)
+		if metaRouter.Spec.GlobalRateLimit != nil {
+			if filters, err = appendGlobalRateLimitFilter(metaRouter, filters); err != nil {
+				return filters, err
+			}
+		}
 	}
 
 	return appendRouter(filters), nil
@@ -88,11 +95,56 @@ func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 }
 
 func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
-	filters []*mpdataplane.MetaProtocolFilter) []*mpdataplane.MetaProtocolFilter {
-	return filters
+	filters []*mpdataplane.MetaProtocolFilter) ([]*mpdataplane.MetaProtocolFilter, error) {
+	globalRateLimit := metaRouter.Spec.GlobalRateLimit
+
+	if len(globalRateLimit.Descriptors) == 0 {
+		return nil, fmt.Errorf("then length of global rate [lmit actions should not be zero")
+	}
+
+	var descriptors []*grldataplane.Descriptor
+	for _, action := range globalRateLimit.Descriptors {
+		descriptors = append(descriptors, &grldataplane.Descriptor{
+			Property:      action.Property,
+			DescriptorKey: action.DescriptorKey,
+		})
+	}
+
+	grt := &grldataplane.RateLimit{
+		Match: &metaroute.RouteMatch{
+			Metadata: xds.MetaMatch2HttpHeaderMatch(globalRateLimit.Match),
+		},
+		Domain: globalRateLimit.Domain,
+		Timeout: &duration.Duration{
+			Seconds: globalRateLimit.RequestTimeout.Seconds,
+			Nanos:   globalRateLimit.RequestTimeout.Nanos,
+		},
+		FailureModeDeny: globalRateLimit.DenyOnFail,
+		RateLimitService: &envoyrl.RateLimitServiceConfig{
+			GrpcService: &envoycore.GrpcService{
+				TargetSpecifier: &envoycore.GrpcService_EnvoyGrpc_{
+					EnvoyGrpc: &envoycore.GrpcService_EnvoyGrpc{
+						ClusterName: globalRateLimit.RateLimitService,
+					},
+				},
+			},
+		},
+		Descriptors: descriptors,
+	}
+	config, err := anypb.New(grt)
+	if err != nil {
+		generatorLog.Errorf("global ratelimit create failed: %e", err)
+	}
+
+	globalRateLimitFilter := mpdataplane.MetaProtocolFilter{
+		Name:   "aeraki.meta_protocol.filters.ratelimit",
+		Config: config,
+	}
+	filters = append(filters, &globalRateLimitFilter)
+	return filters, nil
 }
 
-func crd2Conditions(conditions []*userapi.LocalRateLimitCondition) []*lrldataplane.LocalRateLimitCondition {
+func crd2Conditions(conditions []*userapi.LocalRateLimit_Condition) []*lrldataplane.LocalRateLimitCondition {
 	var localConditions []*lrldataplane.LocalRateLimitCondition
 	for _, condition := range conditions {
 		tokenBucket := crd2kenBucket(condition.TokenBucket)
@@ -106,7 +158,7 @@ func crd2Conditions(conditions []*userapi.LocalRateLimitCondition) []*lrldatapla
 	return localConditions
 }
 
-func crd2kenBucket(tbCrd *userapi.TokenBucket) *commondataplane.TokenBucket {
+func crd2kenBucket(tbCrd *userapi.LocalRateLimit_TokenBucket) *commondataplane.TokenBucket {
 	tokenBucket := &commondataplane.TokenBucket{
 		MaxTokens: tbCrd.MaxTokens,
 		FillInterval: &duration.Duration{
