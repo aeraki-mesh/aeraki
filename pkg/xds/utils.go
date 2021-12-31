@@ -101,40 +101,50 @@ func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) cache.Snapshot
 // MetaMatch2HttpHeaderMatch converts MetaMatch to HttpHeaderMatch
 func MetaMatch2HttpHeaderMatch(matchCrd *userapi.MetaRouteMatch) []*httproute.HeaderMatcher {
 	var headerMatchers []*httproute.HeaderMatcher
-
 	if matchCrd != nil {
-		var headerMatcher *httproute.HeaderMatcher
+		headerMatcher := &httproute.HeaderMatcher{}
 		for name, attribute := range matchCrd.Attributes {
-			switch attribute.GetMatchType().(type) {
-			case *userapi.StringMatch_Exact:
-				headerMatcher = &httproute.HeaderMatcher{
-					Name: name,
-					HeaderMatchSpecifier: &httproute.HeaderMatcher_ExactMatch{
+			headerMatcher.Name = name
+			if isCatchAllHeaderMatch(attribute) {
+				headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_PresentMatch{PresentMatch: true}
+			} else {
+				switch attribute.GetMatchType().(type) {
+				case *userapi.StringMatch_Exact:
+					headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_ExactMatch{
 						ExactMatch: attribute.GetExact(),
-					},
-				}
-			case *userapi.StringMatch_Prefix:
-				headerMatcher = &httproute.HeaderMatcher{
-					Name: name,
-					HeaderMatchSpecifier: &httproute.HeaderMatcher_PrefixMatch{
+					}
+				case *userapi.StringMatch_Prefix:
+					headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_PrefixMatch{
 						PrefixMatch: attribute.GetPrefix(),
-					},
-				}
-			case *userapi.StringMatch_Regex:
-				headerMatcher = &httproute.HeaderMatcher{
-					Name: name,
-					HeaderMatchSpecifier: &httproute.HeaderMatcher_SafeRegexMatch{
+					}
+				case *userapi.StringMatch_Regex:
+					headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_SafeRegexMatch{
 						SafeRegexMatch: &matcher.RegexMatcher{
 							EngineType: regexEngine,
 							Regex:      attribute.GetRegex(),
 						},
-					},
+					}
+				default:
+					continue
 				}
-			default:
-				continue
 			}
 			headerMatchers = append(headerMatchers, headerMatcher)
 		}
 	}
 	return headerMatchers
+}
+
+func isCatchAllHeaderMatch(in *userapi.StringMatch) bool {
+	catchall := false
+
+	if in == nil {
+		return true
+	}
+
+	switch m := in.MatchType.(type) {
+	case *userapi.StringMatch_Regex:
+		catchall = m.Regex == "*"
+	}
+
+	return catchall
 }

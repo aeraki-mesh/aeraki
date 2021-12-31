@@ -38,7 +38,7 @@ spec:
             - name: ratelimit-config
               mountPath: /data/ratelimit/config
               readOnly: true
-          command: ["/bin/sh","-c"]
+          command: ["/bin/sh", "-c"]
           args: ["mkdir -p /ratelimit/config && cp /data/ratelimit/config/config.yaml /ratelimit/config/config.yaml && cat /ratelimit/config/config.yaml &&  /bin/ratelimit"]
           env:
             - name: USE_STATSD
