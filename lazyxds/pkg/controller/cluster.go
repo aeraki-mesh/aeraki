@@ -24,13 +24,15 @@ type Cluster struct {
 	name     string
 	Client   *kubernetes.Clientset
 	Informer informers.SharedInformerFactory
+	stopCh   chan struct{}
 }
 
 // NewCluster ...
-func NewCluster(name string, client *kubernetes.Clientset) *Cluster {
+func NewCluster(name string, client *kubernetes.Clientset, stop chan struct{}) *Cluster {
 	return &Cluster{
 		name:     name,
 		Client:   client,
 		Informer: informers.NewSharedInformerFactory(client, 0),
+		stopCh:   stop,
 	}
 }

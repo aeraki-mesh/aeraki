@@ -23,15 +23,17 @@ import (
 type Endpoints struct {
 	Name      string
 	Namespace string
+	Cluster   string
 
 	IPList []string
 }
 
 // NewEndpoints creates new Endpoints from k8s endpoints
-func NewEndpoints(endpoints *corev1.Endpoints) *Endpoints {
+func NewEndpoints(endpoints *corev1.Endpoints, clusterName string) *Endpoints {
 	ep := &Endpoints{
 		Name:      endpoints.Name,
 		Namespace: endpoints.Namespace,
+		Cluster:   clusterName,
 	}
 
 	for _, subset := range endpoints.Subsets {

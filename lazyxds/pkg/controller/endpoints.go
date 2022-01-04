@@ -22,8 +22,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func (c *AggregationController) syncEndpoints(ctx context.Context, endpoints *corev1.Endpoints) error {
-	ep := model.NewEndpoints(endpoints)
+func (c *AggregationController) syncEndpoints(ctx context.Context, endpoints *corev1.Endpoints, clusterName string) error {
+	ep := model.NewEndpoints(endpoints, clusterName)
 	c.endpoints.Store(ep.ID(), ep)
 
 	return nil

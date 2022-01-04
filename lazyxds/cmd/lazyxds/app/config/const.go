@@ -35,6 +35,8 @@ const (
 	LazyLoadingAnnotation = "lazy-xds"
 	// ManagedByLabel is the common label indicate the component is managed by which controller
 	ManagedByLabel = "app.kubernetes.io/managed-by"
+	// MultiClusterSecretLabel is a specific label of a secret in IstioNamespace which means a remote data-plane cluster added to mesh
+	MultiClusterSecretLabel = "istio/multiCluster"
 )
 
 // GetEgressCluster returns the egress xds cluster string

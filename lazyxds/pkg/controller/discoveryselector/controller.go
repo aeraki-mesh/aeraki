@@ -16,6 +16,7 @@ package discoveryselector
 
 import (
 	"context"
+	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
 	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
 	"github.com/go-logr/logr"
 	meshv1alpha1 "istio.io/api/mesh/v1alpha1"
@@ -56,11 +57,11 @@ func NewController(
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	c.log.Info("starting discoveryselector controller...")
 	ctx := log.WithContext(context.Background(), c.log)
-	configMapWatcher, err := c.clientset.CoreV1().ConfigMaps("istio-system").Watch(ctx, metav1.ListOptions{
+	configMapWatcher, err := c.clientset.CoreV1().ConfigMaps(config.IstioNamespace).Watch(ctx, metav1.ListOptions{
 		FieldSelector: "metadata.name=istio",
 	})
 	if err != nil {
-		c.log.Error(err, "watch configMap <istio> failed")
+		c.log.Error(err, "watch istio configMap failed")
 		return
 	}
 	for {
@@ -70,6 +71,15 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 				c.log.Info("configMapWatcher chan has been close!")
 				c.log.Info("clean chan over!")
 				time.Sleep(time.Second * 5)
+				configMapWatcher, err = c.clientset.CoreV1().ConfigMaps(config.IstioNamespace).Watch(ctx, metav1.ListOptions{
+					FieldSelector: "metadata.name=istio",
+				})
+				if err != nil {
+					c.log.Error(err, "rewatch istio configMap failed")
+				} else {
+					c.log.Info("rewatch istio configMap successfully")
+				}
+				break
 			}
 			if e.Object != nil {
 				c.log.Info("configMapWatcher chan is ok")

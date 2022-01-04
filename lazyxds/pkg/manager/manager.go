@@ -85,7 +85,6 @@ func (m *Manager) Run() error {
 
 	m.controller.Run()
 
-	// todo we need support multiple cluster
 	if err := m.AddCluster("Kubernetes", m.masterClient); err != nil {
 		return err
 	}
