@@ -66,7 +66,7 @@ func Test_inboudEnvoyFilterWorkloadSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := inboudEnvoyFilterWorkloadSelector(tt.service); !reflect.DeepEqual(got, tt.want) {
+			if got := inboundEnvoyFilterWorkloadSelector(tt.service); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("inboudEnvoyFilterWorkloadSelector() = %v, want %v", got, tt.want)
 			}
 		})
