@@ -51,6 +51,10 @@ spec:
               value: ":15010"
             - name: AERAKI_LOG_LEVEL
               value: "all:debug"
+            - name: AERAKI_SERVER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
 ---
 apiVersion: v1
 kind: Service

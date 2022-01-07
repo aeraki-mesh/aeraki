@@ -103,7 +103,6 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 		case <-stop:
 			break
 		}
-
 	}
 }
 

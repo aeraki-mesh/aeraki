@@ -19,6 +19,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aeraki-framework/aeraki/pkg/leaderelection"
+
 	"github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/scheme"
 	"github.com/aeraki-framework/aeraki/pkg/config"
 	"github.com/aeraki-framework/aeraki/pkg/config/serviceentry"
@@ -47,6 +49,7 @@ var (
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
 	args                   *AerakiArgs
+	kubeClient             kubernetes.Interface
 	configController       *config.Controller
 	serviceEntryController *serviceentry.Controller
 	envoyFilterController  *envoyfilter.Controller
@@ -104,7 +107,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(crdCtrlMgr.GetConfig())
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
 
-	return &Server{
+	server := &Server{
 		args:                   args,
 		configController:       configController,
 		envoyFilterController:  envoyFilterController,
@@ -112,12 +115,14 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		serviceEntryController: serviceEntryController,
 		xdsCacheMgr:            routeCacheMgr,
 		xdsServer:              xdsServer,
-	}, nil
+	}
+	err = server.initKubeClient()
+	return server, err
 }
 
 func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 	envoyFilterController *envoyfilter.Controller, xdsCacheMgr *xds.CacheMgr) (manager.Manager, error) {
-	crdCtrlMgr, err := controller.NewManager(kubeConfig, args.Namespace, args.ElectionID)
+	crdCtrlMgr, err := controller.NewManager(kubeConfig, args.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -171,8 +176,12 @@ func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")
 
 	go func() {
-		aerakiLog.Infof("starting Envoy Filter Controller")
-		s.envoyFilterController.Run(stop)
+		leaderelection.
+			NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.EnvoyFilterController, s.kubeClient).
+			AddRunFunction(func(leaderStop <-chan struct{}) {
+				aerakiLog.Infof("starting EnvoyFilter creation controller")
+				s.envoyFilterController.Run(stop)
+			}).Run(stop)
 	}()
 
 	go func() {
@@ -181,17 +190,21 @@ func (s *Server) Start(stop <-chan struct{}) {
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting ServiceEntry controller")
-		s.serviceEntryController.Run(stop)
+		leaderelection.
+			NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.AllocateVIPController, s.kubeClient).
+			AddRunFunction(func(leaderStop <-chan struct{}) {
+				aerakiLog.Infof("starting ServiceEntry IP allocation controller")
+				s.serviceEntryController.Run(stop)
+			}).Run(stop)
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting route controller")
+		aerakiLog.Infof("starting MetaProtocol routes controller")
 		s.xdsCacheMgr.Run(stop)
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting xDS server, listening on %s", s.args.XdsAddr)
+		aerakiLog.Infof("starting MetaProtocol RDS server, listening on %s", s.args.XdsAddr)
 		s.xdsServer.Run(stop)
 	}()
 
@@ -210,6 +223,15 @@ func (s *Server) waitForShutdown(stop <-chan struct{}) {
 		<-stop
 		s.stopCRDController()
 	}()
+}
+
+func (s *Server) initKubeClient() error {
+	kubeConfig, err := kubeconfig.GetConfig()
+	if err != nil {
+		return err
+	}
+	s.kubeClient, err = kubernetes.NewForConfig(kubeConfig)
+	return err
 }
 
 func getConfigStoreKubeConfig(args *AerakiArgs) (*rest.Config, error) {
