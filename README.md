@@ -72,50 +72,32 @@ Most request/response style, stateless protocols can be built on top of the Meta
 * [LazyXDS（xDS 按需加载）](lazyxds/README.md)
 
 ## Supported protocols:
-* Dubbo
-  * Service Discovery
-    * [x] ServiceEntry Integration ([Example](https://github.com/aeraki-framework/aeraki/blob/master/demo/dubbo/serviceentry.yaml))
-    * [x] [ZooKeeper Integration](https://github.com/aeraki-framework/dubbo2istio)
-    * [x] [Nacos Integration](https://github.com/aeraki-framework/dubbo2istio)
+Aeraki can manage the below protocols in a service mesh：
+* Dubbo  Envoy native filter）
+* Thrift (Envoy native filter)
+* Kafka (Envoy native filter)
+* Redis (Envoy native filter)
+* MetaProtocol-Dubbo
+* MetaProtocol-Thfirt
+* Any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-framework/meta-protocol-proxy)
+
+Supported Features:
   * Traffic Management
-    * [x] Request Level Load Balancing
+    * [x] Request Level Load Balancing/Locality Load Balancing
+    * [x] Flexible Route Match Conditions (any properties can be exacted from layer-7 packet and used as mach conditions)
+    * [x] Dynamic route update through Aeraki MetaRDS
     * [x] Version Based Routing
-    * [x] Traffic Splitting
-    * [x] Method Based Routing
-    * [x] Header Based Routing
-    * [x] Crcuit Breaker
-    * [x] Locality Load Balancing
-    * [x] RDS(Route Discovery Service)
+    * [x] Traffic Splittin
+    * [x] Local Rate Limit
+    * [x] Global Rate Limit
+    * [ ] Traffic Mirroring
+    * [ ] Request Transformation
   * Observability
-    * [x] Dubbo Request Metrics
+    * [x] Request level Metrics (Request latency, count, error, etc)
+    * [ ] Distributed Tracing
   * Security 
     * [x] Peer Authorization on Interface/Method
     * [ ] Rquest Authorization
-* Thrift
-  * Traffic Management
-    * [x] Request Level Load Balancing
-    * [x] Version Based Routing
-    * [x] Traffic Splitting
-    * [ ] Header Based Routing
-    * [ ] Rate Limit
-  * Observability
-    * [x] Thrift Request Metrics
-* Kafka
-  * [x] Metrics
-* ZooKeeper
-  * [x] Metrics
-* Redis
-  * [x] Redis Cluster
-  * [x] Sharding
-  * [x] Prefix Routing
-  * [x] Auth
-  * [x] Traffic Mirroring
-* [ ] MySql
-* [ ] MongoDB
-* [ ] Postgres
-* [ ] RocketMQ
-* [ ] TARS
-* ...
 
 ## Demo
 
