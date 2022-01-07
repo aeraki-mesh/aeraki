@@ -26,6 +26,7 @@ type AerakiArgs struct {
 	Namespace         string
 	ConfigStoreSecret string
 	ElectionID        string
+	ServerID          string
 	LogLevel          string
 	Protocols         map[protocol.Instance]envoyfilter.Generator
 }

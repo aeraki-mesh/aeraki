@@ -21,11 +21,13 @@ ENV AERAKI_NAMESPACE="istio-system"
 ENV AERAKI_ISTIO_CONFIG_STORE_SECRET=""
 ENV AERAKI_XDS_LISTEN_ADDR=":15010"
 ENV AERAKI_LOG_LEVEL="all:info"
+ENV AERAKI_SERVER_ID=""
 
 COPY aeraki /usr/local/bin/
 ENTRYPOINT /usr/local/bin/aeraki                                     \
            -istiod-address=$AERAKI_ISTIOD_ADDR                       \
            -namespace=$AERAKI_NAMESPACE                              \
            -config-store-secret=$AERAKI_ISTIO_CONFIG_STORE_SECRET    \
-           -xds-listen-address=$AERAKI_XDS_LISTEN_ADDR                  \
-           -log-level=$AERAKI_LOG_LEVEL
+           -xds-listen-address=$AERAKI_XDS_LISTEN_ADDR               \
+           -log-level=$AERAKI_LOG_LEVEL                              \
+           -server-id=$AERAKI_SERVER_ID
