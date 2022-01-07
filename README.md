@@ -79,7 +79,7 @@ Aeraki can manage the below protocols in a service mesh：
 * Redis (Envoy native filter)
 * MetaProtocol-Dubbo
 * MetaProtocol-Thfirt
-* Any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-framework/meta-protocol-proxy)
+* Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-framework/meta-protocol-proxy) can be managed by Aeraki
 
 Supported Features:
   * Traffic Management
