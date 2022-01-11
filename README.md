@@ -127,7 +127,7 @@ git clone https://github.com/aeraki-framework/aeraki.git
 
 ### Install Istio, Aeraki and demo Applications
 ```bash
-make install
+m
 ```
 
 Note: Aeraki needs to configure Istio with smart dns. If you already have an Istio installed and don't know how to
@@ -135,7 +135,7 @@ Note: Aeraki needs to configure Istio with smart dns. If you already have an Ist
 
 ### Uninstall Istio, Aeraki and demo Applications
 ```bash
-make uninstall
+make uninstall-demo
 ```
 
 ### Open the following URLs in your browser to play with Aeraki and view service metrics
