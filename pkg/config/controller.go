@@ -45,6 +45,7 @@ var (
 // Controller watches Istio config xDS server and notifies the listeners when config changes.
 type Controller struct {
 	configServerAddr string
+	xdsMCP           *adsc.ADSC
 	Store            istiomodel.ConfigStore
 	controller       istiomodel.ConfigStoreCache
 }
@@ -61,30 +62,50 @@ func NewController(configServerAddr string) *Controller {
 
 // Run until a signal is received, this function won't block
 func (c *Controller) Run(stop <-chan struct{}) {
+	go c.controller.Run(stop)
 	go func() {
+		c.connectIstio()
 		for {
-			xdsMCP, err := adsc.New(c.configServerAddr, &adsc.Config{
-				Meta: istiomodel.NodeMetadata{
-					Generator: "api",
-				}.ToStruct(),
-				InitialDiscoveryRequests: c.configInitialRequests(),
-				BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
-			})
-			if err != nil {
-				controllerLog.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
-				time.Sleep(5 * time.Second)
-				continue
-			}
-			xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
-			if err = xdsMCP.Run(); err != nil {
-				controllerLog.Errorf("adsc: failed running %v", err)
-				time.Sleep(5 * time.Second)
-				continue
-			}
-			c.controller.Run(stop)
-			return
+			time.Sleep(30 * time.Minute)
+			c.reconnectIstio()
 		}
 	}()
+}
+
+func (c *Controller) reconnectIstio() {
+	controllerLog.Info("Close connection to Istio MCP over xDS server")
+	c.closeConnection()
+	c.connectIstio()
+	controllerLog.Info("Reconnect to Istio MCP over xDS server")
+}
+
+func (c *Controller) closeConnection() {
+	c.xdsMCP.Close()
+}
+
+func (c *Controller) connectIstio() {
+	var err error
+	for {
+		c.xdsMCP, err = adsc.New(c.configServerAddr, &adsc.Config{
+			Meta: istiomodel.NodeMetadata{
+				Generator: "api",
+			}.ToStruct(),
+			InitialDiscoveryRequests: c.configInitialRequests(),
+			BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
+		})
+		if err != nil {
+			controllerLog.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		c.xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
+		if err = c.xdsMCP.Run(); err != nil {
+			controllerLog.Errorf("adsc: failed running %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		return
+	}
 }
 
 func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
