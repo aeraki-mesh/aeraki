@@ -24,7 +24,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/app/version"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/app/version"
 )
 
 var (

@@ -17,7 +17,7 @@ package model
 import (
 	"fmt"
 
-	dubbopb "github.com/aeraki-framework/aeraki/api/dubbo/v1alpha1"
+	dubbopb "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 
 	"istio.io/istio/pilot/pkg/security/trustdomain"

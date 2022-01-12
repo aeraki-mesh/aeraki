@@ -17,8 +17,8 @@
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
-	"github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/scheme"
+	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

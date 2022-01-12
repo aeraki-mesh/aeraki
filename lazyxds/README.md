@@ -36,8 +36,8 @@ LazyXds enables Istio only push needed xDS to sidecars to reduce resource consum
 ### Install Lazyxds Egress and Controller
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-egress.yaml
-kubectl apply -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-controller.yaml
+kubectl apply -f https://raw.githubusercontent.com/aeraki-mesh/aeraki/master/lazyxds/install/lazyxds-egress.yaml
+kubectl apply -f https://raw.githubusercontent.com/aeraki-mesh/aeraki/master/lazyxds/install/lazyxds-controller.yaml
 ```
 
 The above commands install the lazyxds egress and controller into the istio-system namespace.
@@ -86,7 +86,7 @@ or use kubectl:
     istioctl install -y --set meshConfig.accessLogFile=/dev/stdout
     ```
 
-2. Install lazyXds by following the instructions in [Install Lazyxds egress and controller](https://github.com/aeraki-framework/aeraki/blob/master/lazyxds/README.md#install-lazyxds-egress-and-controller).
+2. Install lazyXds by following the instructions in [Install Lazyxds egress and controller](https://github.com/aeraki-mesh/aeraki/blob/master/lazyxds/README.md#install-lazyxds-egress-and-controller).
 
 3. Install bookinfo application:
 
@@ -176,8 +176,8 @@ or use kubectl:
 ## Uninstall
 
 ```
-kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-controller.yaml
-kubectl delete -f https://raw.githubusercontent.com/aeraki-framework/aeraki/master/lazyxds/install/lazyxds-egress.yaml
+kubectl delete -f https://raw.githubusercontent.com/aeraki-mesh/aeraki/master/lazyxds/install/lazyxds-controller.yaml
+kubectl delete -f https://raw.githubusercontent.com/aeraki-mesh/aeraki/master/lazyxds/install/lazyxds-egress.yaml
 ```
 
 ## Performance

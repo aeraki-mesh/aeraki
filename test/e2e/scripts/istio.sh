@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # This script is copied from github.com/apache/skywalking
 # ----------------------------------------------------------------------------

@@ -19,7 +19,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"

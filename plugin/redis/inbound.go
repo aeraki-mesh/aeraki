@@ -15,7 +15,7 @@
 package redis
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 )
 

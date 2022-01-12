@@ -20,7 +20,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

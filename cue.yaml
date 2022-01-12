@@ -15,7 +15,7 @@
 ---
 # Cuelang configuration to generate OpenAPI schema for configs.
 
-module: github.com/aeraki-framework/aeraki
+module: github.com/aeraki-mesh/aeraki
 
 openapi:
   selfContained: true

@@ -20,7 +20,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -111,7 +111,7 @@ func (svc *Service) UpdateClusterService(clusterName string, service *corev1.Ser
 		Selector:    service.Spec.Selector,
 	}
 
-	// https://github.com/aeraki-framework/aeraki/issues/83
+	// https://github.com/aeraki-mesh/aeraki/issues/83
 	// if a service without selector, the lazy loading is disabled
 	// we always disable lazy loading feature on a service with ExternalName
 	if service.Spec.Type == corev1.ServiceTypeExternalName {

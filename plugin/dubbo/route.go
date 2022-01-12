@@ -17,7 +17,7 @@ package dubbo
 import (
 	"fmt"
 
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	envoy "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	routepb "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"

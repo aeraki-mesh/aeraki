@@ -124,7 +124,7 @@
         "options": [
           {
             "name": "go_package",
-            "value": "github.com/aeraki-framework/aeraki/api/redis/v1alpha1"
+            "value": "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
           }
         ]
       }
@@ -366,7 +366,7 @@
         "options": [
           {
             "name": "go_package",
-            "value": "github.com/aeraki-framework/aeraki/api/redis/v1alpha1"
+            "value": "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
           }
         ]
       }

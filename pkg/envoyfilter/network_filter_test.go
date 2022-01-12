@@ -20,7 +20,7 @@ import (
 
 	istioconfig "istio.io/istio/pkg/config"
 
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	networking "istio.io/api/networking/v1alpha3"
 )
 

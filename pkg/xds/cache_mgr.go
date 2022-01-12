@@ -20,17 +20,17 @@ import (
 	"strings"
 	"time"
 
-	metaprotocolapi "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/aeraki-framework/aeraki/pkg/model"
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 
-	metaroute "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
+	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"

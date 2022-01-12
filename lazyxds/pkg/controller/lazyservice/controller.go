@@ -21,7 +21,7 @@ import (
 	"github.com/go-logr/logr"
 	"k8s.io/klog/v2/klogr"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	queue "k8s.io/client-go/util/workqueue"

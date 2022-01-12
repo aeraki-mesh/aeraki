@@ -18,8 +18,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/model"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 )
 

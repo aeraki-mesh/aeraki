@@ -15,7 +15,7 @@
 package main
 
 import (
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app"
 )
 
 func main() {

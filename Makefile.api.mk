@@ -25,7 +25,7 @@ all: prepare gen
 
 repo_dir := .
 out_path := ./tmp
-module_name := github.com/aeraki-framework/aeraki
+module_name := github.com/aeraki-mesh/aeraki
 
 protoc = protoc -I./common-protos -I.
 protolock = protolock --lockdir ./crd

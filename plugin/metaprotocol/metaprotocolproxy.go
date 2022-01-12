@@ -15,9 +15,9 @@
 package metaprotocol
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/model"
-	metaprotocolmodel "github.com/aeraki-framework/aeraki/pkg/model/metaprotocol"
-	metaprotocol "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
+	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 )
 
