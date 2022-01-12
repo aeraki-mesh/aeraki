@@ -209,4 +209,4 @@ Sincerely thank everyone for choosing, contributing, and using Aeraki. We create
 ## Contact
 * Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
 * Wechat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
-* Slack: Join [Aeraki slack channel](http://aeraki.slack.com/)
+* Slack: Join [Aeraki slack channel](https://istio.slack.com/archives/C02UB8YJ600)
