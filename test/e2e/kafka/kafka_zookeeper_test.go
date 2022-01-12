@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/test/e2e/util"
+	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 )
 
 func TestMain(m *testing.M) {

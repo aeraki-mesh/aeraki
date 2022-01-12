@@ -34,7 +34,7 @@ $ helm version
 version.BuildInfo{Version:"v3.6.3", GitCommit:"d506314abfb5d21419df8c7e7e68012379db2354", GitTreeState:"dirty", GoVersion:"go1.16.5"}
 
 # 下载代码
-$ git clone https://github.com/aeraki-framework/aeraki
+$ git clone https://github.com/aeraki-mesh/aeraki
 
 $ cd aeraki/manifests/charts
 
@@ -70,7 +70,7 @@ istiod-bcddf5d98-mq9ln                 1/1     Running   0          43m
 
 ## 也可以看看
 
-[使用 aeraki 来对dubbo协议进行测试](https://github.com/aeraki-framework/dubbo2istio)
+[使用 aeraki 来对dubbo协议进行测试](https://github.com/aeraki-mesh/dubbo2istio)
 
 Dubbo2istio 将 Dubbo 服务注册表中的 Dubbo 服务自动同步到 Istio 服务网格中，目前已经支持 ZooKeeper，Nacos 和 Etcd。
 

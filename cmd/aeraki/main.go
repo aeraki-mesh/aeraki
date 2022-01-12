@@ -23,16 +23,16 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/aeraki-framework/aeraki/plugin/metaprotocol"
+	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
 
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-framework/aeraki/plugin/kafka"
-	"github.com/aeraki-framework/aeraki/plugin/thrift"
-	"github.com/aeraki-framework/aeraki/plugin/zookeeper"
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/plugin/kafka"
+	"github.com/aeraki-mesh/aeraki/plugin/thrift"
+	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
 	"istio.io/pkg/log"
 
-	"github.com/aeraki-framework/aeraki/pkg/bootstrap"
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )
 
 const (

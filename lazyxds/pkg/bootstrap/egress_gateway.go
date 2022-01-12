@@ -18,8 +18,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istioclient "istio.io/client-go/pkg/clientset/versioned"

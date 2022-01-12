@@ -15,8 +15,8 @@
 package bootstrap
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )
 
 // AerakiArgs provides all of the configuration parameters for the Aeraki service.

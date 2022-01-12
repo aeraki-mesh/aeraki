@@ -12,7 +12,7 @@ import "istio.io/api/networking/v1alpha3/destination_rule.proto";
 // RedisDestination defines policies that apply to redis traffic intended for a redis service
 package redis.aeraki.io.v1alpha1;
 
-option go_package = "github.com/aeraki-framework/aeraki/api/redis/v1alpha1";
+option go_package = "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1";
 
 // RedisDestination defines policies that apply to redis traffic intended for a redis service
 //

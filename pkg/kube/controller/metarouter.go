@@ -20,7 +20,7 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"istio.io/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"

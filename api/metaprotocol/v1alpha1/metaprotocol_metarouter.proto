@@ -68,7 +68,7 @@ import "google/protobuf/wrappers.proto";
 //           weight: 80
 package metaprotocol.aeraki.io.v1alpha1;
 
-option go_package = "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1";
+option go_package = "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1";
 
 // MetaRouter defines route policies for MetaProtocol proxy.
 //

@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
 	envoy_service_accesslog_v3 "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	"github.com/go-logr/logr"
 	"google.golang.org/grpc"

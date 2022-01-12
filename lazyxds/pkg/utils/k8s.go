@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

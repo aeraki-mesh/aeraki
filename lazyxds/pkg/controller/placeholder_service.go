@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/model"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"

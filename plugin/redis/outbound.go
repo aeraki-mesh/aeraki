@@ -19,14 +19,14 @@ import (
 	"strings"
 	"time"
 
-	spec "github.com/aeraki-framework/aeraki/api/redis/v1alpha1"
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
 	"github.com/gogo/protobuf/types"
 	"istio.io/istio/pkg/util/gogo"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pkg/config/schema/collections"

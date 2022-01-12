@@ -15,8 +15,8 @@
 package metaprotocol
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"istio.io/pkg/log"
 )
 

@@ -17,13 +17,13 @@
 package fake
 
 import (
-	clientset "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
-	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
-	fakedubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1/fake"
-	metaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1"
-	fakemetaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1/fake"
-	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
-	fakeredisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1/fake"
+	clientset "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
+	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	fakedubbov1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1/fake"
+	metaprotocolv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1"
+	fakemetaprotocolv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/metaprotocol/v1alpha1/fake"
+	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
+	fakeredisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

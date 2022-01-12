@@ -17,8 +17,8 @@ package controller
 import (
 	"context"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/model"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 )
 

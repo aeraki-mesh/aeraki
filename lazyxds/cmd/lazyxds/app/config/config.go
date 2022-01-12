@@ -18,7 +18,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/options"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/options"
 	componentbaseconfig "k8s.io/component-base/config"
 )
 

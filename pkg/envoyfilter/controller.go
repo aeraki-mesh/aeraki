@@ -22,9 +22,9 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
-	"github.com/aeraki-framework/aeraki/pkg/model"
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/zhaohuabing/debounce"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"

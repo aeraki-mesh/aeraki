@@ -17,8 +17,8 @@
 package metaprotocol
 
 import (
-	internalinterfaces "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/metaprotocol/v1alpha1"
+	internalinterfaces "github.com/aeraki-mesh/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/informers/externalversions/metaprotocol/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

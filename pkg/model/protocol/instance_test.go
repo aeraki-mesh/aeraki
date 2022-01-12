@@ -17,7 +17,7 @@ package protocol_test
 import (
 	"testing"
 
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )
 
 func Test_getLayer7ProtocolFromPortName(t *testing.T) {

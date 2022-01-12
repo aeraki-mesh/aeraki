@@ -15,12 +15,12 @@
 package dubbo
 
 import (
-	"github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned"
-	dubbov1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
+	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 	"k8s.io/client-go/rest"
 
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"istio.io/pkg/log"
 )
 
