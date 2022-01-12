@@ -10,7 +10,7 @@ pull_request_rules:
       - approved-reviews-by=zhaohuabing
     actions:
       queue:
-        method: merge
+        method: squash
         name: default
   - name: ask the maintainer team to review PR
     conditions:
