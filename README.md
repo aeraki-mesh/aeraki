@@ -127,7 +127,7 @@ git clone https://github.com/aeraki-mesh/aeraki.git
 
 ### Install Istio, Aeraki and demo Applications
 ```bash
-m
+make demo 
 ```
 
 Note: Aeraki needs to configure Istio with smart dns. If you already have an Istio installed and don't know how to
