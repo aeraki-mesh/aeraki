@@ -127,7 +127,6 @@ git clone https://github.com/aeraki-mesh/aeraki.git
 
 ### Install Istio, Aeraki and demo Applications
 ```bash
-make install
 make demo 
 ```
 
