@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-tcm
+        sidecar.istio.io/proxyImage: aeraki/proxyv2-tcm
       labels:
         app: trpc-sample-server
         version: v1
@@ -54,7 +54,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-tcm
+        sidecar.istio.io/proxyImage: aeraki/proxyv2-tcm
       labels:
         app: trpc-sample-server
         version: v2
@@ -80,7 +80,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/proxyv2:1.10.0-tcm
+        sidecar.istio.io/proxyImage: aeraki/proxyv2-tcm
       labels:
         app: trpc-sample-client
     spec:

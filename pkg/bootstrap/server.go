@@ -19,16 +19,18 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/scheme"
-	"github.com/aeraki-framework/aeraki/pkg/config"
-	"github.com/aeraki-framework/aeraki/pkg/config/serviceentry"
-	"github.com/aeraki-framework/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-framework/aeraki/pkg/kube/controller"
-	"github.com/aeraki-framework/aeraki/pkg/model/protocol"
-	"github.com/aeraki-framework/aeraki/pkg/xds"
-	"github.com/aeraki-framework/aeraki/plugin/dubbo"
-	"github.com/aeraki-framework/aeraki/plugin/redis"
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
+	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
+
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
+	"github.com/aeraki-mesh/aeraki/pkg/config"
+	"github.com/aeraki-mesh/aeraki/pkg/config/serviceentry"
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/kube/controller"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/xds"
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
+	"github.com/aeraki-mesh/aeraki/plugin/redis"
+	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/pkg/log"
@@ -47,6 +49,7 @@ var (
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
 	args                   *AerakiArgs
+	kubeClient             kubernetes.Interface
 	configController       *config.Controller
 	serviceEntryController *serviceentry.Controller
 	envoyFilterController  *envoyfilter.Controller
@@ -62,56 +65,69 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Istio kube config store : %v", err)
 	}
-	ic, err := istioclient.NewForConfig(kubeConfig)
-
+	client, err := versioned.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create istio client: %v", err)
 	}
 
+	// configController watches Istiod through MCP over xDS to get service entry and virtual service updates
 	configController := config.NewController(args.IstiodAddr)
-	serviceEntryController := serviceentry.NewController(ic)
-	envoyFilterController := envoyfilter.NewController(ic, configController.Store, args.Protocols)
+
+	// Todo remove serviceEntryController, now Istio can allocate IP
+	serviceEntryController := serviceentry.NewController(client)
+
+	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
+	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols)
 	configController.RegisterEventHandler(args.Protocols, func(_, curr istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
 
-	cacheMgr := xds.NewCacheMgr(ic, configController.Store)
+	// routeCacheMgr watches service entry and generate the routes for meta protocol services
+	routeCacheMgr := xds.NewCacheMgr(configController.Store)
 	configController.RegisterEventHandler(args.Protocols, func(prev istioconfig.Config, curr istioconfig.Config,
 		event model.Event) {
-		cacheMgr.ConfigUpdated(prev, curr, event)
+		routeCacheMgr.ConfigUpdated(prev, curr, event)
 	})
-	xdsServer := xds.NewServer(args.XdsAddr, cacheMgr)
 
-	crdCtrlMgr, err := createCrdControllers(args, kubeConfig, envoyFilterController, cacheMgr)
+	// xdsServer is the RDS server for metaProtocol proxy
+	xdsServer := xds.NewServer(args.XdsAddr, routeCacheMgr)
+
+	// crdCtrlMgr watches Aeraki CRDs,  such as MetaRouter, ApplicationProtocol, etc.
+	crdCtrlMgr, err := createCrdControllers(args, kubeConfig, envoyFilterController, routeCacheMgr)
 	if err != nil {
 		return nil, err
 	}
-	cacheMgr.ControllerClient = crdCtrlMgr.GetClient()
+	// routeCacheMgr uses controller manager client to get route configuration in MetaRouters
+	routeCacheMgr.MetaRouterControllerClient = crdCtrlMgr.GetClient()
+	// envoyFilterController uses controller manager client to get the rate limit configuration in MetaRouters
+	envoyFilterController.MetaRouterControllerClient = crdCtrlMgr.GetClient()
 
 	//todo replace config with cached client
 	cfg := crdCtrlMgr.GetConfig()
 	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(crdCtrlMgr.GetConfig())
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
 
-	return &Server{
+	server := &Server{
 		args:                   args,
 		configController:       configController,
 		envoyFilterController:  envoyFilterController,
 		crdCtrlMgr:             crdCtrlMgr,
 		serviceEntryController: serviceEntryController,
-		xdsCacheMgr:            cacheMgr,
+		xdsCacheMgr:            routeCacheMgr,
 		xdsServer:              xdsServer,
-	}, nil
+	}
+	err = server.initKubeClient()
+	return server, err
 }
 
 func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 	envoyFilterController *envoyfilter.Controller, xdsCacheMgr *xds.CacheMgr) (manager.Manager, error) {
-	crdCtrlMgr, err := controller.NewManager(kubeConfig, args.Namespace, args.ElectionID)
+	crdCtrlMgr, err := controller.NewManager(kubeConfig, args.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
-	triggerPush := func() error {
+	updateEnvoyFilter := func() error {
 		envoyFilterController.ConfigUpdated(model.EventUpdate)
 		return nil
 	}
@@ -119,23 +135,31 @@ func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		xdsCacheMgr.UpdateRoute()
 		return nil
 	}
-	err = controller.AddRedisServiceController(crdCtrlMgr, triggerPush)
+	err = controller.AddRedisServiceController(crdCtrlMgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add RedisServiceController: %e", err)
 	}
-	err = controller.AddRedisDestinationController(crdCtrlMgr, triggerPush)
+	err = controller.AddRedisDestinationController(crdCtrlMgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add RedisDestinationController: %e", err)
 	}
-	err = controller.AddDubboAuthorizationPolicyController(crdCtrlMgr, triggerPush)
+	err = controller.AddDubboAuthorizationPolicyController(crdCtrlMgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
 	}
-	err = controller.AddApplicationProtocolController(crdCtrlMgr, triggerPush)
+	err = controller.AddApplicationProtocolController(crdCtrlMgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
 	}
-	err = controller.AddMetaRouterController(crdCtrlMgr, updateCache)
+	err = controller.AddMetaRouterController(crdCtrlMgr, func() error {
+		if err := updateEnvoyFilter(); err != nil { //MetaRouter Rate limit config will cause update on EnvoyFilters
+			return err
+		}
+		if err := updateCache(); err != nil { //MetaRouter route config will cause update on RDS cache
+			return err
+		}
+		return nil
+	})
 	if err != nil {
 		aerakiLog.Fatalf("could not add MetaRouterController: %e", err)
 	}
@@ -152,8 +176,12 @@ func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")
 
 	go func() {
-		aerakiLog.Infof("starting Envoy Filter Controller")
-		s.envoyFilterController.Run(stop)
+		leaderelection.
+			NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.EnvoyFilterController, s.kubeClient).
+			AddRunFunction(func(leaderStop <-chan struct{}) {
+				aerakiLog.Infof("starting EnvoyFilter creation controller")
+				s.envoyFilterController.Run(stop)
+			}).Run(stop)
 	}()
 
 	go func() {
@@ -162,17 +190,21 @@ func (s *Server) Start(stop <-chan struct{}) {
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting ServiceEntry controller")
-		s.serviceEntryController.Run(stop)
+		leaderelection.
+			NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.AllocateVIPController, s.kubeClient).
+			AddRunFunction(func(leaderStop <-chan struct{}) {
+				aerakiLog.Infof("starting ServiceEntry IP allocation controller")
+				s.serviceEntryController.Run(stop)
+			}).Run(stop)
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting route controller")
+		aerakiLog.Infof("starting MetaProtocol routes controller")
 		s.xdsCacheMgr.Run(stop)
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting xDS server, listening on %s", s.args.XdsAddr)
+		aerakiLog.Infof("starting MetaProtocol RDS server, listening on %s", s.args.XdsAddr)
 		s.xdsServer.Run(stop)
 	}()
 
@@ -191,6 +223,15 @@ func (s *Server) waitForShutdown(stop <-chan struct{}) {
 		<-stop
 		s.stopCRDController()
 	}()
+}
+
+func (s *Server) initKubeClient() error {
+	kubeConfig, err := kubeconfig.GetConfig()
+	if err != nil {
+		return err
+	}
+	s.kubeClient, err = kubernetes.NewForConfig(kubeConfig)
+	return err
 }
 
 func getConfigStoreKubeConfig(args *AerakiArgs) (*rest.Config, error) {

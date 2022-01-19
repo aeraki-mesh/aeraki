@@ -38,8 +38,10 @@ BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
 MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
 
 install:
+	bash demo/install-aeraki.sh
+demo:
 	bash demo/install-demo.sh
-uninstall:
+uninstall-demo:
 	bash demo/uninstall-demo.sh
 test: style-check
 	$(GOMOD) tidy
@@ -73,17 +75,17 @@ lint:
 	golint ./...
 	golangci-lint run --tests="false"
 e2e-dubbo:
-	go test -v github.com/aeraki-framework/aeraki/test/e2e/dubbo/...
+	go test -v github.com/aeraki-mesh/aeraki/test/e2e/dubbo/...
 e2e-thrift:
-	go test -v github.com/aeraki-framework/aeraki/test/e2e/thrift/...
+	go test -v github.com/aeraki-mesh/aeraki/test/e2e/thrift/...
 e2e-kafka-zookeeper:
-	go test -v github.com/aeraki-framework/aeraki/test/e2e/kafka/...
+	go test -v github.com/aeraki-mesh/aeraki/test/e2e/kafka/...
 e2e-redis:
-	go test -v github.com/aeraki-framework/aeraki/test/e2e/redis/...
+	go test -v github.com/aeraki-mesh/aeraki/test/e2e/redis/...
 e2e-metaprotocol:
-	go test -v github.com/aeraki-framework/aeraki/test/e2e/metaprotocol/...
+	go test -v github.com/aeraki-mesh/aeraki/test/e2e/metaprotocol/...
 e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e-redis e2e-metaprotocol
-.PHONY: build docker-build docker-push clean style-check lint e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e
+.PHONY: build docker-build docker-push clean style-check lint e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e install demo uninstall-demo
 
 # lazyxds
 LAZYXDS_DOCKER_TAG?=aeraki/lazyxds:$(IMAGE_TAG)
@@ -114,3 +116,4 @@ docker-build-e2e.lazyxds: build.lazyxds
 	rm -rf $(DOCKER_TMP)
 e2e-lazyxds:
 	ginkgo -v ./test/e2e/lazyxds/lazyxds/
+.DEFAULT_GOAL := docker-build

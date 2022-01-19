@@ -15,7 +15,7 @@
 package kafka
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	kafka "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/kafka_broker/v3"
 )
 

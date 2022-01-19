@@ -1,12 +1,17 @@
 ---
+queue_rules:
+  - name: default
+    conditions:
+      # Conditions to get out of the queue (= merged)
+      - approved-reviews-by=zhaohuabing
 pull_request_rules:
   - name: Automatic merge on CI success and review
     conditions:
       - approved-reviews-by=zhaohuabing
     actions:
-      merge:
+      queue:
         method: squash
-        strict: true
+        name: default
   - name: ask the maintainer team to review PR
     conditions:
       - and:

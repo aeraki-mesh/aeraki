@@ -19,9 +19,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/manager"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/manager"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/klog/v2"

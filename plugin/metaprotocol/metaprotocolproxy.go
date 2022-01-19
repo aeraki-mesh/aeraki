@@ -15,9 +15,9 @@
 package metaprotocol
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/model"
-	metaprotocolmodel "github.com/aeraki-framework/aeraki/pkg/model/metaprotocol"
-	metaprotocol "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
+	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 )
 
@@ -62,6 +62,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPr
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
+		MetaProtocolFilters: buildOutboundFilters(context.MetaRouter),
 	}, nil
 }
 
@@ -79,6 +80,12 @@ func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPro
 	if err != nil {
 		return nil, err
 	}
+
+	filters, err := buildInboundFilters(context.MetaRouter)
+	if err != nil {
+		return nil, err
+	}
+
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
 			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
@@ -89,5 +96,6 @@ func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPro
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
+		MetaProtocolFilters: filters,
 	}, nil
 }

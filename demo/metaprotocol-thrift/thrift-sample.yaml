@@ -29,6 +29,7 @@ spec:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
         sidecar.istio.io/proxyImage: aeraki/proxyv2
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
         version: v1
@@ -55,6 +56,7 @@ spec:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
         sidecar.istio.io/proxyImage: aeraki/proxyv2
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
         version: v2
@@ -81,6 +83,7 @@ spec:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
         sidecar.istio.io/proxyImage: aeraki/proxyv2
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-client
     spec:

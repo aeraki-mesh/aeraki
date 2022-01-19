@@ -17,8 +17,8 @@ package redis
 import (
 	"math"
 
-	spec "github.com/aeraki-framework/aeraki/api/redis/v1alpha1"
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"

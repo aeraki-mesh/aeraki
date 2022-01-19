@@ -2,7 +2,7 @@
 title: metaprotocol.aeraki.io.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 8
+number_of_entries: 14
 ---
 <p>$schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
 $title: Application Protocol
@@ -81,6 +81,24 @@ No
 <tr id="MetaRouter-routes">
 <td><code>routes</code></td>
 <td><code><a href="#MetaRoute">MetaRoute[]</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRouter-local_rate_limit">
+<td><code>localRateLimit</code></td>
+<td><code><a href="#LocalRateLimit">LocalRateLimit</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRouter-global_rate_limit">
+<td><code>globalRateLimit</code></td>
+<td><code><a href="#GlobalRateLimit">GlobalRateLimit</a></code></td>
 <td>
 </td>
 <td>
@@ -347,6 +365,306 @@ matching or selection for final routing.</p>
 <td><code>uint32</code></td>
 <td>
 <p>Valid port number</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="LocalRateLimit">LocalRateLimit</h2>
+<section>
+<p>LocalRateLimit defines local rate limit policies for MetaProtocol proxy</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="LocalRateLimit-token_bucket">
+<td><code>tokenBucket</code></td>
+<td><code><a href="#LocalRateLimit-TokenBucket">TokenBucket</a></code></td>
+<td>
+<p>The default token bucket configuration to use for rate limiting requests that are processed by
+this filter.
+Local rate limiter will first check the conditions, if a specific condition matches, then the token
+bucket within that condition will be applied to the incoming request. All the other requests
+that don&rsquo;t match the conditions will be rate limited by the default token bucket.
+If the default token bucket is not specified, then the requests that don&rsquo;t match the conditions
+will not be rate limited.
+At least one of token_bucket or conditions should have value.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="LocalRateLimit-conditions">
+<td><code>conditions</code></td>
+<td><code><a href="#LocalRateLimit-Condition">Condition[]</a></code></td>
+<td>
+<p>The more specific rate limit conditions, the first match will be used.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="GlobalRateLimit">GlobalRateLimit</h2>
+<section>
+<p>GlobalRateLimit configures global rate limit service for MetaProtocol proxy</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="GlobalRateLimit-match">
+<td><code>match</code></td>
+<td><code><a href="#MetaRouteMatch">MetaRouteMatch</a></code></td>
+<td>
+<p>Match conditions to be satisfied for the rate limit rule to be activated.
+All conditions inside a single match block have AND semantic.
+If the match is not specified, then all the incoming requests will be considered matched.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="GlobalRateLimit-domain">
+<td><code>domain</code></td>
+<td><code>string</code></td>
+<td>
+<p>The rate limit domain to use when calling the rate limit service.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="GlobalRateLimit-request_timeout">
+<td><code>requestTimeout</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration">Duration</a></code></td>
+<td>
+<p>The timeout in milliseconds for the rate limit service RPC. If not
+set, this defaults to 20ms.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="GlobalRateLimit-deny_on_fail">
+<td><code>denyOnFail</code></td>
+<td><code>bool</code></td>
+<td>
+<p>The filter&rsquo;s behavior in case the rate limiting service does
+not respond back. When it is set to true, Envoy will not allow traffic in case of
+communication failure between rate limiting service and the proxy.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="GlobalRateLimit-rate_limit_service">
+<td><code>rateLimitService</code></td>
+<td><code>string</code></td>
+<td>
+<p>The cluster name of the external rate limit service provider.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="GlobalRateLimit-descriptors">
+<td><code>descriptors</code></td>
+<td><code><a href="#GlobalRateLimit-Descriptor">Descriptor[]</a></code></td>
+<td>
+<p>Defines what properties in the requests should be sent to the rate limit service</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="LocalRateLimit-TokenBucket">LocalRateLimit.TokenBucket</h2>
+<section>
+<p>Configures a token bucket which is used for rate limiting.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="LocalRateLimit-TokenBucket-max_tokens">
+<td><code>maxTokens</code></td>
+<td><code>uint32</code></td>
+<td>
+<p>The maximum tokens that the bucket can hold. This is also the number of tokens that the bucket
+initially contains. The value must be greater than 1.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="LocalRateLimit-TokenBucket-tokens_per_fill">
+<td><code>tokensPerFill</code></td>
+<td><code><a href="#google-protobuf-UInt32Value">UInt32Value</a></code></td>
+<td>
+<p>The number of tokens added to the bucket during each fill interval. The value must be greater than 1.
+If not specified, defaults to a single token.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="LocalRateLimit-TokenBucket-fill_interval">
+<td><code>fillInterval</code></td>
+<td><code><a href="https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#duration">Duration</a></code></td>
+<td>
+<p>The fill interval that tokens are added to the bucket. During each fill interval
+<code>tokens_per_fill</code> are added to the bucket. The bucket will never contain more than
+<code>max_tokens</code> tokens.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="LocalRateLimit-Condition">LocalRateLimit.Condition</h2>
+<section>
+<p>Condition defines a rate limit policy for a more specific condition</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="LocalRateLimit-Condition-match">
+<td><code>match</code></td>
+<td><code><a href="#MetaRouteMatch">MetaRouteMatch</a></code></td>
+<td>
+<p>Match conditions to be satisfied for the rate limit rule to be activated.
+All conditions inside a single match block have AND semantic.
+If the match is not specified, then all the incoming requests will be considered matched.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="LocalRateLimit-Condition-token_bucket">
+<td><code>tokenBucket</code></td>
+<td><code><a href="#LocalRateLimit-TokenBucket">TokenBucket</a></code></td>
+<td>
+<p>The token bucket for this particular condition</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="GlobalRateLimit-Descriptor">GlobalRateLimit.Descriptor</h2>
+<section>
+<p>Descriptor defines the mapping between the property in the request and the descriptor key in the rate
+limit server configuration
+Normally the property is the same as the descriptor key, but adding a mapping layer allows more flexibility</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="GlobalRateLimit-Descriptor-property">
+<td><code>property</code></td>
+<td><code>string</code></td>
+<td>
+<p>The property extracted from the requests</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="GlobalRateLimit-Descriptor-descriptor_key">
+<td><code>descriptorKey</code></td>
+<td><code>string</code></td>
+<td>
+<p>The corresponding descriptor key in the rate limit server configuration</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="google-protobuf-UInt32Value">google.protobuf.UInt32Value</h2>
+<section>
+<p>Wrapper message for <code>uint32</code>.</p>
+
+<p>The JSON representation for <code>UInt32Value</code> is JSON number.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="google-protobuf-UInt32Value-value">
+<td><code>value</code></td>
+<td><code>uint32</code></td>
+<td>
+<p>The uint32 value.</p>
 
 </td>
 <td>

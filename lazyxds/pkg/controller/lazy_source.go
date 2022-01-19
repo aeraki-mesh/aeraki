@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/model"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 )
 
 func (c *AggregationController) syncLazyService(ctx context.Context, id string) (err error) {

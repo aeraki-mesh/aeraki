@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/test/e2e/util"
+	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 )
 
 func TestMain(m *testing.M) {
@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 func setup() {
 	util.CreateNamespace("kafka", "")
 	util.LabelNamespace("kafka", "istio-injection=enabled", "")
-	util.Shell("helm repo add zhaohuabing http://zhaohuabing.com/helm-repo")
+	util.Shell("helm repo add zhaohuabing https://zhaohuabing.github.io/helm-repo")
 	util.Shell("helm repo update")
 	util.Shell("helm install my-release --set persistence.enabled=false --set zookeeper.persistence.enabled=false zhaohuabing/kafka -n kafka")
 	util.KubeApply("kafka", "testdata/kafka-sample.yaml", "")

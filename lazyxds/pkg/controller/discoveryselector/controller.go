@@ -16,8 +16,8 @@ package discoveryselector
 
 import (
 	"context"
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	"github.com/go-logr/logr"
 	meshv1alpha1 "istio.io/api/mesh/v1alpha1"
 	corev1 "k8s.io/api/core/v1"

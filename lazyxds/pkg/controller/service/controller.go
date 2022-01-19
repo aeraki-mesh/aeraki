@@ -17,17 +17,18 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/model"
-	"k8s.io/apimachinery/pkg/labels"
 	"reflect"
 	"time"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/model"
+	"k8s.io/apimachinery/pkg/labels"
+
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	"github.com/go-logr/logr"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/klog/v2/klogr"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

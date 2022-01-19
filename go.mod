@@ -1,4 +1,4 @@
-module github.com/aeraki-framework/aeraki
+module github.com/aeraki-mesh/aeraki
 
 go 1.16
 
@@ -18,7 +18,7 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 //replace github.com/envoyproxy/go-control-plane => /Users/huabingzhao/workspace/go-control-plane
 
 require (
-	github.com/aeraki-framework/meta-protocol-control-plane-api v1.0.0-alpha
+	github.com/aeraki-mesh/meta-protocol-control-plane-api v1.0.4
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210804155723-c55ac1656905
 	github.com/fatih/color v1.12.0
@@ -27,6 +27,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/google/uuid v1.3.0
 	github.com/gosuri/uitable v0.0.4
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/onsi/ginkgo v1.16.4
@@ -36,6 +37,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.8.1
 	github.com/zhaohuabing/debounce v1.0.0
+	go.uber.org/atomic v1.9.0
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/tools v0.1.8 // indirect

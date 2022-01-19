@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
 )
 
 const (

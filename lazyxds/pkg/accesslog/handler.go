@@ -15,7 +15,7 @@
 package accesslog
 
 import (
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	al "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	als "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"

@@ -17,7 +17,7 @@
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/aeraki-framework/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/aeraki-mesh/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

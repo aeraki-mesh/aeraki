@@ -15,12 +15,12 @@
 package app
 
 import (
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/app"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/signal"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/app"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/signal"
 	"k8s.io/klog/v2"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/options"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/options"
 )
 
 const commandDesc = `lazyxds enables istio only push needed xds to sidecars`

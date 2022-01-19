@@ -13,7 +13,7 @@
 // limitations under the License.
 syntax = "proto3";
 
-import "google/api/field_behavior.proto";
+//import "google/api/field_behavior.proto";
 
 // $schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
 // $title: Application Protocol
@@ -33,7 +33,7 @@ import "google/api/field_behavior.proto";
 // ```
 package metaprotocol.aeraki.io.v1alpha1;
 
-option go_package = "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1";
+option go_package = "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1";
 
 // ApplicationProtocol defines an application protocol built on top of MetaProtocol.
 //

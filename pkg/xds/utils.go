@@ -18,11 +18,16 @@ import (
 	"strconv"
 	"time"
 
-	metaroute "github.com/aeraki-framework/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
+	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+
+	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 )
+
+var regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 
 //We use Envoy RDS(HTTP RouteConfiguration) to transmit Meta Protocol Configuration from the RDS server to the Proxy
 func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httproute.RouteConfiguration {
@@ -91,4 +96,55 @@ func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) cache.Snapshot
 		[]types.Resource{}, // secrets
 		[]types.Resource{}, // extensionconfig
 	)
+}
+
+// MetaMatch2HttpHeaderMatch converts MetaMatch to HttpHeaderMatch
+func MetaMatch2HttpHeaderMatch(matchCrd *userapi.MetaRouteMatch) []*httproute.HeaderMatcher {
+	var headerMatchers []*httproute.HeaderMatcher
+	if matchCrd != nil {
+		headerMatcher := &httproute.HeaderMatcher{}
+		for name, attribute := range matchCrd.Attributes {
+			headerMatcher.Name = name
+			if isCatchAllHeaderMatch(attribute) {
+				headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_PresentMatch{PresentMatch: true}
+			} else {
+				switch attribute.GetMatchType().(type) {
+				case *userapi.StringMatch_Exact:
+					headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_ExactMatch{
+						ExactMatch: attribute.GetExact(),
+					}
+				case *userapi.StringMatch_Prefix:
+					headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_PrefixMatch{
+						PrefixMatch: attribute.GetPrefix(),
+					}
+				case *userapi.StringMatch_Regex:
+					headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_SafeRegexMatch{
+						SafeRegexMatch: &matcher.RegexMatcher{
+							EngineType: regexEngine,
+							Regex:      attribute.GetRegex(),
+						},
+					}
+				default:
+					continue
+				}
+			}
+			headerMatchers = append(headerMatchers, headerMatcher)
+		}
+	}
+	return headerMatchers
+}
+
+func isCatchAllHeaderMatch(in *userapi.StringMatch) bool {
+	catchall := false
+
+	if in == nil {
+		return true
+	}
+
+	switch m := in.MatchType.(type) {
+	case *userapi.StringMatch_Regex:
+		catchall = m.Regex == "*"
+	}
+
+	return catchall
 }

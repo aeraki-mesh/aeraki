@@ -23,7 +23,7 @@ import (
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	"github.com/go-logr/logr"
 	istioinformers "istio.io/client-go/pkg/informers/externalversions/networking/v1alpha3"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"

@@ -15,7 +15,7 @@
 package envoyfilter
 
 import (
-	"github.com/aeraki-framework/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 // Generator generates protocol specified envoyfilters

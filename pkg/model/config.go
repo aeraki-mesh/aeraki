@@ -15,7 +15,7 @@
 package model
 
 import (
-	metaprotocol "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	networking "istio.io/api/networking/v1alpha3"
 	istioconfig "istio.io/istio/pkg/config"
 )

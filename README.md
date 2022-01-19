@@ -16,14 +16,14 @@
 
 # Aeraki
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/aeraki-framework/aeraki/blob/master/LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/aeraki-framework/aeraki)](https://goreportcard.com/report/github.com/aeraki-framework/aeraki)
-[![CI Tests](https://github.com/aeraki-framework/aeraki/workflows/ci/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22ci%22)
-[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-metaprotocol/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-metaprotocol%22)
-[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-dubbo/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-dubbo%22)
-[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-thrift/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-thrift%22)
-[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-kafka-zookeeper/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-kafka-zookeeper%22)
-[![E2E Tests](https://github.com/aeraki-framework/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-framework/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/aeraki-mesh/aeraki/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aeraki-mesh/aeraki)](https://goreportcard.com/report/github.com/aeraki-mesh/aeraki)
+[![CI Tests](https://github.com/aeraki-mesh/aeraki/workflows/ci/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22ci%22)
+[![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-metaprotocol/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-metaprotocol%22)
+[![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-dubbo/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-dubbo%22)
+[![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-thrift/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-thrift%22)
+[![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-kafka-zookeeper/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-kafka-zookeeper%22)
+[![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
 
 # Manage **any** layer 7 traffic in Istio service mesh!
 
@@ -54,68 +54,50 @@ If you have already invested a lot of effort in migrating to a service mesh, of 
 
 ## Aeraki's approach
 
-To address these problems, Aeraki Framework providing a non-intrusive, extendable way to manage any layer 7 traffic in a service mesh.
+To address these problems, Aeraki Mesh providing a non-intrusive, extendable way to manage any layer 7 traffic in a service mesh.
 ![ Aeraki ](docs/aeraki-architecture.png)
 
-As this diagram shows, Aeraki Framework consists of the following components:
+As this diagram shows, Aeraki Mesh consists of the following components:
 
-* Aeraki: [Aeraki](https://github.com/aeraki-framework/aeraki) provides high-level, user-friendly traffic management rules to operations, translates the rules to envoy filter configurations, and leverages Istio’s `EnvoyFilter` API to push the configurations to the sidecar proxies. Aeraki also serves as the RDS server for MetaProtocol proxies in the data plane. Contrary to Envoy RDS, which focuses on HTTP, Aeraki RDS is aimed to provide a general dynamic route capability for all layer-7 protocols.
-* MetaProtocol Proxy: [MetaProtocol Proxy](https://github.com/aeraki-framework/meta-protocol-proxy) provides common capabilities for Layer-7 protocols, such as load balancing, circuit breaker, load balancing, routing, rate limiting, fault injection, and auth. Layer-7 protocols can be built on top of MetaProtocol. To add a new protocol into the service mesh, the only thing you need to do is implementing the [codec interface](https://github.com/aeraki-framework/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118) and a couple of lines of configuration. If you have special requirements which can’t be accommodated by the built-in capabilities, MetaProtocol Proxy also has an application-level filter chain mechanism, allowing users to write their own layer-7 filters to add custom logic into MetaProtocol Proxy.
+* Aeraki: [Aeraki](https://github.com/aeraki-mesh/aeraki) provides high-level, user-friendly traffic management rules to operations, translates the rules to envoy filter configurations, and leverages Istio’s `EnvoyFilter` API to push the configurations to the sidecar proxies. Aeraki also serves as the RDS server for MetaProtocol proxies in the data plane. Contrary to Envoy RDS, which focuses on HTTP, Aeraki RDS is aimed to provide a general dynamic route capability for all layer-7 protocols.
+* MetaProtocol Proxy: [MetaProtocol Proxy](https://github.com/aeraki-mesh/meta-protocol-proxy) provides common capabilities for Layer-7 protocols, such as load balancing, circuit breaker, load balancing, routing, rate limiting, fault injection, and auth. Layer-7 protocols can be built on top of MetaProtocol. To add a new protocol into the service mesh, the only thing you need to do is implementing the [codec interface](https://github.com/aeraki-mesh/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118) and a couple of lines of configuration. If you have special requirements which can’t be accommodated by the built-in capabilities, MetaProtocol Proxy also has an application-level filter chain mechanism, allowing users to write their own layer-7 filters to add custom logic into MetaProtocol Proxy.
 
-[Dubbo](https://github.com/aeraki-framework/meta-protocol-proxy/tree/master/src/application_protocols/dubbo) and [Thrift](https://github.com/aeraki-framework/meta-protocol-proxy/tree/master/src/application_protocols/thrift) have already been implemented based on MetaProtocol. More protocols are on the way. If you're using a close-source, proprietary protocol, you can also manage it in your service mesh simply by writing a MetaProtocol codec for it.
+[Dubbo](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/dubbo) and [Thrift](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/thrift) have already been implemented based on MetaProtocol. More protocols are on the way. If you're using a close-source, proprietary protocol, you can also manage it in your service mesh simply by writing a MetaProtocol codec for it.
 
-Most request/response style, stateless protocols can be built on top of the MetaProtocol Proxy. However, some protocols' routing policies are too "special" to be normalized in MetaProtocol. For example, Redis proxy uses a slot number to map a client query to a specific Redis server node, and the slot number is computed by the key in the request. Aeraki can still manage those protocols as long as there's an available Envoy Filter in the Envoy proxy side. Currently, for protocols in this category, [Redis](https://github.com/aeraki-framework/aeraki/blob/master/docs/zh/redis.md) and Kafka are supported in Aeraki.
+Most request/response style, stateless protocols can be built on top of the MetaProtocol Proxy. However, some protocols' routing policies are too "special" to be normalized in MetaProtocol. For example, Redis proxy uses a slot number to map a client query to a specific Redis server node, and the slot number is computed by the key in the request. Aeraki can still manage those protocols as long as there's an available Envoy Filter in the Envoy proxy side. Currently, for protocols in this category, [Redis](https://github.com/aeraki-mesh/aeraki/blob/master/docs/zh/redis.md) and Kafka are supported in Aeraki.
 ## Reference
 * [Implement an application protocol](docs/metaprotocol.md)
-* [Dubbo (中文) ](https://github.com/aeraki-framework/dubbo2istio#readme)
+* [Dubbo (中文) ](https://github.com/aeraki-mesh/dubbo2istio#readme)
 * [Redis (中文) ](docs/zh/redis.md)
 * [LazyXDS（xDS 按需加载）](lazyxds/README.md)
 
 ## Supported protocols:
-* Dubbo
-  * Service Discovery
-    * [x] ServiceEntry Integration ([Example](https://github.com/aeraki-framework/aeraki/blob/master/demo/dubbo/serviceentry.yaml))
-    * [x] [ZooKeeper Integration](https://github.com/aeraki-framework/dubbo2istio)
-    * [x] [Nacos Integration](https://github.com/aeraki-framework/dubbo2istio)
+Aeraki can manage the below protocols in a service mesh：
+* Dubbo  Envoy native filter）
+* Thrift (Envoy native filter)
+* Kafka (Envoy native filter)
+* Redis (Envoy native filter)
+* MetaProtocol-Dubbo
+* MetaProtocol-Thfirt
+* Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
+
+Supported Features:
   * Traffic Management
-    * [x] Request Level Load Balancing
+    * [x] Request Level Load Balancing/Locality Load Balancing
+    * [x] Flexible Route Match Conditions (any properties can be exacted from layer-7 packet and used as mach conditions)
+    * [x] Dynamic route update through Aeraki MetaRDS
     * [x] Version Based Routing
-    * [x] Traffic Splitting
-    * [x] Method Based Routing
-    * [x] Header Based Routing
-    * [x] Crcuit Breaker
-    * [x] Locality Load Balancing
-    * [x] RDS(Route Discovery Service)
+    * [x] Traffic Splittin
+    * [x] Local Rate Limit
+    * [x] Global Rate Limit
+    * [ ] Traffic Mirroring
+    * [ ] Request Transformation
   * Observability
-    * [x] Dubbo Request Metrics
+    * [x] Request level Metrics (Request latency, count, error, etc)
+    * [ ] Distributed Tracing
   * Security 
     * [x] Peer Authorization on Interface/Method
     * [ ] Rquest Authorization
-* Thrift
-  * Traffic Management
-    * [x] Request Level Load Balancing
-    * [x] Version Based Routing
-    * [x] Traffic Splitting
-    * [ ] Header Based Routing
-    * [ ] Rate Limit
-  * Observability
-    * [x] Thrift Request Metrics
-* Kafka
-  * [x] Metrics
-* ZooKeeper
-  * [x] Metrics
-* Redis
-  * [x] Redis Cluster
-  * [x] Sharding
-  * [x] Prefix Routing
-  * [x] Auth
-  * [x] Traffic Mirroring
-* [ ] MySql
-* [ ] MongoDB
-* [ ] Postgres
-* [ ] RocketMQ
-* [ ] TARS
-* ...
 
 ## Demo
 
@@ -140,12 +122,12 @@ Recored Demo: Dubbo and Thrift Traffic Management
 
 ### Download Aeraki from the Github
 ```bash
-git clone https://github.com/aeraki-framework/aeraki.git
+git clone https://github.com/aeraki-mesh/aeraki.git
 ```
 
 ### Install Istio, Aeraki and demo Applications
 ```bash
-make install
+make demo 
 ```
 
 Note: Aeraki needs to configure Istio with smart dns. If you already have an Istio installed and don't know how to
@@ -153,7 +135,7 @@ Note: Aeraki needs to configure Istio with smart dns. If you already have an Ist
 
 ### Uninstall Istio, Aeraki and demo Applications
 ```bash
-make uninstall
+make uninstall-demo
 ```
 
 ### Open the following URLs in your browser to play with Aeraki and view service metrics
@@ -222,9 +204,9 @@ make docker-build-e2e.lazyxds
 
 ## Who is using Aeraki?
 
-Sincerely thank everyone for choosing, contributing, and using Aeraki. We created this issue to collect the use cases so we can drive the Aeraki community to evolve in the right direction and better serve your real-world scenarios. We encourage you to submit a comment on this issue to include your use case：https://github.com/aeraki-framework/aeraki/issues/105
+Sincerely thank everyone for choosing, contributing, and using Aeraki. We created this issue to collect the use cases so we can drive the Aeraki community to evolve in the right direction and better serve your real-world scenarios. We encourage you to submit a comment on this issue to include your use case：https://github.com/aeraki-mesh/aeraki/issues/105
 
 ## Contact
 * Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
 * Wechat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
-* Slack: Join [Aeraki slack channel](http://aeraki.slack.com/)
+* Slack: Join [Aeraki slack channel](https://istio.slack.com/archives/C02UB8YJ600)

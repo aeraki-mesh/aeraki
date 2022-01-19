@@ -14,6 +14,8 @@
 syntax = "proto3";
 
 import "google/api/field_behavior.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
 
 // $schema: metaprotocol.aeraki.io.v1alpha1.MetaRouter
 // $title: MetaRouter
@@ -66,7 +68,7 @@ import "google/api/field_behavior.proto";
 //           weight: 80
 package metaprotocol.aeraki.io.v1alpha1;
 
-option go_package = "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha1";
+option go_package = "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1";
 
 // MetaRouter defines route policies for MetaProtocol proxy.
 //
@@ -90,7 +92,9 @@ option go_package = "github.com/aeraki-framework/aeraki/api/metaprotocol/v1alpha
 // -->
 message MetaRouter {
   repeated string hosts = 1;
-  repeated MetaRoute routes = 3;
+  repeated MetaRoute routes = 2;
+  LocalRateLimit local_rate_limit= 3;
+  GlobalRateLimit global_rate_limit= 4;
 }
 
 // Describes match conditions and actions for routing MetaProtocol.
@@ -195,4 +199,85 @@ message PortSelector {
 
   reserved 2;
   reserved "name";
+}
+
+// LocalRateLimit defines local rate limit policies for MetaProtocol proxy
+message LocalRateLimit {
+  // Configures a token bucket which is used for rate limiting.
+  message TokenBucket {
+    // The maximum tokens that the bucket can hold. This is also the number of tokens that the bucket
+    // initially contains. The value must be greater than 1.
+    uint32 max_tokens = 1;
+
+    // The number of tokens added to the bucket during each fill interval. The value must be greater than 1.
+    //If not specified, defaults to a single token.
+    google.protobuf.UInt32Value tokens_per_fill = 2;
+
+    // The fill interval that tokens are added to the bucket. During each fill interval
+    // `tokens_per_fill` are added to the bucket. The bucket will never contain more than
+    // `max_tokens` tokens.
+    google.protobuf.Duration fill_interval = 3 [(google.api.field_behavior) = REQUIRED];
+  }
+
+  // Condition defines a rate limit policy for a more specific condition
+  message Condition {
+    // Match conditions to be satisfied for the rate limit rule to be activated.
+    // All conditions inside a single match block have AND semantic.
+    // If the match is not specified, then all the incoming requests will be considered matched.
+    MetaRouteMatch match = 1 [(google.api.field_behavior) = REQUIRED];
+
+    // The token bucket for this particular condition
+    TokenBucket token_bucket = 2 [(google.api.field_behavior) = REQUIRED];
+  }
+
+  // The default token bucket configuration to use for rate limiting requests that are processed by
+  // this filter.
+  // Local rate limiter will first check the conditions, if a specific condition matches, then the token
+  // bucket within that condition will be applied to the incoming request. All the other requests
+  // that don't match the conditions will be rate limited by the default token bucket.
+  // If the default token bucket is not specified, then the requests that don't match the conditions
+  // will not be rate limited.
+  // At least one of token_bucket or conditions should have value.
+  LocalRateLimit.TokenBucket token_bucket = 1;
+
+  // The more specific rate limit conditions, the first match will be used.
+  repeated LocalRateLimit.Condition conditions = 2;
+}
+
+// GlobalRateLimit configures global rate limit service for MetaProtocol proxy
+message GlobalRateLimit {
+
+  // Descriptor defines the mapping between the property in the request and the descriptor key in the rate
+  // limit server configuration
+  // Normally the property is the same as the descriptor key, but adding a mapping layer allows more flexibility
+  message Descriptor {
+    // The property extracted from the requests
+    string property = 1 [(google.api.field_behavior) = REQUIRED];
+
+    // The corresponding descriptor key in the rate limit server configuration
+    string descriptor_key = 2 [(google.api.field_behavior) = REQUIRED];
+  }
+
+  // Match conditions to be satisfied for the rate limit rule to be activated.
+  // All conditions inside a single match block have AND semantic.
+  // If the match is not specified, then all the incoming requests will be considered matched.
+  MetaRouteMatch match = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The rate limit domain to use when calling the rate limit service.
+  string domain = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // The timeout in milliseconds for the rate limit service RPC. If not
+  // set, this defaults to 20ms.
+  google.protobuf.Duration request_timeout = 3;
+
+  // The filter's behavior in case the rate limiting service does
+  // not respond back. When it is set to true, Envoy will not allow traffic in case of
+  // communication failure between rate limiting service and the proxy.
+  bool deny_on_fail = 4;
+
+  // The cluster name of the external rate limit service provider.
+  string rate_limit_service = 5 [(google.api.field_behavior) = REQUIRED];
+
+  // Defines what properties in the requests should be sent to the rate limit service
+  repeated GlobalRateLimit.Descriptor descriptors = 6 [(google.api.field_behavior) = REQUIRED];
 }

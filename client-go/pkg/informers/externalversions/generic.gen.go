@@ -19,9 +19,9 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
-	metaprotocolv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
-	redisv1alpha1 "github.com/aeraki-framework/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	metaprotocolv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

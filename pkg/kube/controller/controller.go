@@ -23,17 +23,18 @@ import (
 var controllerLog = log.RegisterScope("controller", "crd controller", 0)
 
 // NewManager create a manager to manager all crd controllers.
-func NewManager(kubeConfig *rest.Config, namespace string, electionID string) (manager.Manager, error) {
+func NewManager(kubeConfig *rest.Config, namespace string) (manager.Manager, error) {
 	mgrOpt := manager.Options{
 		MetricsBindAddress:      "0",
-		LeaderElection:          true,
+		LeaderElection:          false,
 		LeaderElectionNamespace: namespace,
-		LeaderElectionID:        electionID,
 	}
 	m, err := manager.New(kubeConfig, mgrOpt)
 	if err != nil {
 		return nil, err
 	}
+
+	m.Elected()
 
 	//err = addRedisServiceController(m, triggerPush)
 	//if err != nil {

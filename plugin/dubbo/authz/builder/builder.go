@@ -20,12 +20,12 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
-	dubborulepb "github.com/aeraki-framework/aeraki/api/dubbo/v1alpha1"
-	dubboapi "github.com/aeraki-framework/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
-	dubboclient "github.com/aeraki-framework/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	dubborulepb "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
+	dubboapi "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	dubboclient "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	authzmodel "github.com/aeraki-framework/aeraki/plugin/dubbo/authz/model"
+	authzmodel "github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/model"
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 	dubbopb "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	rbacdubbopb "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/rbac/v3"

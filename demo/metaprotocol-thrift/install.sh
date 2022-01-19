@@ -19,3 +19,5 @@ kubectl label namespace meta-thrift istio-injection=enabled --overwrite=true
 kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-thrift
 kubectl apply -f $BASEDIR/thrift-sample.yaml -n meta-thrift
 kubectl apply -f $BASEDIR/destinationrule.yaml -n meta-thrift
+kubectl create cm rate-limit-config -n meta-thrift --from-file $BASEDIR/rate-limit-server/config.yaml
+kubectl apply -f $BASEDIR/rate-limit-server/rate-limit-server.yaml -n meta-thrift
