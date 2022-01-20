@@ -102,8 +102,8 @@ func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) cache.Snapshot
 func MetaMatch2HttpHeaderMatch(matchCrd *userapi.MetaRouteMatch) []*httproute.HeaderMatcher {
 	var headerMatchers []*httproute.HeaderMatcher
 	if matchCrd != nil {
-		headerMatcher := &httproute.HeaderMatcher{}
 		for name, attribute := range matchCrd.Attributes {
+			headerMatcher := &httproute.HeaderMatcher{}
 			headerMatcher.Name = name
 			if isCatchAllHeaderMatch(attribute) {
 				headerMatcher.HeaderMatchSpecifier = &httproute.HeaderMatcher_PresentMatch{PresentMatch: true}
