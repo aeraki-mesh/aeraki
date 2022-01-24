@@ -17,15 +17,17 @@ package multicluster
 import (
 	"context"
 	"fmt"
-	"github.com/aeraki-framework/aeraki/lazyxds/cmd/lazyxds/app/config"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
-	coreinformers "k8s.io/client-go/informers/core/v1"
-	v1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	queue "k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2/klogr"
@@ -36,7 +38,7 @@ import (
 // Controller is responsible for synchronizing multiCluster secrets.
 type Controller struct {
 	log           logr.Logger
-	lister        v1.SecretLister
+	informer      cache.SharedIndexInformer
 	listerSynced  cache.InformerSynced
 	queue         queue.RateLimitingInterface
 	syncCluster   func(context.Context, *corev1.Secret) error
@@ -45,21 +47,37 @@ type Controller struct {
 
 // NewController creates a new multiCluster controller
 func NewController(
-	informer coreinformers.SecretInformer,
+	kubeClient *kubernetes.Clientset,
 	syncSecret func(context.Context, *corev1.Secret) error,
 	deleteSecret func(context.Context, string) error,
 ) *Controller {
 	logger := klogr.New().WithName("MultiClusterController")
+
+	informer := cache.NewSharedIndexInformer(
+		&cache.ListWatch{
+			ListFunc: func(opts meta_v1.ListOptions) (runtime.Object, error) {
+				opts.LabelSelector = config.MultiClusterSecretLabel + "=true"
+				obj, err := kubeClient.CoreV1().Secrets(config.IstioNamespace).List(context.TODO(), opts)
+				return obj, err
+			},
+			WatchFunc: func(opts meta_v1.ListOptions) (watch.Interface, error) {
+				opts.LabelSelector = config.MultiClusterSecretLabel + "=true"
+				return kubeClient.CoreV1().Secrets(config.IstioNamespace).Watch(context.TODO(), opts)
+			},
+		},
+		&corev1.Secret{}, 0, cache.Indexers{},
+	)
+
 	c := &Controller{
 		log:           logger,
-		lister:        informer.Lister(),
-		listerSynced:  informer.Informer().HasSynced,
+		informer:      informer,
+		listerSynced:  informer.HasSynced,
 		queue:         queue.NewNamedRateLimitingQueue(queue.DefaultControllerRateLimiter(), "secret"),
 		syncCluster:   syncSecret,
 		deleteCluster: deleteSecret,
 	}
 
-	informer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    c.add,
 		UpdateFunc: c.update,
 		DeleteFunc: c.delete,
@@ -121,10 +139,12 @@ func (c *Controller) Run(workers int, stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 	defer c.queue.ShutDown()
 
-	c.log.Info("Starting Service controller")
-	defer c.log.Info("Shutting down Service controller")
+	c.log.Info("Starting secret controller")
+	go c.informer.Run(stopCh)
+	log.Info("Waiting for informer caches to sync")
+	defer c.log.Info("Shutting down Secret controller")
 
-	if !cache.WaitForNamedCacheSync("Service", stopCh, c.listerSynced) {
+	if !cache.WaitForNamedCacheSync("Secret", stopCh, c.listerSynced) {
 		return
 	}
 
@@ -167,19 +187,16 @@ func (c *Controller) syncFromKey(ctx context.Context, key string) error {
 	logger := log.FromContext(ctx)
 	logger.V(4).Info("Starting sync")
 	defer func() {
-		logger.V(4).Info("Finished sync service", "duration", time.Since(startTime).String())
+		logger.V(4).Info("Finished sync Secret", "duration", time.Since(startTime).String())
 	}()
 
-	ns, name, err := cache.SplitMetaNamespaceKey(key)
+	_, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
 		return err
 	}
 
-	if ns != config.IstioNamespace {
-		return nil
-	}
-
-	secret, err := c.lister.Secrets(ns).Get(name)
+	//secret, err := c.lister.Secrets(ns).Get(name)
+	obj, exists, err := c.informer.GetIndexer().GetByKey(key)
 	if err != nil && apierrors.IsNotFound(err) {
 		logger.V(4).Info("Secret has been deleted")
 		return c.deleteCluster(ctx, name)
@@ -187,14 +204,11 @@ func (c *Controller) syncFromKey(ctx context.Context, key string) error {
 	if err != nil {
 		return fmt.Errorf("unable to retrieve secret from store: error %w", err)
 	}
-
-	if value, ok := secret.Labels[config.MultiClusterSecretLabel]; !ok || value != "true" {
+	if exists {
+		secret := obj.(*corev1.Secret)
+		return c.syncCluster(ctx, secret)
+	} else {
 		return c.deleteCluster(ctx, name)
 	}
 
-	if !secret.DeletionTimestamp.IsZero() {
-		return c.deleteCluster(ctx, name)
-	}
-
-	return c.syncCluster(ctx, secret)
 }

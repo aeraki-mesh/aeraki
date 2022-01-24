@@ -21,7 +21,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/controller/multicluster"
 	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/informers"
 	"sync"
 
 	"github.com/aeraki-mesh/aeraki/lazyxds/cmd/lazyxds/app/config"
@@ -58,7 +57,6 @@ type AggregationController struct {
 	KubeClient    *kubernetes.Clientset
 	istioClient   *istioclient.Clientset
 	istioInformer istioinformer.SharedInformerFactory
-	kubeInformer  informers.SharedInformerFactory
 	multiCluster  map[string]*Cluster
 
 	namespaceController map[string]*namespace.Controller
@@ -94,7 +92,6 @@ func NewController(istioClient *istioclient.Clientset, kubeClient *kubernetes.Cl
 		istioClient:         istioClient,
 		KubeClient:          kubeClient,
 		istioInformer:       istioinformer.NewSharedInformerFactory(istioClient, 0),
-		kubeInformer:        informers.NewSharedInformerFactory(kubeClient, 0),
 		stop:                stop,
 		multiCluster:        make(map[string]*Cluster),
 		lazyServices:        make(map[string]*model.Service),
@@ -132,7 +129,7 @@ func NewController(istioClient *istioclient.Clientset, kubeClient *kubernetes.Cl
 	)
 
 	c.multiClusterController = multicluster.NewController(
-		c.kubeInformer.Core().V1().Secrets(),
+		c.KubeClient,
 		c.syncCluster,
 		c.deleteCluster,
 	)
@@ -247,7 +244,6 @@ func (c *AggregationController) Run() {
 	go c.configMapController.Run(c.stop)
 	go c.multiClusterController.Run(2, c.stop)
 
-	c.kubeInformer.Start(c.stop)
 	c.istioInformer.Start(c.stop)
 }
 

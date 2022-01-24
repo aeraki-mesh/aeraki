@@ -17,7 +17,7 @@ package controller
 import (
 	"context"
 	"fmt"
-	"github.com/aeraki-framework/aeraki/lazyxds/pkg/utils/log"
+	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
