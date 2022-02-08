@@ -73,13 +73,15 @@ Most request/response style, stateless protocols can be built on top of the Meta
 
 ## Supported protocols:
 Aeraki can manage the below protocols in a service mesh：
-* Dubbo  Envoy native filter）
+* Dubbo (Envoy native filter）
 * Thrift (Envoy native filter)
 * Kafka (Envoy native filter)
 * Redis (Envoy native filter)
 * MetaProtocol-Dubbo
 * MetaProtocol-Thfirt
-* Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
+* MetaProtocol-QQ music(QQ 音乐)
+* MetaProtcool-Yangshiping(央视频)
+* MetaProtocol-Private protocol: Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
 
 Supported Features:
   * Traffic Management
