@@ -99,6 +99,7 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 	spec.Ports = []*networking.Port{targetPort}
 	filters := envoyfilter.GenerateReplaceNetworkFilter(
 		filterContext.ServiceEntry,
+		filterContext.ServiceEntry.Spec.Ports[0],
 		g.buildOutboundProxyWithFallback(ctx, filterContext, port, portName),
 		g.buildInboundProxy(filterContext, port, portName),
 		"envoy.filters.network.redis_proxy",

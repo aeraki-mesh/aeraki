@@ -17,6 +17,7 @@ package metaprotocol
 import (
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"istio.io/pkg/log"
 )
 
@@ -33,18 +34,26 @@ func NewGenerator() *Generator {
 
 // Generate create EnvoyFilters for MetaProtocol services
 func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
-	outboundProxy, err := buildOutboundProxy(context)
-	if err != nil {
-		return nil, err
+	var envoyfilters []*model.EnvoyFilterWrapper
+	for _, port := range context.ServiceEntry.Spec.Ports {
+		if protocol.GetLayer7ProtocolFromPortName(port.Name).IsMetaProtocol() {
+			outboundProxy, err := buildOutboundProxy(context, port)
+			if err != nil {
+				return nil, err
+			}
+			inboundProxy, err := buildInboundProxy(context, port)
+			if err != nil {
+				return nil, err
+			}
+			envoyfilters = append(envoyfilters,
+				envoyfilter.GenerateReplaceNetworkFilter(
+					context.ServiceEntry,
+					port,
+					outboundProxy,
+					inboundProxy,
+					"envoy.filters.network.meta_protocol_proxy",
+					"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy")...)
+		}
 	}
-	inboundProxy, err := buildInboundProxy(context)
-	if err != nil {
-		return nil, err
-	}
-	return envoyfilter.GenerateReplaceNetworkFilter(
-		context.ServiceEntry,
-		outboundProxy,
-		inboundProxy,
-		"envoy.filters.network.meta_protocol_proxy",
-		"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy"), nil
+	return envoyfilters, nil
 }

@@ -19,11 +19,11 @@ import (
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
 	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	istionetworking "istio.io/api/networking/v1alpha3"
 )
 
-func buildOutboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaProtocolProxy, error) {
-	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(context.ServiceEntry.Spec.Ports[0].
-		Name)
+func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -33,11 +33,11 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPr
 	}
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionOutbound, "",
-			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
+			context.ServiceEntry.Spec.Hosts[0], int(port.Number)),
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_Rds{
 			Rds: &metaprotocol.Rds{
 				RouteConfigName: model.BuildMetaProtocolRouteName(context.ServiceEntry.Spec.Hosts[0],
-					int(context.ServiceEntry.Spec.Ports[0].Number)),
+					int(port.Number)),
 				ConfigSource: &envoyconfig.ConfigSource{
 					ResourceApiVersion: envoyconfig.ApiVersion_V3,
 					ConfigSourceSpecifier: &envoyconfig.ConfigSource_ApiConfigSource{
@@ -66,12 +66,12 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPr
 	}, nil
 }
 
-func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaProtocolProxy, error) {
-	route, err := buildInboundRouteConfig(context)
+func buildInboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+	route, err := buildInboundRouteConfig(context, port)
 	if err != nil {
 		return nil, err
 	}
-	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(context.ServiceEntry.Spec.Ports[0].
+	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.
 		Name)
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext) (*metaprotocol.MetaPro
 
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
-			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
+			context.ServiceEntry.Spec.Hosts[0], int(port.Number)),
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_RouteConfig{
 			RouteConfig: route,
 		},
