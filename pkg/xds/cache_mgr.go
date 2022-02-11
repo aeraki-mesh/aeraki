@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+
 	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -27,7 +29,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
@@ -114,7 +115,7 @@ func (c *CacheMgr) updateRouteCache() error {
 	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
 		GroupVersionKind(), "")
 	if err != nil {
-		return fmt.Errorf("failed to service entry configs: %v", err)
+		return fmt.Errorf("failed to list service entries from the config store: %v", err)
 	}
 
 	var routes []*metaroute.RouteConfiguration
@@ -123,19 +124,19 @@ func (c *CacheMgr) updateRouteCache() error {
 		service, ok := config.Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
 			xdsLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
-			return nil
-		}
-		if len(service.Ports) == 0 {
-			continue
-		}
-		if !protocol.GetLayer7ProtocolFromPortName(service.Ports[0].Name).IsMetaProtocol() {
 			continue
 		}
 
+		if len(service.Ports) == 0 {
+			xdsLog.Errorf("service has no ports: %s", config.Name)
+			continue
+		}
+		if !isMetaProtocolService(service) {
+			continue
+		}
 		if len(service.Hosts) == 0 {
 			xdsLog.Errorf("host should not be empty: %s", config.Name)
-			// We can't retry in this scenario
-			return nil
+			continue
 		}
 		if len(service.Hosts) > 1 {
 			xdsLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", config.Name)
@@ -145,12 +146,17 @@ func (c *CacheMgr) updateRouteCache() error {
 		if err != nil {
 			xdsLog.Errorf("failed to list meta router for service: %s", config.Name)
 		}
-		if metaRouter != nil && len(metaRouter.Spec.Routes) > 0 {
-			xdsLog.Debugf("find meta router ：%s for : %s", metaRouter.Name, config.Name)
-			routes = append(routes, c.constructRoute(service, metaRouter))
-		} else {
-			xdsLog.Debugf("no meta router for : %s", config.Name)
-			routes = append(routes, c.defaultRoute(service))
+
+		for _, port := range service.Ports {
+			if protocol.GetLayer7ProtocolFromPortName(port.Name).IsMetaProtocol() {
+				if metaRouter != nil && len(metaRouter.Spec.Routes) > 0 {
+					xdsLog.Debugf("find meta router ：%s for : %s", metaRouter.Name, config.Name)
+					routes = append(routes, c.constructRoute(service, port, metaRouter))
+				} else {
+					xdsLog.Debugf("no meta router for : %s", config.Name)
+					routes = append(routes, c.defaultRoute(service, port))
+				}
+			}
 		}
 	}
 
@@ -165,7 +171,17 @@ func (c *CacheMgr) updateRouteCache() error {
 	return nil
 }
 
-func (c *CacheMgr) constructRoute(service *networking.ServiceEntry, metaRouter *metaprotocol.MetaRouter) *metaroute.
+func isMetaProtocolService(service *networking.ServiceEntry) bool {
+	for _, port := range service.Ports {
+		if protocol.GetLayer7ProtocolFromPortName(port.Name).IsMetaProtocol() {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
+	port *networking.Port, metaRouter *metaprotocol.MetaRouter) *metaroute.
 	RouteConfiguration {
 	var routes []*metaroute.Route
 	for _, route := range metaRouter.Spec.Routes {
@@ -174,29 +190,31 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry, metaRouter *
 			Match: &metaroute.RouteMatch{
 				Metadata: MetaMatch2HttpHeaderMatch(route.Match),
 			},
-			Route: c.constructAction(service, route),
+			Route: c.constructAction(service, port, route),
 		})
 	}
+	// Currently, the routes for different port are the same, but we may need different routes for different ports in
+	// the future
 	metaRoute := metaroute.RouteConfiguration{
-		Name:   model.BuildMetaProtocolRouteName(service.Hosts[0], int(service.Ports[0].Number)),
+		Name:   model.BuildMetaProtocolRouteName(service.Hosts[0], int(port.Number)),
 		Routes: routes,
 	}
 	return &metaRoute
 }
 
-func (c *CacheMgr) constructAction(service *networking.ServiceEntry, route *metaprotocolapi.MetaRoute) *metaroute.RouteAction {
+func (c *CacheMgr) constructAction(service *networking.ServiceEntry, port *networking.Port, route *metaprotocolapi.MetaRoute) *metaroute.RouteAction {
 	var routeAction *metaroute.RouteAction
 	if len(route.Route) == 1 {
 		subset := route.Route[0].Destination.Subset
 		host := route.Route[0].Destination.Host
-		port := service.Ports[0].Number
+		dstPort := port.Number
 		if route.Route[0].Destination.Port != nil && route.Route[0].Destination.Port.Number != 0 {
-			port = route.Route[0].Destination.Port.Number
+			dstPort = route.Route[0].Destination.Port.Number
 		}
 		routeAction = &metaroute.RouteAction{
 			ClusterSpecifier: &metaroute.RouteAction_Cluster{
 				Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
-					host, int(port)),
+					host, int(dstPort)),
 			},
 		}
 	} else {
@@ -205,13 +223,13 @@ func (c *CacheMgr) constructAction(service *networking.ServiceEntry, route *meta
 		for _, routeDestination := range route.Route {
 			subset := routeDestination.Destination.Subset
 			host := routeDestination.Destination.Host
-			port := service.Ports[0].Number
+			dstPort := port.Number
 			if routeDestination.Destination.Port != nil && routeDestination.Destination.Port.Number != 0 {
-				port = routeDestination.Destination.Port.Number
+				dstPort = routeDestination.Destination.Port.Number
 			}
 			clusters = append(clusters, &routev3.WeightedCluster_ClusterWeight{
 				Name: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
-					host, int(port)),
+					host, int(dstPort)),
 				Weight: &wrappers.UInt32Value{
 					Value: routeDestination.Weight,
 				},
@@ -232,9 +250,9 @@ func (c *CacheMgr) constructAction(service *networking.ServiceEntry, route *meta
 	}
 	return routeAction
 }
-func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry) *metaroute.RouteConfiguration {
+func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port) *metaroute.RouteConfiguration {
 	metaRoute := metaroute.RouteConfiguration{
-		Name: model.BuildMetaProtocolRouteName(service.Hosts[0], int(service.Ports[0].Number)),
+		Name: model.BuildMetaProtocolRouteName(service.Hosts[0], int(port.Number)),
 		Routes: []*metaroute.Route{
 			{
 				Name: "default",
@@ -244,7 +262,7 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry) *metaroute.Rou
 				Route: &metaroute.RouteAction{
 					ClusterSpecifier: &metaroute.RouteAction_Cluster{
 						Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, "",
-							service.Hosts[0], int(service.Ports[0].Number)),
+							service.Hosts[0], int(port.Number)),
 					},
 				},
 			},
@@ -278,9 +296,11 @@ func (c *CacheMgr) ConfigUpdated(_ istioconfig.Config, curr istioconfig.Config, 
 			xdsLog.Errorf("Failed in getting a virtual service: %v", curr.Name)
 			return
 		}
-		if strings.HasPrefix(service.Ports[0].Name,
-			"tcp-metaprotocol") { //@todo we may need to handle multiple ports in the future
-			c.pushChannel <- event
+		for _, port := range service.Ports {
+			if strings.HasPrefix(port.Name,
+				"tcp-metaprotocol") {
+				c.pushChannel <- event
+			}
 		}
 	}
 }

@@ -34,17 +34,21 @@ var generatorLog = log.RegisterScope("aeraki-generator", "aeraki generator", 0)
 // GenerateInsertBeforeNetworkFilter generates an EnvoyFilter that inserts a protocol specified filter before the tcp proxy
 func GenerateInsertBeforeNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
-	return generateNetworkFilter(service, outboundProxy, inboundProxy, filterName, filterType, networking.EnvoyFilter_Patch_INSERT_BEFORE)
+	return generateNetworkFilter(service, service.Spec.Ports[0], outboundProxy, inboundProxy, filterName,
+		filterType,
+		networking.EnvoyFilter_Patch_INSERT_BEFORE)
 }
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
-func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
+func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port,
+	outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
-	return generateNetworkFilter(service, outboundProxy, inboundProxy, filterName, filterType, networking.EnvoyFilter_Patch_REPLACE)
+	return generateNetworkFilter(service, port, outboundProxy, inboundProxy, filterName, filterType,
+		networking.EnvoyFilter_Patch_REPLACE)
 }
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
-func generateNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
+func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string, operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	var envoyFilters []*model.EnvoyFilterWrapper
 
@@ -58,7 +62,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy pro
 		}
 
 		for i := 0; i < len(service.Spec.GetAddresses()); i++ {
-			outboundListenerName := service.Spec.GetAddresses()[i] + "_" + strconv.Itoa(int(service.Spec.Ports[0].
+			outboundListenerName := service.Spec.GetAddresses()[i] + "_" + strconv.Itoa(int(port.
 				Number))
 			outboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
 				ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
@@ -81,7 +85,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy pro
 			}
 
 			envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
-				Name: outboundEnvoyFilterName(service.Spec.Hosts[0], service.Spec.Addresses[i]),
+				Name: outboundEnvoyFilterName(service.Spec.Hosts[0], service.Spec.Addresses[i], int(port.Number)),
 				Envoyfilter: &networking.EnvoyFilter{
 					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
 				},
@@ -106,7 +110,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy pro
 						Listener: &networking.EnvoyFilter_ListenerMatch{
 							Name: "virtualInbound",
 							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								DestinationPort: service.Spec.Ports[0].Number,
+								DestinationPort: port.Number,
 								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
 									Name: wellknown.TCPProxy,
 								},
@@ -121,7 +125,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy pro
 			}
 
 			envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
-				Name: inboundEnvoyFilterName(service.Spec),
+				Name: inboundEnvoyFilterName(service.Spec.Hosts[0], int(port.Number)),
 				Envoyfilter: &networking.EnvoyFilter{
 					WorkloadSelector: WorkloadSelector,
 					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
@@ -152,12 +156,12 @@ func inboundEnvoyFilterWorkloadSelector(service *model.ServiceEntryWrapper) *net
 	return selector
 }
 
-func outboundEnvoyFilterName(host, vip string) string {
-	return "aeraki" + "-outbound-" + host + "-" + vip
+func outboundEnvoyFilterName(host, vip string, port int) string {
+	return "aeraki" + "-outbound-" + host + "-" + vip + "-" + strconv.Itoa(port)
 }
 
-func inboundEnvoyFilterName(service *networking.ServiceEntry) string {
-	return "aeraki" + "-inbound-" + service.Hosts[0]
+func inboundEnvoyFilterName(host string, port int) string {
+	return "aeraki" + "-inbound-" + host + "-" + strconv.Itoa(port)
 }
 
 func generateValue(proxy proto.Message, filterName string, filterType string) (*types.Struct, error) {

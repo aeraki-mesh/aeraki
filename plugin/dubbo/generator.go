@@ -47,6 +47,7 @@ func NewGenerator(cfg *rest.Config) *Generator {
 func (g *Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	return envoyfilter.GenerateReplaceNetworkFilter(
 		context.ServiceEntry,
+		context.ServiceEntry.Spec.Ports[0],
 		buildOutboundProxy(context),
 		buildInboundProxy(context, g.client),
 		"envoy.filters.network.dubbo_proxy",
