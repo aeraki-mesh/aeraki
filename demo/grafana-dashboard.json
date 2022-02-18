@@ -108,7 +108,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))",
+          "expr": "sum(rate(envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request[5m]))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -299,7 +299,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_bucket[5m])) by (le))",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -488,27 +488,27 @@
       "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_bucket{le=\"10\",app=\"thrift-sample-client\"}/ignoring (le) envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_count *100",
           "interval": "",
-          "legendFormat": "Less than 1 ms",
+          "legendFormat": "Less than 10 ms",
           "refId": "A"
         },
         {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"10\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_bucket{le=\"100\",app=\"thrift-sample-client\"}/ignoring (le) envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_count *100",
           "interval": "",
-          "legendFormat": "Less than 10 ms",
+          "legendFormat": "Less than 100 ms",
           "refId": "B"
         },
         {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"100\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1000\",app=\"thrift-sample-client\"}/ignoring (le) envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_count *100",
           "interval": "",
-          "legendFormat": "Less than 100 ms",
+          "legendFormat": "Less than 1 s",
           "refId": "C"
         },
         {
-          "expr": "envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_bucket{le=\"1000\",app=\"thrift-sample-client\"}/ignoring (le) envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request_time_ms_count *100",
+          "expr": "envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_bucket{le=\"10000\",app=\"thrift-sample-client\"}/ignoring (le) envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request_time_ms_count *100",
           "interval": "",
-          "legendFormat": "Less than 1 s",
+          "legendFormat": "Less than 10 s",
           "refId": "D"
         }
       ],
@@ -638,7 +638,7 @@
       "pluginVersion": "7.4.3",
       "targets": [
         {
-          "expr": "sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_thrift_outbound_9090__thrift_sample_server_thrift_svc_cluster_local_request[5m]))*100",
+          "expr": "sum(rate(envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_response_success[5m]))/sum(rate(envoy_meta_protocol_thrift_outbound_9090__thrift_sample_server_meta_thrift_svc_cluster_local_request[5m]))*100",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -1064,5 +1064,5 @@
   "timezone": "",
   "title": "Aeraki Demo",
   "uid": "pgz7wp-Gz",
-  "version": 6
+  "version": 5
 }
