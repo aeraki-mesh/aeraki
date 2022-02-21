@@ -25,13 +25,8 @@
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-kafka-zookeeper/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-kafka-zookeeper%22)
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
 
-# Manage **any** layer 7 traffic in Istio service mesh!
+# Manage **any** layer 7 traffic in a service mesh!
 
-<div align="center">
-<img src="docs/aeraki&istio.png">
-</div>
-
----
 **Aeraki** [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC. We hope that this breeze can help Istio sail a little further.
 
 ## Problems to solve
@@ -39,7 +34,7 @@
 We are facing some challenges in service meshes:
 * Istio and other popular service mesh implementations have very limited support for layer 7 protocols other than HTTP and gRPC.
 * Envoy RDS(Route Discovery Service) is solely designed for HTTP. Other protocols such as Dubbo and Thrift can only use listener in-line routes for traffic management, which breaks existing connections when routes change.
-* It takes a lot of effort to introduce a proprietary protocol into a service mesh. You’ll need to write an Envoy filter to handle the traffic in the data plane, and a control plane to manage those Envoys.
+* It takes a lot of effort to introduce a proprietary protocol into a service mesh. You’ll need to write an Envoy filter to handle the traffic in the data plane, and a control plane to manage those Envoy proxies.
 
 Those obstacles make it very hard, if not impossible, for users to manage the traffic of other widely-used layer-7 protocols in microservices. For example, in a microservices application, we may have the below protocols:
 
