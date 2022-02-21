@@ -27,7 +27,10 @@
 
 # Manage **any** layer 7 traffic in a service mesh!
 
-**Aeraki** [Air-rah-ki] is the Greek word for 'breeze'. While Istio connects microservices in a service mesh, Aeraki provides a framework to allow Istio to support more layer 7 protocols other than just HTTP and gRPC. We hope that this breeze can help Istio sail a little further.
+**Aeraki** [Air-rah-ki] is the Greek word for 'breeze'. While service mesh becomes an important infrastructure for microservices, many(if not all) service mesh implementations mainly focus on HTTP protocols and treat other protocols as plain TCP traffic. Aeraki Mesh is created to provide a non-intrusive, highly extendable way to manage any layer 7 traffic in a service mesh. 
+
+Note: Aeraki only handles none-HTTP laery 7 traffic in a service mesh, and leaves the HTTP traffic to other existing service mesh projects. (As they have already done a very good job on it, and we don't want to reinvent the wheel! ) 
+Aeraki currently can be integrated with Istio, and it may support other service mesh projects in the future.
 
 ## Problems to solve
 
@@ -36,14 +39,14 @@ We are facing some challenges in service meshes:
 * Envoy RDS(Route Discovery Service) is solely designed for HTTP. Other protocols such as Dubbo and Thrift can only use listener in-line routes for traffic management, which breaks existing connections when routes change.
 * It takes a lot of effort to introduce a proprietary protocol into a service mesh. You’ll need to write an Envoy filter to handle the traffic in the data plane, and a control plane to manage those Envoy proxies.
 
-Those obstacles make it very hard, if not impossible, for users to manage the traffic of other widely-used layer-7 protocols in microservices. For example, in a microservices application, we may have the below protocols:
+Those obstacles make it very hard, if not impossible, for users to manage the traffic of other widely-used layer 7 protocols in microservices. For example, in a microservices application, we may have the below protocols:
 
 * RPC: HTTP, gRPC, Thrift, Dubbo, Proprietary RPC Protocol …
 * Messaging: Kafka, RabbitMQ …
 * Cache: Redis, Memcached …
 * Database: MySQL, PostgreSQL, MongoDB …
 
-![ Common Layer-7 Protocols Used in Microservices ](docs/protocols.png)
+![ Common Layer 7 Protocols Used in Microservices ](docs/protocols.png)
 
 If you have already invested a lot of effort in migrating to a service mesh, of course, you want to get the most out of it — managing the traffic of all the protocols in your microservices.
 
