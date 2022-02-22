@@ -89,12 +89,11 @@ func (c *Controller) connectIstio() {
 		c.xdsMCP, err = adsc.New(c.configServerAddr, &adsc.Config{
 			Meta: istiomodel.NodeMetadata{
 				Generator: "api",
-				// Currently we use metadata to indicates that the result should not be filtered by the proxy location.
+				// Currently we use clusterId="" to indicates that the result should not be filtered by the proxy
+				//location.
 				// For example, all the VIPs of the clusters should be included in the addresses of a service entry.
 				// https://github.com/istio/istio/pull/36820
-				Raw: map[string]interface{}{
-					"Result_filter": "none",
-				},
+				ClusterID: "",
 			}.ToStruct(),
 			InitialDiscoveryRequests: c.configInitialRequests(),
 			BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
