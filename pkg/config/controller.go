@@ -15,9 +15,14 @@
 package config
 
 import (
+	"io/ioutil"
 	"reflect"
 	"strings"
 	"time"
+
+	"istio.io/istio/pkg/security"
+
+	"istio.io/istio/security/pkg/nodeagent/cache"
 
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
@@ -30,7 +35,16 @@ import (
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
+	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
 	"istio.io/pkg/log"
+)
+
+const (
+	// istiodCACertPath is the ca volume mount file name for istio root ca.
+	istiodCACertPath = "/var/run/secrets/istio/root-cert.pem"
+
+	// K8sSAJwtFileName is the token volume mount file name for k8s jwt token.
+	K8sSAJwtFileName = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
 var (
@@ -42,21 +56,28 @@ var (
 				MustAdd(collections.IstioNetworkingV1Alpha3Envoyfilters).Build()
 )
 
+// Options for config controller
+type Options struct {
+	ClusterID  string
+	NameSpace  string
+	IstiodAddr string
+}
+
 // Controller watches Istio config xDS server and notifies the listeners when config changes.
 type Controller struct {
-	configServerAddr string
-	xdsMCP           *adsc.ADSC
-	Store            istiomodel.ConfigStore
-	controller       istiomodel.ConfigStoreCache
+	options    *Options
+	xdsMCP     *adsc.ADSC
+	Store      istiomodel.ConfigStore
+	controller istiomodel.ConfigStoreCache
 }
 
 // NewController creates a new Controller instance based on the provided arguments.
-func NewController(configServerAddr string) *Controller {
+func NewController(options *Options) *Controller {
 	store := memory.Make(configCollection)
 	return &Controller{
-		configServerAddr: configServerAddr,
-		Store:            store,
-		controller:       memory.NewController(store),
+		options:    options,
+		Store:      store,
+		controller: memory.NewController(store),
 	}
 }
 
@@ -85,21 +106,34 @@ func (c *Controller) closeConnection() {
 
 func (c *Controller) connectIstio() {
 	var err error
+
+	config := adsc.Config{
+		Namespace: c.options.NameSpace,
+		Meta: istiomodel.NodeMetadata{
+			Generator: "api",
+			// Currently we use clusterId="" to indicates that the result should not be filtered by the proxy
+			//location.
+			// For example, all the VIPs of the clusters should be included in the addresses of a service entry.
+			// https://github.com/istio/istio/pull/36820
+			ClusterID: "",
+		}.ToStruct(),
+		InitialDiscoveryRequests: c.configInitialRequests(),
+		BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
+	}
+
 	for {
-		c.xdsMCP, err = adsc.New(c.configServerAddr, &adsc.Config{
-			Meta: istiomodel.NodeMetadata{
-				Generator: "api",
-				// Currently we use clusterId="" to indicates that the result should not be filtered by the proxy
-				//location.
-				// For example, all the VIPs of the clusters should be included in the addresses of a service entry.
-				// https://github.com/istio/istio/pull/36820
-				ClusterID: "",
-			}.ToStruct(),
-			InitialDiscoveryRequests: c.configInitialRequests(),
-			BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
-		})
+		// we assume it's tls if istiod port is not 15010
+		if !strings.HasSuffix(c.options.IstiodAddr, ":15010") {
+			sm, err := c.newSecretManager()
+			if err != nil {
+				controllerLog.Errorf("failed to create SecretManager %s %v", c.options.IstiodAddr, err)
+			} else {
+				config.SecretManager = sm
+			}
+		}
+		c.xdsMCP, err = adsc.New(c.options.IstiodAddr, &config)
 		if err != nil {
-			controllerLog.Errorf("failed to dial XDS %s %v", c.configServerAddr, err)
+			controllerLog.Errorf("failed to dial XDS %s %v", c.options.IstiodAddr, err)
 			time.Sleep(5 * time.Second)
 			continue
 		}
@@ -183,4 +217,29 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 	for _, schema := range schemas {
 		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
 	}
+}
+
+func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {
+	var rootCert []byte
+	var err error
+
+	if rootCert, err = ioutil.ReadFile(istiodCACertPath); err != nil {
+		log.Fatalf("invalid config -  missing a root certificate %s", istiodCACertPath)
+	}
+
+	// Will use TLS unless the reserved 15010 port is used ( istiod on an ipsec/secure VPC)
+	// rootCert may be nil - in which case the system roots are used, and the CA is expected to have public key
+	// Otherwise assume the injection has mounted /etc/certs/root-cert.pem
+	o := &security.Options{
+		CAEndpoint: c.options.IstiodAddr,
+		ClusterID:  c.options.ClusterID,
+		JWTPath:    K8sSAJwtFileName,
+	}
+
+	caClient, err := citadel.NewCitadelClient(o, true, rootCert)
+	if err != nil {
+		return nil, err
+	}
+
+	return cache.NewSecretManagerClient(caClient, o)
 }

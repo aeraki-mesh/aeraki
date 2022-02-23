@@ -47,7 +47,8 @@ const (
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
-	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The current namespace where Aeraki is deployed")
+	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The namespace where Aeraki is deployed")
+	flag.StringVar(&args.ClusterID, "cluster-id", "", "The cluster where Aeraki is deployed")
 	flag.StringVar(&args.XdsAddr, "xds-listen-address", defaultXdsAddr, "Istiod xds server port")
 	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultConfigStoreSecret,
 		"The secret to store the Istio kube config store, use the in cluster API server if it's not specified")

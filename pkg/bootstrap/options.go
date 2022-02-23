@@ -24,6 +24,7 @@ type AerakiArgs struct {
 	IstiodAddr        string
 	XdsAddr           string
 	Namespace         string
+	ClusterID         string
 	ConfigStoreSecret string
 	ElectionID        string
 	ServerID          string

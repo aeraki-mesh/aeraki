@@ -71,7 +71,11 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	}
 
 	// configController watches Istiod through MCP over xDS to get service entry and virtual service updates
-	configController := config.NewController(args.IstiodAddr)
+	configController := config.NewController(&config.Options{
+		ClusterID:  args.ClusterID,
+		IstiodAddr: args.IstiodAddr,
+		NameSpace:  args.Namespace,
+	})
 
 	// Todo remove serviceEntryController, now Istio can allocate IP
 	serviceEntryController := serviceentry.NewController(client)

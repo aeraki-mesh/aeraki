@@ -19,10 +19,10 @@ BASEDIR=$(dirname "$0")/..
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 COMMON_DIR=$BASEDIR/test/e2e/common
 
-if [ -z "$AERAKI_VERSION" ]; then
-  export BUILD_TAG=latest
+if [ -z "$AERAKI_TAG" ]; then
+  export AERAKI_TAG=latest
 else
-  export BUILD_TAG=$AERAKI_VERSION
+  export AERAKI_TAG=$AERAKI_TAG
 fi
 
-bash ${SCRIPTS_DIR}/aeraki.sh
+bash ${SCRIPTS_DIR}/aeraki.sh $1
