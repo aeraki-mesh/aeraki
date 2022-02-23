@@ -231,9 +231,12 @@ func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {
 	// rootCert may be nil - in which case the system roots are used, and the CA is expected to have public key
 	// Otherwise assume the injection has mounted /etc/certs/root-cert.pem
 	o := &security.Options{
-		CAEndpoint: c.options.IstiodAddr,
-		ClusterID:  c.options.ClusterID,
-		JWTPath:    K8sSAJwtFileName,
+		CAEndpoint:        c.options.IstiodAddr,
+		ClusterID:         c.options.ClusterID,
+		JWTPath:           K8sSAJwtFileName,
+		WorkloadNamespace: c.options.NameSpace,
+		TrustDomain:       "cluster.local",
+		ServiceAccount:    "aeraki",
 	}
 
 	caClient, err := citadel.NewCitadelClient(o, true, rootCert)
