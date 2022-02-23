@@ -39,6 +39,8 @@ MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
 
 install:
 	bash demo/install-aeraki.sh
+install-for-tcm:
+	bash demo/install-aeraki.sh mode=tcm
 demo:
 	bash demo/install-demo.sh
 uninstall-demo:

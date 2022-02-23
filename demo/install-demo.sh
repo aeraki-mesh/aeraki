@@ -17,7 +17,7 @@ BASEDIR=$(dirname "$0")/..
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 COMMON_DIR=$BASEDIR/test/e2e/common
 export ISTIO_VERSION=1.10.0
-export BUILD_TAG=latest
+export AERAKI_TAG=latest
 
 bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
 bash ${SCRIPTS_DIR}/aeraki.sh
