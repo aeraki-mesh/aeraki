@@ -94,6 +94,7 @@ metadata:
   labels:
     app: aeraki
   name: aeraki
+  namespace: istio-system
 rules:
   - apiGroups:
       - ""
