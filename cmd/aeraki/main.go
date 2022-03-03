@@ -46,6 +46,7 @@ const (
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
+	flag.BoolVar(&args.Master, "master", true, "Istiod xds server address")
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
 	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The namespace where Aeraki is deployed")
 	flag.StringVar(&args.ClusterID, "cluster-id", "", "The cluster where Aeraki is deployed")

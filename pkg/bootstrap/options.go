@@ -21,6 +21,7 @@ import (
 
 // AerakiArgs provides all of the configuration parameters for the Aeraki service.
 type AerakiArgs struct {
+	Master            bool
 	IstiodAddr        string
 	XdsAddr           string
 	Namespace         string

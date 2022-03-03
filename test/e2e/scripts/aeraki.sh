@@ -33,6 +33,10 @@ if [ -z "$AERAKI_NAMESPACE" ]; then
   export AERAKI_NAMESPACE="istio-system"
 fi
 
+if [ -z "$AERAKI_IS_MASTER" ]; then
+  export $AERAKI_IS_MASTER="true"
+fi
+
 mkdir -p ~/.aeraki
 envsubst < $BASEDIR/../../../k8s/aeraki.yaml > ~/.aeraki/aeraki.yaml
 if [ "$1" == "mode=tcm" ]; then
