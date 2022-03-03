@@ -179,27 +179,31 @@ func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")
 
-	go func() {
-		leaderelection.
-			NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.EnvoyFilterController, s.kubeClient).
-			AddRunFunction(func(leaderStop <-chan struct{}) {
-				aerakiLog.Infof("starting EnvoyFilter creation controller")
-				s.envoyFilterController.Run(stop)
-			}).Run(stop)
-	}()
-
+	// Only create EnvoyFilters and assign VIP when running as in master mode
+	if s.args.Master {
+		aerakiLog.Infof("aeraki is running as the master")
+		go func() {
+			leaderelection.
+				NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.EnvoyFilterController, s.kubeClient).
+				AddRunFunction(func(leaderStop <-chan struct{}) {
+					aerakiLog.Infof("starting EnvoyFilter creation controller")
+					s.envoyFilterController.Run(stop)
+				}).Run(stop)
+		}()
+		go func() {
+			leaderelection.
+				NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.AllocateVIPController, s.kubeClient).
+				AddRunFunction(func(leaderStop <-chan struct{}) {
+					aerakiLog.Infof("starting ServiceEntry IP allocation controller")
+					s.serviceEntryController.Run(stop)
+				}).Run(stop)
+		}()
+	} else {
+		aerakiLog.Infof("aeraki is running as a slave, only xds server will be started")
+	}
 	go func() {
 		aerakiLog.Infof("watching xDS resource changes at %s", s.args.IstiodAddr)
 		s.configController.Run(stop)
-	}()
-
-	go func() {
-		leaderelection.
-			NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.AllocateVIPController, s.kubeClient).
-			AddRunFunction(func(leaderStop <-chan struct{}) {
-				aerakiLog.Infof("starting ServiceEntry IP allocation controller")
-				s.serviceEntryController.Run(stop)
-			}).Run(stop)
 	}()
 
 	go func() {

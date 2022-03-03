@@ -37,6 +37,8 @@ spec:
         - name: aeraki
           image: aeraki/aeraki:${AERAKI_TAG}
           env:
+            - name: AERAKI_IS_MASTER
+              value: "${AERAKI_IS_MASTER}"
             - name: AERAKI_ISTIOD_ADDR
               value: ${AERAKI_ISTIOD_ADDR}
             - name: AERAKI_CLUSTER_ID
