@@ -34,7 +34,7 @@ if [ -z "$AERAKI_NAMESPACE" ]; then
 fi
 
 if [ -z "$AERAKI_IS_MASTER" ]; then
-  export $AERAKI_IS_MASTER="true"
+  export AERAKI_IS_MASTER="true"
 fi
 
 mkdir -p ~/.aeraki
