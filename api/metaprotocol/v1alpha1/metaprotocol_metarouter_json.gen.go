@@ -90,6 +90,17 @@ func (this *MetaRoute) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for KeyValue
+func (this *KeyValue) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for KeyValue
+func (this *KeyValue) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 // MarshalJSON is a custom marshaler for MetaRouteMatch
 func (this *MetaRouteMatch) MarshalJSON() ([]byte, error) {
 	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)

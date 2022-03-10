@@ -190,7 +190,9 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
 			Match: &metaroute.RouteMatch{
 				Metadata: MetaMatch2HttpHeaderMatch(route.Match),
 			},
-			Route: c.constructAction(service, port, route),
+			Route:            c.constructAction(service, port, route),
+			RequestMutation:  c.constructMutation(route.RequestMutation),
+			ResponseMutation: c.constructMutation(route.ResponseMutation),
 		})
 	}
 	// Currently, the routes for different port are the same, but we may need different routes for different ports in
@@ -326,4 +328,12 @@ func (c *CacheMgr) hasNode(node string) bool {
 
 func (c *CacheMgr) cache() cachev3.SnapshotCache {
 	return c.routeCache
+}
+
+func (c *CacheMgr) constructMutation(mutation []*metaprotocolapi.KeyValue) []*metaroute.KeyValue {
+	var result []*metaroute.KeyValue
+	for _, keyValue := range mutation {
+		result = append(result, &metaroute.KeyValue{Key: keyValue.Key, Value: keyValue.Value})
+	}
+	return result
 }

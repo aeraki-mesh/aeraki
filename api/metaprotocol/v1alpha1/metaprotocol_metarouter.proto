@@ -120,8 +120,23 @@ message MetaRoute {
   // If this field is absent, all the traffic (100%) will be mirrored.
   // Max value is 100.
   // Percent mirror_percentage = 6;
-  // Header manipulation rules
-  // Headers headers = 7;
+
+  // Specifies a list of key-value pairs that should be mutated for each request. How to interpret the key-value pairs
+  // depends on the codec implementation
+  repeated KeyValue request_mutation = 19;
+
+  // Specifies a list of key-value pairs that should be mutated for each response. How to interpret the key-value pairs
+  // depends on the codec implementation
+  repeated KeyValue response_mutation = 20;
+}
+
+// KeyValue defines a Key /value pair.
+message KeyValue {
+  // Key name.
+  string key = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // alue.
+  string value = 2 [(google.api.field_behavior) = REQUIRED];
 }
 
 message MetaRouteMatch {

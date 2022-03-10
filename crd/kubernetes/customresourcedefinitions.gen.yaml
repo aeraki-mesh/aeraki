@@ -396,6 +396,36 @@ spec:
                       description: The name assigned to the route for debugging purposes.
                       format: string
                       type: string
+                    requestMutation:
+                      description: Specifies a list of key-value pairs that should
+                        be mutated for each request.
+                      items:
+                        properties:
+                          key:
+                            description: Key name.
+                            format: string
+                            type: string
+                          value:
+                            description: alue.
+                            format: string
+                            type: string
+                        type: object
+                      type: array
+                    responseMutation:
+                      description: Specifies a list of key-value pairs that should
+                        be mutated for each response.
+                      items:
+                        properties:
+                          key:
+                            description: Key name.
+                            format: string
+                            type: string
+                          value:
+                            description: alue.
+                            format: string
+                            type: string
+                        type: object
+                      type: array
                     route:
                       description: A Route rule can forward (default) traffic.
                       items:

@@ -18,6 +18,8 @@ import (
 	"strconv"
 	"time"
 
+	httpcore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+
 	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 
@@ -69,12 +71,34 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 			}
 		}
 
+		var requestHeaders []*httpcore.HeaderValueOption
+		for _, mutation := range route.RequestMutation {
+			requestHeaders = append(requestHeaders, &httpcore.HeaderValueOption{
+				Header: &httpcore.HeaderValue{
+					Key:   mutation.Key,
+					Value: mutation.Value,
+				},
+			})
+		}
+
+		var responseHeaders []*httpcore.HeaderValueOption
+		for _, mutation := range route.ResponseMutation {
+			responseHeaders = append(responseHeaders, &httpcore.HeaderValueOption{
+				Header: &httpcore.HeaderValue{
+					Key:   mutation.Key,
+					Value: mutation.Value,
+				},
+			})
+		}
+
 		httpRoute.VirtualHosts[0].Routes = append(httpRoute.VirtualHosts[0].Routes, &httproute.Route{
 			Name:  route.Name,
 			Match: routeMatch,
 			Action: &httproute.Route_Route{
 				Route: routeAction,
 			},
+			RequestHeadersToAdd:  requestHeaders,
+			ResponseHeadersToAdd: responseHeaders,
 		})
 	}
 
