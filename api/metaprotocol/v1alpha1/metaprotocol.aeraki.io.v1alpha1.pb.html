@@ -2,7 +2,7 @@
 title: metaprotocol.aeraki.io.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 14
+number_of_entries: 15
 ---
 <p>$schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
 $title: Application Protocol
@@ -157,6 +157,69 @@ determine the proportion of traffic it receives.</p>
 </td>
 <td>
 No
+</td>
+</tr>
+<tr id="MetaRoute-request_mutation">
+<td><code>requestMutation</code></td>
+<td><code><a href="#KeyValue">KeyValue[]</a></code></td>
+<td>
+<p>Specifies a list of key-value pairs that should be mutated for each request. How to interpret the key-value pairs
+depends on the codec implementation</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRoute-response_mutation">
+<td><code>responseMutation</code></td>
+<td><code><a href="#KeyValue">KeyValue[]</a></code></td>
+<td>
+<p>Specifies a list of key-value pairs that should be mutated for each response. How to interpret the key-value pairs
+depends on the codec implementation</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="KeyValue">KeyValue</h2>
+<section>
+<p>KeyValue defines a Key /value pair.</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="KeyValue-key">
+<td><code>key</code></td>
+<td><code>string</code></td>
+<td>
+<p>Key name.</p>
+
+</td>
+<td>
+Yes
+</td>
+</tr>
+<tr id="KeyValue-value">
+<td><code>value</code></td>
+<td><code>string</code></td>
+<td>
+<p>alue.</p>
+
+</td>
+<td>
+Yes
 </td>
 </tr>
 </tbody>
