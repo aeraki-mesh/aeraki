@@ -101,6 +101,8 @@ Supported Features:
     * [x] Peer Authorization on Interface/Method
     * [ ] Rquest Authorization
 
+> Note: Protocols built on top of MetaProtocol supports all above features in Aeraki Mesh, Envoy native filters only support some of the above features, depending on the capacities of the native filters.
+
 ## Demo
 
 [Live Demo: kiali Dashboard](http://aeraki.zhaohuabing.com:20001/)
