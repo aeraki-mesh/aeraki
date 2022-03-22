@@ -84,12 +84,14 @@ Aeraki can manage the below protocols in a service mesh：
 Supported Features:
   * Traffic Management
     * [x] Request Level Load Balancing/Locality Load Balancing
+    * [x] Circuit breaking
     * [x] Flexible Route Match Conditions (any properties can be exacted from layer-7 packet and used as mach conditions)
     * [x] Dynamic route update through Aeraki MetaRDS
     * [x] Version Based Routing
     * [x] Traffic Splittin
     * [x] Local Rate Limit
     * [x] Global Rate Limit
+    * [x] Message mutation
     * [ ] Traffic Mirroring
     * [ ] Request Transformation
   * Observability
