@@ -154,18 +154,17 @@ func (c *CacheMgr) updateRouteCache() error {
 
 		for _, port := range service.Ports {
 			if protocol.GetLayer7ProtocolFromPortName(port.Name).IsMetaProtocol() {
-				if metaRouter != nil || destinationRule != nil {
-					if metaRouter != nil {
-						xdsLog.Debugf("find meta router ：%s for : %s", metaRouter.Name, config.Name)
-					}
-					if destinationRule != nil {
-						xdsLog.Debugf("find destination rule ：%s for : %s", destinationRule.Name, config.Name)
-					}
-
+				if metaRouter != nil {
+					xdsLog.Debugf("find meta router ：%s for : %s", metaRouter.Name, config.Name)
+				}
+				if destinationRule != nil {
+					xdsLog.Debugf("find destination rule ：%s for : %s", destinationRule.Name, config.Name)
+				}
+				if metaRouter != nil {
 					routes = append(routes, c.constructRoute(service, port, metaRouter, destinationRule))
 				} else {
 					xdsLog.Debugf("no meta router for : %s", config.Name)
-					routes = append(routes, c.defaultRoute(service, port))
+					routes = append(routes, c.defaultRoute(service, port, destinationRule))
 				}
 			}
 		}
@@ -266,7 +265,8 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 
 	return routeAction
 }
-func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port) *metaroute.RouteConfiguration {
+func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,
+	dr *model.DestinationRuleWrapper) *metaroute.RouteConfiguration {
 	metaRoute := metaroute.RouteConfiguration{
 		Name: model.BuildMetaProtocolRouteName(service.Hosts[0], int(port.Number)),
 		Routes: []*metaroute.Route{
@@ -283,6 +283,10 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 				},
 			},
 		},
+	}
+	if dr != nil {
+		metaRoute.Routes[0].Route.HashPolicy = []string{dr.Spec.TrafficPolicy.LoadBalancer.GetConsistentHash().
+			GetHttpHeaderName()}
 	}
 	return &metaRoute
 }
