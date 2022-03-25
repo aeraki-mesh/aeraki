@@ -34,6 +34,12 @@ type VirtualServiceWrapper struct {
 	Spec *networking.VirtualService
 }
 
+// DestinationRuleWrapper wraps an Istio DestinationRule and its metadata, including name, annotations and labels.
+type DestinationRuleWrapper struct {
+	istioconfig.Meta
+	Spec *networking.DestinationRule
+}
+
 // EnvoyFilterWrapper wraps an Istio EnvoyFilterWrapper and its name, which is used as an unique identifier in Istio.
 // If two Envoyfilters with the same name have been created, the previous one sill be replaced by the latter one
 type EnvoyFilterWrapper struct {
