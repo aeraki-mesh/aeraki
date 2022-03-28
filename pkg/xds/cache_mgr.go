@@ -325,16 +325,10 @@ func (c *CacheMgr) findRelatedDestinationRule(service *networking.ServiceEntry) 
 			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", vsConfig.Name, err)
 		}
 		if dr.Host == service.Hosts[0] {
-			if dr.TrafficPolicy != nil && dr.TrafficPolicy.LoadBalancer != nil &&
-				dr.TrafficPolicy.LoadBalancer.GetConsistentHash() != nil && dr.TrafficPolicy.LoadBalancer.
-				GetConsistentHash().GetHttpHeaderName() != "" {
-				return &model.DestinationRuleWrapper{
-					Meta: vsConfig.Meta,
-					Spec: dr,
-				}, nil
-			}
-			xdsLog.Warnf("no load balancing policy in dr: %v", dr)
-			return nil, nil
+			return &model.DestinationRuleWrapper{
+				Meta: vsConfig.Meta,
+				Spec: dr,
+			}, nil
 		}
 	}
 	return nil, nil
