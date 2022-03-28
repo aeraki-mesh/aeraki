@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/wrappers"
+
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 
 	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
@@ -33,7 +35,6 @@ import (
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"
 
 	"github.com/zhaohuabing/debounce"
@@ -146,15 +147,24 @@ func (c *CacheMgr) updateRouteCache() error {
 		if err != nil {
 			xdsLog.Errorf("failed to list meta router for service: %s", config.Name)
 		}
+		destinationRule, err := c.findRelatedDestinationRule(service)
+		if err != nil {
+			xdsLog.Errorf("failed to list destination rule for service: %s", config.Name)
+		}
 
 		for _, port := range service.Ports {
 			if protocol.GetLayer7ProtocolFromPortName(port.Name).IsMetaProtocol() {
-				if metaRouter != nil && len(metaRouter.Spec.Routes) > 0 {
+				if metaRouter != nil {
 					xdsLog.Debugf("find meta router ：%s for : %s", metaRouter.Name, config.Name)
-					routes = append(routes, c.constructRoute(service, port, metaRouter))
+				}
+				if destinationRule != nil {
+					xdsLog.Debugf("find destination rule ：%s for : %s", destinationRule.Name, config.Name)
+				}
+				if metaRouter != nil {
+					routes = append(routes, c.constructRoute(service, port, metaRouter, destinationRule))
 				} else {
 					xdsLog.Debugf("no meta router for : %s", config.Name)
-					routes = append(routes, c.defaultRoute(service, port))
+					routes = append(routes, c.defaultRoute(service, port, destinationRule))
 				}
 			}
 		}
@@ -181,7 +191,7 @@ func isMetaProtocolService(service *networking.ServiceEntry) bool {
 }
 
 func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
-	port *networking.Port, metaRouter *metaprotocol.MetaRouter) *metaroute.
+	port *networking.Port, metaRouter *metaprotocol.MetaRouter, dr *model.DestinationRuleWrapper) *metaroute.
 	RouteConfiguration {
 	var routes []*metaroute.Route
 	for _, route := range metaRouter.Spec.Routes {
@@ -190,7 +200,7 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
 			Match: &metaroute.RouteMatch{
 				Metadata: MetaMatch2HttpHeaderMatch(route.Match),
 			},
-			Route:            c.constructAction(service, port, route),
+			Route:            c.constructAction(port, route, dr),
 			RequestMutation:  c.constructMutation(route.RequestMutation),
 			ResponseMutation: c.constructMutation(route.ResponseMutation),
 		})
@@ -204,55 +214,59 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
 	return &metaRoute
 }
 
-func (c *CacheMgr) constructAction(service *networking.ServiceEntry, port *networking.Port, route *metaprotocolapi.MetaRoute) *metaroute.RouteAction {
-	var routeAction *metaroute.RouteAction
-	if len(route.Route) == 1 {
-		subset := route.Route[0].Destination.Subset
-		host := route.Route[0].Destination.Host
-		dstPort := port.Number
-		if route.Route[0].Destination.Port != nil && route.Route[0].Destination.Port.Number != 0 {
-			dstPort = route.Route[0].Destination.Port.Number
-		}
-		routeAction = &metaroute.RouteAction{
-			ClusterSpecifier: &metaroute.RouteAction_Cluster{
+func (c *CacheMgr) constructAction(port *networking.Port,
+	route *metaprotocolapi.MetaRoute, dr *model.DestinationRuleWrapper) *metaroute.RouteAction {
+	var routeAction = &metaroute.RouteAction{}
+
+	if route != nil {
+		if len(route.Route) == 1 {
+			subset := route.Route[0].Destination.Subset
+			host := route.Route[0].Destination.Host
+			dstPort := port.Number
+			if route.Route[0].Destination.Port != nil && route.Route[0].Destination.Port.Number != 0 {
+				dstPort = route.Route[0].Destination.Port.Number
+			}
+			routeAction.ClusterSpecifier = &metaroute.RouteAction_Cluster{
 				Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
 					host, int(dstPort)),
-			},
-		}
-	} else {
-		var clusters []*routev3.WeightedCluster_ClusterWeight
-		var totalWeight uint32
-		for _, routeDestination := range route.Route {
-			subset := routeDestination.Destination.Subset
-			host := routeDestination.Destination.Host
-			dstPort := port.Number
-			if routeDestination.Destination.Port != nil && routeDestination.Destination.Port.Number != 0 {
-				dstPort = routeDestination.Destination.Port.Number
 			}
-			clusters = append(clusters, &routev3.WeightedCluster_ClusterWeight{
-				Name: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
-					host, int(dstPort)),
-				Weight: &wrappers.UInt32Value{
-					Value: routeDestination.Weight,
-				},
-			})
-			totalWeight += routeDestination.Weight
-		}
-
-		routeAction = &metaroute.RouteAction{
-			ClusterSpecifier: &metaroute.RouteAction_WeightedClusters{
+		} else {
+			var clusters []*routev3.WeightedCluster_ClusterWeight
+			var totalWeight uint32
+			for _, routeDestination := range route.Route {
+				subset := routeDestination.Destination.Subset
+				host := routeDestination.Destination.Host
+				dstPort := port.Number
+				if routeDestination.Destination.Port != nil && routeDestination.Destination.Port.Number != 0 {
+					dstPort = routeDestination.Destination.Port.Number
+				}
+				clusters = append(clusters, &routev3.WeightedCluster_ClusterWeight{
+					Name: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
+						host, int(dstPort)),
+					Weight: &wrappers.UInt32Value{
+						Value: routeDestination.Weight,
+					},
+				})
+				totalWeight += routeDestination.Weight
+			}
+			routeAction.ClusterSpecifier = &metaroute.RouteAction_WeightedClusters{
 				WeightedClusters: &routev3.WeightedCluster{
 					Clusters: clusters,
 					TotalWeight: &wrappers.UInt32Value{
 						Value: totalWeight,
 					},
 				},
-			},
+			}
 		}
 	}
+	if dr != nil {
+		routeAction.HashPolicy = []string{dr.Spec.TrafficPolicy.LoadBalancer.GetConsistentHash().GetHttpHeaderName()}
+	}
+
 	return routeAction
 }
-func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port) *metaroute.RouteConfiguration {
+func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,
+	dr *model.DestinationRuleWrapper) *metaroute.RouteConfiguration {
 	metaRoute := metaroute.RouteConfiguration{
 		Name: model.BuildMetaProtocolRouteName(service.Hosts[0], int(port.Number)),
 		Routes: []*metaroute.Route{
@@ -270,6 +284,10 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 			},
 		},
 	}
+	if dr != nil {
+		metaRoute.Routes[0].Route.HashPolicy = []string{dr.Spec.TrafficPolicy.LoadBalancer.GetConsistentHash().
+			GetHttpHeaderName()}
+	}
 	return &metaRoute
 }
 
@@ -283,8 +301,40 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 	for _, metaRouter := range metaRouterList.Items {
 		for _, host := range metaRouter.Spec.Hosts {
 			if host == service.Hosts[0] {
-				return &metaRouter, nil
+				if len(metaRouter.Spec.Routes) > 0 {
+					return &metaRouter, nil
+				}
+				xdsLog.Warnf("no route in metaRouter: %v", metaRouter)
+				return nil, nil
 			}
+		}
+	}
+	return nil, nil
+}
+
+func (c *CacheMgr) findRelatedDestinationRule(service *networking.ServiceEntry) (*model.DestinationRuleWrapper, error) {
+	drs, err := c.configStore.List(
+		collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind(), "")
+	if err != nil {
+		return nil, fmt.Errorf("failed to list configs: %v", err)
+	}
+
+	for _, vsConfig := range drs {
+		dr, ok := vsConfig.Spec.(*networking.DestinationRule)
+		if !ok { // should never happen
+			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", vsConfig.Name, err)
+		}
+		if dr.Host == service.Hosts[0] {
+			if dr.TrafficPolicy != nil && dr.TrafficPolicy.LoadBalancer != nil &&
+				dr.TrafficPolicy.LoadBalancer.GetConsistentHash() != nil && dr.TrafficPolicy.LoadBalancer.
+				GetConsistentHash().GetHttpHeaderName() != "" {
+				return &model.DestinationRuleWrapper{
+					Meta: vsConfig.Meta,
+					Spec: dr,
+				}, nil
+			}
+			xdsLog.Warnf("no load balancing policy in dr: %v", dr)
+			return nil, nil
 		}
 	}
 	return nil, nil

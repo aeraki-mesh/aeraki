@@ -56,17 +56,25 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 			})
 		}
 
-		var routeAction *httproute.RouteAction
+		var routeAction = &httproute.RouteAction{}
 		if route.Route.GetWeightedClusters() != nil {
-			routeAction = &httproute.RouteAction{
-				ClusterSpecifier: &httproute.RouteAction_WeightedClusters{
-					WeightedClusters: route.Route.GetWeightedClusters(),
-				},
+			routeAction.ClusterSpecifier = &httproute.RouteAction_WeightedClusters{
+				WeightedClusters: route.Route.GetWeightedClusters(),
 			}
 		} else {
-			routeAction = &httproute.RouteAction{
-				ClusterSpecifier: &httproute.RouteAction_Cluster{
-					Cluster: route.Route.GetCluster(),
+			routeAction.ClusterSpecifier = &httproute.RouteAction_Cluster{
+				Cluster: route.Route.GetCluster(),
+			}
+		}
+
+		if route.Route.HashPolicy != nil && len(route.Route.HashPolicy) > 0 {
+			routeAction.HashPolicy = []*httproute.RouteAction_HashPolicy{
+				{
+					PolicySpecifier: &httproute.RouteAction_HashPolicy_Header_{
+						Header: &httproute.RouteAction_HashPolicy_Header{
+							HeaderName: route.Route.HashPolicy[0],
+						},
+					},
 				},
 			}
 		}

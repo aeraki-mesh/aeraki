@@ -210,6 +210,43 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 					}
 				}
 			}
+		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
+			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
+			dr, ok := curr.Spec.(*networking.DestinationRule)
+			if !ok {
+				// This should never happen
+				controllerLog.Errorf("failed in getting a destination rule: %v", event.String(), curr.Name)
+				return
+			}
+
+			// We only care about the Load balancing policy,
+			//httpHeaderName is used to convey the metadata key for generating hash
+			if dr.TrafficPolicy != nil && dr.TrafficPolicy.LoadBalancer != nil && dr.TrafficPolicy.LoadBalancer.
+				GetConsistentHash() != nil && dr.TrafficPolicy.LoadBalancer.
+				GetConsistentHash().GetHttpHeaderName() != "" {
+				serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+				if err != nil {
+					controllerLog.Errorf("failed to list configs: %v", err)
+					return
+				}
+				for _, config := range serviceEntries {
+					service, ok := config.Spec.(*networking.ServiceEntry)
+					if !ok { // should never happen
+						controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
+						return
+					}
+
+					for _, host := range service.Hosts {
+						if host == dr.Host {
+							for _, port := range service.Ports {
+								if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
+									handler(prev, curr, event)
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
