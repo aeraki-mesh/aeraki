@@ -29,7 +29,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.1
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
@@ -46,7 +46,7 @@ metadata:
   name: thrift-sample-server
   namespace: meta-thrift
 spec:
-  host: thrift-sample-server
+  host: thrift-sample-server.meta-thrift.svc.cluster.local
   trafficPolicy:
     outlierDetection:
       baseEjectionTime: 15m
