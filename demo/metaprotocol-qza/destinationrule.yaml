@@ -19,7 +19,7 @@ metadata:
   name: qza-sample-server
   namespace: meta-qza
 spec:
-  host: qza-sample-server
+  host: qza-sample-server.meta-qza.svc.cluster.local
   subsets:
     - name: v1
       labels:

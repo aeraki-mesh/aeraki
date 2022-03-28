@@ -20,10 +20,7 @@ metadata:
   namespace: meta-thrift
 spec:
   host: thrift-sample-server.meta-thrift.svc.cluster.local
-  subsets:
-    - name: v1
-      labels:
-        version: v1
-    - name: v2
-      labels:
-        version: v2
+  trafficPolicy:
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: method

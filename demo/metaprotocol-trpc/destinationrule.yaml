@@ -19,7 +19,7 @@ metadata:
   name: trpc-sample-server
   namespace: meta-trpc
 spec:
-  host: trpc-sample-server
+  host: trpc-sample-server.meta-trpc.svc.cluster.local
   subsets:
     - name: v1
       labels:
