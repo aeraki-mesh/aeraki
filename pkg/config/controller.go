@@ -20,11 +20,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+
 	"istio.io/istio/pkg/security"
 
 	"istio.io/istio/security/pkg/nodeagent/cache"
 
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
@@ -159,91 +160,37 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 }
 
 // RegisterEventHandler adds a handler to receive config update events for a configuration type
-func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyfilter.Generator, handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
+func (c *Controller) RegisterEventHandler(handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
 	handlerWrapper := func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
 		if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
 			return
 		}
-		// Now we only care about ServiceEntry and VirtualService
+		// We care about these resources:
+		// * ServiceEntry: Services handled by Aeraki: tcp-metaprotocol, tcp-dubbo, tcp-thrift, tcp-redis
+		// * VirtualService: Route rules for dubbo and thrift
+		// * DestinationRule: the Load balancing policy in set in the dr,
+		//   httpHeaderName is used to convey the metadata key for generating hash
 		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 			//controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
-			service, ok := curr.Spec.(*networking.ServiceEntry)
-			if !ok {
-				// This should never happen
-				controllerLog.Errorf("failed in getting a virtual service: %v", curr.Name)
-				return
-			}
-			for _, port := range service.Ports {
-				if !strings.HasPrefix(port.Name, "tcp") {
-					continue
-				}
+			if c.shouldHandleSeChange(curr) {
+				handler(prev, curr, event)
+			} else if c.shouldHandleSeChange(prev) {
 				handler(prev, curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
-			vs, ok := curr.Spec.(*networking.VirtualService)
-			if !ok {
-				// This should never happen
-				controllerLog.Errorf("failed in getting a virtual service: %v", event.String(), curr.Name)
-				return
-			}
-			serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
-			if err != nil {
-				controllerLog.Errorf("failed to list configs: %v", err)
-				return
-			}
-			for _, config := range serviceEntries {
-				service, ok := config.Spec.(*networking.ServiceEntry)
-				if !ok { // should never happen
-					controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
-					return
-				}
-				if len(vs.Hosts) > 0 {
-					for _, host := range service.Hosts {
-						if host == vs.Hosts[0] {
-							for _, port := range service.Ports {
-								if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
-									handler(prev, curr, event)
-								}
-							}
-						}
-					}
-				}
+			if c.shouldHandleVsChange(curr) {
+				handler(prev, curr, event)
+			} else if c.shouldHandleVsChange(prev) {
+				handler(prev, curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
-			dr, ok := curr.Spec.(*networking.DestinationRule)
-			if !ok {
-				// This should never happen
-				controllerLog.Errorf("failed in getting a destination rule: %v", event.String(), curr.Name)
-				return
+			if c.shouldHandleDrChange(curr) {
+				handler(prev, curr, event)
+			} else if c.shouldHandleDrChange(prev) {
+				handler(prev, curr, event)
 			}
-
-			// We only care about the Load balancing policy in the dr,
-			// httpHeaderName is used to convey the metadata key for generating hash
-			serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
-			if err != nil {
-				controllerLog.Errorf("failed to list configs: %v", err)
-				return
-			}
-			for _, config := range serviceEntries {
-				service, ok := config.Spec.(*networking.ServiceEntry)
-				if !ok { // should never happen
-					controllerLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
-					return
-				}
-
-				for _, host := range service.Hosts {
-					if host == dr.Host {
-						for _, port := range service.Ports {
-							if _, ok := protocols[protocol.GetLayer7ProtocolFromPortName(port.Name)]; ok {
-								handler(prev, curr, event)
-							}
-						}
-					}
-				}
-			}
-
 		}
 	}
 
@@ -251,6 +198,88 @@ func (c *Controller) RegisterEventHandler(protocols map[protocol.Instance]envoyf
 	for _, schema := range schemas {
 		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
 	}
+}
+
+func (c *Controller) shouldHandleSeChange(seConfig istioconfig.Config) bool {
+	service, ok := seConfig.Spec.(*networking.ServiceEntry)
+	if !ok {
+		// This should never happen
+		controllerLog.Errorf("failed in getting a service entry: %v", seConfig.Name)
+		return false
+	}
+	for _, port := range service.Ports {
+		if protocol.IsAerakiSupportedProtocols(port.Name) {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Controller) shouldHandleVsChange(vsConfig istioconfig.Config) bool {
+	vs, ok := vsConfig.Spec.(*networking.VirtualService)
+	if !ok {
+		// This should never happen
+		controllerLog.Errorf("failed in getting a virtual service: %v", vsConfig.Name)
+		return false
+	}
+	serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	if err != nil {
+		controllerLog.Errorf("failed to list configs: %v", err)
+		return false
+	}
+	for _, se := range serviceEntries {
+		service, ok := se.Spec.(*networking.ServiceEntry)
+		if !ok { // should never happen
+			controllerLog.Errorf("failed in getting a service entry: %s: %v", se.Name, err)
+			return false
+		}
+		if len(vs.Hosts) > 0 {
+			for _, host := range service.Hosts {
+				if model.IsFQDNEquals(host, se.Namespace, vs.Hosts[0], vsConfig.Namespace) {
+					for _, port := range service.Ports {
+						if protocol.IsAerakiSupportedProtocols(port.Name) {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
+func (c *Controller) shouldHandleDrChange(drConfig istioconfig.Config) bool {
+	// We only care about the Load balancing policy in the dr,
+	// httpHeaderName is used to convey the metadata key for generating hash
+	dr, ok := drConfig.Spec.(*networking.DestinationRule)
+	if !ok {
+		// This should never happen
+		controllerLog.Errorf("failed in getting a destination rule: %s", drConfig.Name)
+		return false
+	}
+	serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	if err != nil {
+		controllerLog.Errorf("failed to list configs: %v", err)
+		return false
+	}
+	for _, se := range serviceEntries {
+		service, ok := se.Spec.(*networking.ServiceEntry)
+		if !ok { // should never happen
+			controllerLog.Errorf("failed in getting a service entry: %s: %v", se.Name, err)
+			return false
+		}
+
+		for _, host := range service.Hosts {
+			if model.IsFQDNEquals(host, se.Namespace, dr.Host, drConfig.Namespace) {
+				for _, port := range service.Ports {
+					if protocol.IsAerakiSupportedProtocols(port.Name) {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {

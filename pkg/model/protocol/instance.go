@@ -116,3 +116,9 @@ func GetLayer7ProtocolFromPortName(name string) Instance {
 	}
 	return Unsupported
 }
+
+// IsAerakiSupportedProtocols return true if the protocol is supported by Aeraki, false if not
+func IsAerakiSupportedProtocols(name string) bool {
+	protocol := GetLayer7ProtocolFromPortName(name)
+	return protocol != Unsupported
+}

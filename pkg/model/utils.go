@@ -17,6 +17,7 @@ package model
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/config/host"
@@ -53,4 +54,17 @@ func Struct2JSON(ojb interface{}) interface{} {
 		return ojb
 	}
 	return string(b)
+}
+
+// IsFQDNEquals return true if two FQDN name equals, false if not
+func IsFQDNEquals(name1, ns1, name2, ns2 string) bool {
+	var fqdn1 = name1
+	var fqdn2 = name2
+	if !strings.Contains(name1, ".") {
+		fqdn1 = name1 + "." + ns1 + ".svc.cluster.local"
+	}
+	if !strings.Contains(name2, ".") {
+		fqdn2 = name2 + "." + ns2 + ".svc.cluster.local"
+	}
+	return fqdn1 == fqdn2
 }

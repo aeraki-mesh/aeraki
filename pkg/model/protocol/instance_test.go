@@ -71,3 +71,23 @@ func TestRegisterCustomProtocol(t *testing.T) {
 		})
 	}
 }
+
+func TestIsAerakiSupportedProtocols(t *testing.T) {
+	tests := []struct {
+		name     string
+		portName string
+		want     bool
+	}{
+		{"MetaProtocol", "tcp-metaprotocol", true},
+		{"Dubbo", "tcp-dubbo", true},
+		{"tcp", "tcp", false},
+		{"http", "http", false},
+	}
+	for _, tt := range tests {
+		t.Run("test", func(t *testing.T) {
+			if got := protocol.IsAerakiSupportedProtocols(tt.portName); got != tt.want {
+				t.Errorf("IsAerakiSupportedProtocols() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
