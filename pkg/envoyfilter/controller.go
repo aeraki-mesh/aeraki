@@ -192,26 +192,28 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 			controllerLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", config.Name)
 		}
 
-		relatedVs, err := c.findRelatedVirtualService(service)
-		if err != nil {
-			return envoyFilters, fmt.Errorf("failed in finding the related virtual service : %s: %v", config.Name, err)
-		}
-		relatedMr, err := c.findRelatedMetaRouter(service)
-		if err != nil {
-			return envoyFilters, fmt.Errorf("failed in finding the related meta router : %s: %v", config.Name, err)
-		}
-		context := &model.EnvoyFilterContext{
-			ServiceEntry: &model.ServiceEntryWrapper{
-				Meta: config.Meta,
-				Spec: service,
-			},
-			VirtualService: relatedVs,
-			MetaRouter:     relatedMr,
-		}
 		for _, port := range service.Ports {
 			instance := protocol.GetLayer7ProtocolFromPortName(port.Name)
 			if generator, ok := c.generators[instance]; ok {
 				controllerLog.Infof("found generator for port: %s", port.Name)
+
+				relatedVs, err := c.findRelatedVirtualService(service)
+				if err != nil {
+					return envoyFilters, fmt.Errorf("failed in finding the related virtual service : %s: %v", config.Name, err)
+				}
+				relatedMr, err := c.findRelatedMetaRouter(service)
+				if err != nil {
+					return envoyFilters, fmt.Errorf("failed in finding the related meta router : %s: %v", config.Name, err)
+				}
+				context := &model.EnvoyFilterContext{
+					ServiceEntry: &model.ServiceEntryWrapper{
+						Meta: config.Meta,
+						Spec: service,
+					},
+					VirtualService: relatedVs,
+					MetaRouter:     relatedMr,
+				}
+
 				envoyFilterWrappers, err := generator.Generate(context)
 				if err != nil {
 					controllerLog.Errorf("failed to generate envoy filter: service: %s, port: %s, error: %v",
