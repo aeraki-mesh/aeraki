@@ -83,7 +83,7 @@ Aeraki can manage the below protocols in a service mesh：
 
 Supported Features:
   * Traffic Management
-    * [x] Request Level Load Balancing/Locality Load Balancing
+    * [x] Request Level Load Balancing/Locality Load Balancing (Supports Consistent Hash/Session Sticky)
     * [x] Circuit breaking
     * [x] Flexible Route Match Conditions (any properties can be exacted from layer-7 packet and used as mach conditions)
     * [x] Dynamic route update through Aeraki MetaRDS
