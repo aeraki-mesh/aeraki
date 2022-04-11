@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.0.0
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-stream-test
       labels:
         app: trpc-sample-server
         version: v1
@@ -54,7 +54,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.0.0
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-stream-test
       labels:
         app: trpc-sample-server
         version: v2
@@ -68,21 +68,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trpc-sample-client
+  name: trpc-sample-client-unary
   labels:
-    app: trpc-sample-client
+    app: trpc-sample-client-unary
 spec:
   selector:
     matchLabels:
-      app: trpc-sample-client
+      app: trpc-sample-client-unary
   replicas: 1
   template:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.0.0
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-stream-test
       labels:
-        app: trpc-sample-client
+        app: trpc-sample-client-unary
     spec:
       containers:
         - name: trpc-sample-client
@@ -90,6 +90,92 @@ spec:
           env:
             - name: server_addr
               value: "trpc-sample-server:8000"
+            - name: cmd
+              value: "SayHello" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trpc-sample-client-client-stream
+  labels:
+    app: trpc-sample-client-client-stream
+spec:
+  selector:
+    matchLabels:
+      app: trpc-sample-client-client-stream
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-stream-test
+      labels:
+        app: trpc-sample-client-client-stream
+    spec:
+      containers:
+        - name: trpc-sample-client
+          image: aeraki/trpc-client
+          env:
+            - name: server_addr
+              value: "trpc-sample-server:8000"
+            - name: cmd
+              value: "SayHelloClientStream" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trpc-sample-client-server-stream
+  labels:
+    app: trpc-sample-client-server-stream
+spec:
+  selector:
+    matchLabels:
+      app: trpc-sample-client-server-stream
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-stream-test
+      labels:
+        app: trpc-sample-client-server-stream
+    spec:
+      containers:
+        - name: trpc-sample-client
+          image: aeraki/trpc-client
+          env:
+            - name: server_addr
+              value: "trpc-sample-server:8000"
+            - name: cmd
+              value: "SayHelloServerStream" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trpc-sample-client-bidirection-stream
+  labels:
+    app: trpc-sample-client-bidirection-stream
+spec:
+  selector:
+    matchLabels:
+      app: trpc-sample-client-bidirection-stream
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-stream-test
+      labels:
+        app: trpc-sample-client-bidirection-stream
+    spec:
+      containers:
+        - name: trpc-sample-client
+          image: aeraki/trpc-client
+          env:
+            - name: server_addr
+              value: "trpc-sample-server:8000"
+            - name: cmd
+              value: "SayHelloBidirectionStream" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
 ---
 apiVersion: v1
 kind: Service
@@ -103,22 +189,3 @@ spec:
       protocol: TCP
       port: 8000
       targetPort: 8000
----
-# network-tool is used for debugging purpose
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#  name: network-tool
-# spec:
-#  selector:
-#    matchLabels:
-#      app: network-tool
-#  replicas: 1
-#  template:
-#    metadata:
-#      labels:
-#        app: network-tool
-#    spec:
-#      containers:
-#        - name: network-tool
-#          image: praqma/network-multitool
