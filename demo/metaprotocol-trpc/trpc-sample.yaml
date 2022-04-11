@@ -91,7 +91,7 @@ spec:
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
-              value: "SayHello" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+              value: "SayHello"  # 测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -119,7 +119,7 @@ spec:
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
-              value: "SayHelloClientStream" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+              value: "SayHelloClientStream"  # 测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -147,7 +147,7 @@ spec:
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
-              value: "SayHelloServerStream" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+              value: "SayHelloServerStream"  # 测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -175,7 +175,7 @@ spec:
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
-              value: "SayHelloBidirectionStream" #测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
+              value: "SayHelloBidirectionStream"  # 测试客户端流式请求 "SayHelloClientStream"  测试服务器流式请求 "SayHelloServerStream"  测试双向流式请求 "SayHelloBidirectionStream"
 ---
 apiVersion: v1
 kind: Service
