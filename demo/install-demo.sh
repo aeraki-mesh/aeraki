@@ -41,5 +41,5 @@ if [ $# == 0 ]
 then
     bash $BASEDIR/demo/metaprotocol-dubbo/install.sh
     bash $BASEDIR/demo/metaprotocol-thrift/install.sh
-    bash ${BASEDIR}/demo/kafka/install.sh
+    #bash ${BASEDIR}/demo/kafka/install.sh
 fi

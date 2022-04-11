@@ -27,10 +27,8 @@ spec:
         attributes:
           callee:
             exact: "trpc.test.helloworld"
-          caller:
-            exact: "trpc.app.trpc-client.service"
           func:
-            exact: "/trpc.test.helloworld.Greeter/SayHello"
+            prefix: "/trpc.test.helloworld.Greeter/SayHello"
       route:
         - destination:
             host: trpc-sample-server.meta-trpc.svc.cluster.local
