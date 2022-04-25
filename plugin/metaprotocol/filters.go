@@ -75,7 +75,7 @@ func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 		StatPrefix: metaRouter.Spec.Hosts[0],
 	}
 	if localRateLimit.TokenBucket != nil {
-		lrt.TokenBucket = crd2kenBucket(localRateLimit.TokenBucket)
+		lrt.TokenBucket = crd2tokenBucket(localRateLimit.TokenBucket)
 	}
 	if len(localRateLimit.Conditions) > 0 {
 		lrt.Conditions = crd2Conditions(localRateLimit.Conditions)
@@ -147,18 +147,20 @@ func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 func crd2Conditions(conditions []*userapi.LocalRateLimit_Condition) []*lrldataplane.LocalRateLimitCondition {
 	var localConditions []*lrldataplane.LocalRateLimitCondition
 	for _, condition := range conditions {
-		tokenBucket := crd2kenBucket(condition.TokenBucket)
-		localConditions = append(localConditions, &lrldataplane.LocalRateLimitCondition{
-			TokenBucket: tokenBucket,
-			Match: &metaroute.RouteMatch{
-				Metadata: xds.MetaMatch2HttpHeaderMatch(condition.Match),
-			},
-		})
+		if condition.TokenBucket != nil {
+			tokenBucket := crd2tokenBucket(condition.TokenBucket)
+			localConditions = append(localConditions, &lrldataplane.LocalRateLimitCondition{
+				TokenBucket: tokenBucket,
+				Match: &metaroute.RouteMatch{
+					Metadata: xds.MetaMatch2HttpHeaderMatch(condition.Match),
+				},
+			})
+		}
 	}
 	return localConditions
 }
 
-func crd2kenBucket(tbCrd *userapi.LocalRateLimit_TokenBucket) *commondataplane.TokenBucket {
+func crd2tokenBucket(tbCrd *userapi.LocalRateLimit_TokenBucket) *commondataplane.TokenBucket {
 	tokenBucket := &commondataplane.TokenBucket{
 		MaxTokens: tbCrd.MaxTokens,
 		FillInterval: &duration.Duration{
