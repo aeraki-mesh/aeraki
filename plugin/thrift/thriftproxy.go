@@ -49,7 +49,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext) *thrift.ThriftProxy {
 
 	return &thrift.ThriftProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
-			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
+			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].TargetPort)),
 		Transport:   thrift.TransportType_AUTO_TRANSPORT,
 		Protocol:    thrift.ProtocolType_AUTO_PROTOCOL,
 		RouteConfig: route,

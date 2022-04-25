@@ -110,7 +110,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.
 						Listener: &networking.EnvoyFilter_ListenerMatch{
 							Name: "virtualInbound",
 							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								DestinationPort: port.Number,
+								DestinationPort: port.TargetPort,
 								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
 									Name: wellknown.TCPProxy,
 								},
@@ -125,7 +125,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.
 			}
 
 			envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
-				Name: inboundEnvoyFilterName(service.Spec.Hosts[0], int(port.Number)),
+				Name: inboundEnvoyFilterName(service.Spec.Hosts[0], int(port.TargetPort)),
 				Envoyfilter: &networking.EnvoyFilter{
 					WorkloadSelector: WorkloadSelector,
 					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},

@@ -65,7 +65,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext, client dubbov1alpha1.D
 
 	return &dubbo.DubboProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
-			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number)),
+			context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].TargetPort)),
 		ProtocolType:      dubbo.ProtocolType_Dubbo,
 		SerializationType: dubbo.SerializationType_Hessian2,
 		// we only support one to one mapping of interface and service. If there're multiple interfaces in one process,

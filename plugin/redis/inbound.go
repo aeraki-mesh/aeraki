@@ -20,7 +20,7 @@ import (
 )
 
 func (g *Generator) buildInboundProxy(context *model.EnvoyFilterContext, port uint32, portName string) *redis.RedisProxy {
-	name := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
+	name := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].TargetPort))
 	proxy := &redis.RedisProxy{
 		StatPrefix: name,
 		Settings: &redis.RedisProxy_ConnPoolSettings{

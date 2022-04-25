@@ -88,7 +88,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext, port *istionetworking.
 
 	return &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
-			context.ServiceEntry.Spec.Hosts[0], int(port.Number)),
+			context.ServiceEntry.Spec.Hosts[0], int(port.TargetPort)),
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_RouteConfig{
 			RouteConfig: route,
 		},
