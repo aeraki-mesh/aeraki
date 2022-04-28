@@ -67,7 +67,6 @@ Most request/response style, stateless protocols can be built on top of the Meta
 * [Implement an application protocol](docs/metaprotocol.md)
 * [Dubbo (中文) ](https://github.com/aeraki-mesh/dubbo2istio#readme)
 * [Redis (中文) ](docs/zh/redis.md)
-* [LazyXDS（xDS 按需加载）](lazyxds/README.md)
 
 ## Supported protocols:
 Aeraki can manage the below protocols in a service mesh：
@@ -165,16 +164,6 @@ make build
 make build-mac
 ```
 
-### Build LazyXDS Binary
-
-```bash
-# build lazyxds binary on linux
-make build.lazyxds
-
-# build lazyxds binary on darwin
-make build-mac.lazyxds
-```
-
 ### Build Aeraki Image
 
 ```bash
@@ -186,19 +175,6 @@ make docker-build tag=xxx
 
 # build aeraki e2e docker image
 make docker-build-e2e
-```
-
-### Build LazyXDS Image
-
-```bash
-# build lazyxds docker image with the default latest tag
-make docker-build.lazyxds
-
-# build lazyxds docker image with xxx tag
-make docker-build.lazyxds tag=xxx
-
-# build lazyxds e2e docker image
-make docker-build-e2e.lazyxds
 ```
 
 ## Talks
