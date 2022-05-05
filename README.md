@@ -152,3 +152,11 @@ Sincerely thank everyone for choosing, contributing, and using Aeraki. We create
 * Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
 * Wechat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
 * Slack: Join [Aeraki slack channel](https://istio.slack.com/archives/C02UB8YJ600)
+
+## Landscapes
+
+<p align="center">
+<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
+<br/><br/>
+Aeraki Mesh enriches the <a href="https://landscape.cncf.io/?selected=aeraki-mesh">CNCF CLOUD NATIVE Landscape.</a>
+</p>
