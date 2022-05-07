@@ -27,9 +27,9 @@
 
 # Manage **any** layer-7 traffic in a service mesh!
 
-**Aeraki** [Air-rah-ki] is the Greek word for 'breeze'. While service mesh becomes an important infrastructure for microservices, many(if not all) service mesh implementations mainly focus on HTTP protocols and treat other protocols as plain TCP traffic. Aeraki Mesh is created to provide a non-intrusive, highly extendable way to manage any layer 7 traffic in a service mesh. 
+**Aeraki** [Air-rah-ki] is the Greek word for 'breeze'. While service mesh becomes an important infrastructure for microservices, many(if not all) service mesh implementations mainly focus on HTTP protocols and treat other protocols as plain TCP traffic. Aeraki Mesh is created to provide a non-intrusive, highly extendable way to manage any layer-7 traffic in a service mesh. 
 
-Note: Aeraki only handles none-HTTP laery-7 traffic in a service mesh, and leaves the HTTP traffic to other existing service mesh projects. (As they have already done a very good job on it, and we don't want to reinvent the wheel! ) 
+Note: Aeraki only handles none-HTTP layer-7 traffic in a service mesh, and leaves the HTTP traffic to other existing service mesh projects. (As they have already done a very good job on it, and we don't want to reinvent the wheel! ) 
 Aeraki currently can be integrated with Istio, and it may support other service mesh projects in the future.
 
 ## Problems to solve
@@ -98,7 +98,7 @@ Supported Features:
     * [ ] Distributed Tracing
   * Security 
     * [x] Peer Authorization on Interface/Method
-    * [ ] Rquest Authorization
+    * [ ] Request Authorization
 
 > Note: Protocols built on top of MetaProtocol supports all above features in Aeraki Mesh, Envoy native filters only support some of the above features, depending on the capacities of the native filters.
 
