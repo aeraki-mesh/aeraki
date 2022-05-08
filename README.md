@@ -14,7 +14,7 @@
 # limitations under the License.
 -->
 
-# Aeraki （[Chinese](./README.zh-CN.md)）
+# Aeraki （[中文](./README.zh-CN.md)）
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/aeraki-mesh/aeraki/blob/master/LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/aeraki-mesh/aeraki)](https://goreportcard.com/report/github.com/aeraki-mesh/aeraki)
