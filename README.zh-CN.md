@@ -68,7 +68,7 @@ MetaProtocol Proxy 中已经内置了 [Dubbo](https://github.com/aeraki-mesh/met
 * [Redis (中文) ](docs/zh/redis.md)
 
 ## 支持的协议:
-Aeraki 可以在一个服务网格中管理以下协议：
+Aeraki 已经支持下述协议：
 * Dubbo (Envoy 原生过滤器）
 * Thrift (Envoy 原生过滤器)
 * Kafka (Envoy 原生过滤器)
