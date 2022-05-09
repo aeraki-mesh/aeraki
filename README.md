@@ -64,7 +64,7 @@ As this diagram shows, Aeraki Mesh consists of the following components:
 
 Most request/response style, stateless protocols can be built on top of the MetaProtocol Proxy. However, some protocols' routing policies are too "special" to be normalized in MetaProtocol. For example, Redis proxy uses a slot number to map a client query to a specific Redis server node, and the slot number is computed by the key in the request. Aeraki can still manage those protocols as long as there's an available Envoy Filter in the Envoy proxy side. Currently, for protocols in this category, [Redis](https://github.com/aeraki-mesh/aeraki/blob/master/docs/zh/redis.md) and Kafka are supported in Aeraki.
 ## Reference
-* [Implement an application protocol](docs/metaprotocol.md)
+* [Implement an application protocol](https://www.aeraki.net/zh/docs/v1.0/tutorials/implement-a-custom-protocol/)
 * [Dubbo (中文) ](https://github.com/aeraki-mesh/dubbo2istio#readme)
 * [Redis (中文) ](docs/zh/redis.md)
 
@@ -76,9 +76,11 @@ Aeraki can manage the below protocols in a service mesh：
 * Redis (Envoy native filter)
 * MetaProtocol-Dubbo
 * MetaProtocol-Thfirt
-* MetaProtocol-QQ music(QQ 音乐)
-* MetaProtcool-Yangshiping(央视频)
-* MetaProtocol-Private protocol: Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
+* MetaProtocol-qza (Tencent Music)
+* MetaProtocol-videoPacket (Tencent Media Data Platform)
+* MetaProtocol-tRPC（Tencent RPC）
+* MetaProtocol-Others：Baidu, Alauda, Tencent iGame...
+* MetaProtocol-Private protocols: Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
 
 Supported Features:
   * Traffic Management
@@ -141,6 +143,7 @@ make docker-build-e2e
 
 ## Talks
 
+* IstioCon 2022: [Tencent Music’s service mesh practice with Istio and Aeraki](https://events.istio.io/istiocon-2022/sessions/tencent-music-aeraki/)
 * Istio meetup China(中文): [全栈服务网格 - Aeraki 助你在 Istio 服务网格中管理任何七层流量](https://www.youtube.com/watch?v=Bq5T3OR3iTM) 
 * IstioCon 2021: [How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
 
