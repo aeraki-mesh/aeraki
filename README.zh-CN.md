@@ -27,18 +27,18 @@
 
 # 在服务网格中管理任何七层流量!
 
-**Aeraki** [Air-rah-ki] 是希腊语 ”微风“ 的意思。 虽然服务网格已经成为微服务的重要基础设施，但许多（可能不是全部）服务网格的实现主要集中在 HTTP 协议，并将其他协议视为普通的 TCP 流量。Aeraki Mesh 的创建是为了提供一种非侵入性的、高度可扩展的方式来管理服务网格中的任何7层流量。
+**Aeraki** [Air-rah-ki] 是希腊语 ”微风“ 的意思。 虽然服务网格已经成为微服务的重要基础设施，但许多（也许是全部？）服务网格的实现主要关注 HTTP 协议，而将其他七层协议视为普通的 TCP 流量。Aeraki Mesh 提供了一种非侵入的、高度可扩展的解决方案来管理服务网格中的任何7层流量。
 
-请注意：Aeraki 只处理服务网中的非 HTTP 的七层流量，而将 HTTP 流量留给其他现有的服务网格项目。(现有的项目已经足够优秀，而不必重新造轮子。)  Aeraki 目前可以与 Istio 集成，并且在未来可能会支持其他服务网格项目。
+请注意：Aeraki 只处理服务网中的非 HTTP 七层流量，而将 HTTP 流量留给其他现有的服务网格项目。(现有的项目已经足够优秀，而不必重新造轮子。)  Aeraki 目前可以与 Istio 集成，不排除在未来可能会支持其他服务网格项目。
 
 ## 待解决的问题
 
 我们在服务网格中面临的一些挑战：
-*  Istio 和其他流行的服务网状结构实现对 HTTP 和 gRPC 协议之外的7层协议的支持非常有限。
-* Envoy RDS (Route Discovery Service) 是专为 HTTP 设计的。而其他的协议，如 Dubbo 和 Thrift 等，只能使用监听器在线路由来进行流量管理，而当路由改变时，会破坏现有连接。
-* 在服务网格中引入一个专有协议需要花费很多精力。需要编写一个 Envoy 过滤器来处理网络层的流量，以及一个网络层来管理这些 Envoy 代理。
+* Istio 和其他流行的服务网格实现对 HTTP 和 gRPC 协议之外的7层协议的支持非常有限。
+* Envoy RDS (Route Discovery Service) 是专为 HTTP 设计的。而其他的协议，如 Dubbo 和 Thrift 等，只能使用监听器内联路由来进行流量管理，当路由改变时，需要重建监听器，导致存量链接上的请求被中断而出现错误。
+* 在服务网格中引入一个专有协议需要花费很多精力。需要编写一个 Envoy 过滤器来处理网络层的流量，以及一个专有控制面来管理这些 Envoy 代理。
 
-这些障碍使得用户难以，甚至不可能去管理微服务中其他广泛使用的7层协议的流量。例如，在一个微服务应用中，我们可能使用以下协议。
+这些问题使得用户难以在服务网格中管理微服务中其他广泛使用的7层协议的流量。例如，在一个微服务应用中，我们可能使用以下协议。
 
 * RPC: HTTP, gRPC, Thrift, Dubbo, Proprietary RPC Protocol …
 * 消息队列: Kafka, RabbitMQ …
@@ -47,7 +47,7 @@
 
 ![ 微服务中常使用的七层协议 ](docs/protocols.png)
 
-如果你已经在迁移到其他服务网格中投入了大量的精力，当然，你希望得到它的最大好处--管理你的微服务中所有协议的流量。
+如果你已经在服务网格中投入了大量的精力，当然，你希望得到它的最大好处--管理你的微服务中所有协议的流量。
 
 ## Aeraki 的解决方案
 
@@ -56,14 +56,14 @@
 
 正如该图所示，Aeraki Mesh 由以下几部分组成。
 
-* Aeraki: [Aeraki](https://github.com/aeraki-mesh/aeraki) 为运维提供了高层次的、用户友好的流量管理规则，将规则转化为 envoy 过滤器配置，并利用 Istio 的`EnvoyFilter`API 将配置推送给 sidecar 代理。 Aeraki 还在网络层中充当了 MetaProtocol 的代理 RDS 服务器。不同于专注于 HTTP 的 Envoy RDS 相反，Aeraki RDS 旨在为所有七层协议提供通用的动态路由能力。
-* MetaProtocol Proxy: [MetaProtocol Proxy](https://github.com/aeraki-mesh/meta-protocol-proxy) 为七层协议提供了常见的功能，如负载均衡、熔断、路由、速率限制、故障注入和认证。七层协议可以建立在 MetaProtocol 之上。要在服务网格中加入一个新的协议，唯一需要做的就是实现 [编解码器接口](https://github.com/aeraki-mesh/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118) 和几行配置。如果有特殊的要求，而内置的功能又不能满足，MetaProtocol Proxy 还存在着一个应用级的过滤器链机制，允许用户编写自己的七层过滤器，将自定义的逻辑加入 MetaProtocol Proxy。
+* Aeraki: [Aeraki](https://github.com/aeraki-mesh/aeraki) 为运维提供了高层次的、用户友好的流量管理规则，将规则转化为 envoy 代理配置，并利用 Istio 的`EnvoyFilter` API 将配置推送给数据面的 sidecar 代理。 Aeraki 还在控制面中充当了 MetaProtocol Proxy 的 RDS 服务器。不同于专注于 HTTP 的 Envoy RDS，Aeraki RDS 旨在为所有七层协议提供通用的动态路由能力。
+* MetaProtocol Proxy: [MetaProtocol Proxy](https://github.com/aeraki-mesh/meta-protocol-proxy) 是一个七层代理框架，为七层协议提供了常用的流量管理能力，如负载均衡、熔断、路由、本地/全局限流、故障注入、指标收集、调用跟踪等等。我们可以基于 MetaProtocol Proxy 提供的通用能力创建自己专有协议的七层代理。要在服务网格中加入一个新的协议，唯一需要做的就是实现 [编解码器接口](https://github.com/aeraki-mesh/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118) （通常只需数百行代码）和几行 yaml 配置。如果有特殊的要求，而内置的功能又不能满足，MetaProtocol Proxy 还提供了一个扩展机制，允许用户编写自己的七层过滤器，将自定义的逻辑加入 MetaProtocol Proxy 中。
 
-[Dubbo](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/dubbo) 和 [Thrift](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/thrift) 已经在 MetaProtocol 的基础上实现了协议支持。我们也将会实现更多的协议。如果用户正在使用一个闭源的专有协议，也可以在你的服务网格中管理它，而只需为它编写一个 MetaProtocol 编解码器。
+MetaProtocol Proxy 中已经内置了 [Dubbo](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/dubbo) 和 [Thrift](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/thrift) 支持。如果你正在使用一个闭源的专有协议，也可以在服务网格中管理它，只需为它编写一个 MetaProtocol 编解码器即可。
 
-大多数请求/响应式的无状态协议都可以建立在 MetaProtocol Proxy 之上。但是，有些协议的路由策略过于 "特殊"，无法在 MetaProtocol 中规范化。例如，Redis 代理使用 slot number 将客户端查询映射到特定的Redis服务器节点，slot number 是由请求中的密钥计算出来的。 只要在 Envoy 代理方有一个可用的 Envoy 过滤器，Aeraki 仍然可以管理这些协议。目前，对于这一类的协议，Aeraki 支持 [Redis](https://github.com/aeraki-mesh/aeraki/blob/master/docs/zh/redis.md) 和 Kafka。
+大多数请求/响应式的无状态协议和流式调用都可以建立在 MetaProtocol Proxy 之上。但是，由于有些协议的路由策略过于 "特殊"，无法在 MetaProtocol 中规范化。例如，Redis 代理使用 slot number 将客户端查询映射到特定的Redis服务器节点，slot number 是由请求中的密钥计算出来的。只要在 Envoy Proxy 中有一个可用的 TCP filter，Aeraki 仍然可以管理这些协议。目前，对于这一类的协议，Aeraki 支持 [Redis](https://github.com/aeraki-mesh/aeraki/blob/master/docs/zh/redis.md) 和 Kafka。
 ## 参考文档
-* [应用协议的实现](docs/metaprotocol.md)
+* [如何接入一个私有协议](https://www.aeraki.net/zh/docs/v1.0/tutorials/implement-a-custom-protocol/)
 * [Dubbo (中文) ](https://github.com/aeraki-mesh/dubbo2istio#readme)
 * [Redis (中文) ](docs/zh/redis.md)
 
@@ -75,9 +75,11 @@ Aeraki 可以在一个服务网格中管理以下协议：
 * Redis (Envoy 原生过滤器)
 * MetaProtocol-Dubbo
 * MetaProtocol-Thfirt
-* MetaProtocol-QQ music(QQ 音乐)
-* MetaProtcool-Yangshiping(央视频)
-* MetaProtocol-Private protocol: Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
+* MetaProtocol-qza（腾讯音乐内部协议）
+* MetaProtocol-videoPacket（腾讯融媒体内部协议）
+* MetaProtocol-tRPC（腾讯内部 rpc 协议）
+* MetaProtocol-其他协议：百度、灵雀云、腾讯游戏人生等的内部协议...
+* MetaProtocol-私有协议：需要在服务网格中接入你的私有协议？没有问题，几乎任何七层协议都可以基于 [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) 实现，并在 Aeraki Mesh 中进行流量管理
 
 支持的特性:
   * 流量管理
@@ -99,7 +101,7 @@ Aeraki 可以在一个服务网格中管理以下协议：
     * [x] 基于接口/方法的对等授权
     * [ ] 授权请求
 
-> 请注意: 建立在 MetaProtocol 之上的协议支持 Aeraki Mesh 的上述所有功能，Envoy 本地过滤器只支持部分上述功能，这取决于本地过滤器。
+> 请注意: 建立在 MetaProtocol 之上的协议实现支持 Aeraki Mesh 的上述所有功能，Envoy 原生 filter 只支持部分上述功能，这取决于原生 filter 的能力。
 
 ## 样例
 
@@ -138,10 +140,11 @@ make docker-build tag=xxx
 make docker-build-e2e
 ```
 
-## 讲座
+## 外部分享
 
-* Istio meetup China(中文): [全栈服务网格 - Aeraki 助你在 Istio 服务网格中管理任何七层流量](https://www.youtube.com/watch?v=Bq5T3OR3iTM) 
-* IstioCon 2021: [How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
+* IstioCon 2022：[Tencent Music’s service mesh practice with Istio and Aeraki(Istio + Aeraki 在腾讯音乐的服务网格落地)](https://events.istio.io/istiocon-2022/sessions/tencent-music-aeraki/)
+* Istio meetup China(中文)：[全栈服务网格 - Aeraki 助你在 Istio 服务网格中管理任何七层流量](https://www.youtube.com/watch?v=Bq5T3OR3iTM) 
+* IstioCon 2021：[How to Manage Any Layer-7 Traffic in an Istio Service Mesh?](https://www.youtube.com/watch?v=sBS4utF68d8)
 
 ## 谁在使用 Aeraki?
 
