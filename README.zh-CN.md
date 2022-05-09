@@ -155,10 +155,10 @@ make docker-build-e2e
 * Wechat Group: 请联系微信ID：zhao_huabing，来加入 Aeraki 微信群聊
 * Slack: 加入 [Aeraki slack 频道](https://istio.slack.com/archives/C02UB8YJ600)
 
-## Landscapes
+## CNCF 云原生全景图
 
 <p align="center">
 <img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
 <br/><br/>
-Aeraki Mesh enriches the <a href="https://landscape.cncf.io/?selected=aeraki-mesh">CNCF CLOUD NATIVE Landscape.</a>
+Aeraki Mesh 是<a href="https://landscape.cncf.io/?selected=aeraki-mesh"> CNCF 云原生全景图</a> 中服务网格领域的项目.
 </p>
