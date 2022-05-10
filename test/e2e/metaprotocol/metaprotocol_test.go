@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
 	"github.com/aeraki-mesh/aeraki/test/e2e/util"
+	 "istio.io/pkg/log"
 )
 
 func TestMain(m *testing.M) {

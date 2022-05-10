@@ -23,21 +23,13 @@ require (
 	github.com/aeraki-mesh/meta-protocol-control-plane-api v1.0.6
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210804155723-c55ac1656905
-	github.com/fatih/color v1.12.0
-	github.com/go-logr/logr v0.4.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/uuid v1.3.0
-	github.com/gosuri/uitable v0.0.4
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/onsi/ginkgo v1.16.4
-	github.com/onsi/gomega v1.15.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.2.1
-	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.8.1
 	github.com/zhaohuabing/debounce v1.0.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f
@@ -50,11 +42,7 @@ require (
 	istio.io/gogo-genproto v0.0.0-20210806192525-32ebb2f9006c
 	istio.io/istio v0.0.0-20210825081007-437970b95b6a
 	istio.io/pkg v0.0.0-20210806192335-d58436bead18
-	k8s.io/api v0.22.0
 	k8s.io/apimachinery v0.22.0
 	k8s.io/client-go v0.22.0
-	k8s.io/component-base v0.22.0
-	k8s.io/klog/v2 v2.9.0
 	sigs.k8s.io/controller-runtime v0.9.5
-	sigs.k8s.io/yaml v1.2.0
 )
