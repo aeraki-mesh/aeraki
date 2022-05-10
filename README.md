@@ -76,10 +76,11 @@ Aeraki can manage the below protocols in a service mesh：
 * Redis (Envoy native filter)
 * MetaProtocol-Dubbo
 * MetaProtocol-Thfirt
-* MetaProtocol-qza (Tencent Music)
-* MetaProtocol-videoPacket (Tencent Media Data Platform)
-* MetaProtocol-tRPC（Tencent RPC）
-* MetaProtocol-Others：Baidu, Alauda, Tencent iGame...
+* MetaProtocol-bRPC (A RPC protocol open-source by Baidu)
+* MetaProtocol-tRPC (A proprietary RPC protocol used in Tencent）
+* MetaProtocol-qza (A proprietary protocol used in Tencent Music)
+* MetaProtocol-videoPacket (A proprietary protocol used in Tencent Media Data Platform)
+* MetaProtocol-Others：Alauda, Tencent iGame...
 * MetaProtocol-Private protocols: Have a private protocol? No problem, any layer-7 protocols built on top of the [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) can be managed by Aeraki
 
 Supported Features:

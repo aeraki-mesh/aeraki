@@ -75,10 +75,11 @@ Aeraki 已经支持下述协议：
 * Redis (Envoy 原生过滤器)
 * MetaProtocol-Dubbo
 * MetaProtocol-Thfirt
+* MetaProtocol-bRPC（百度开源 RPC 协议）
+* MetaProtocol-tRPC（腾讯内部 RPC 协议）
 * MetaProtocol-qza（腾讯音乐内部协议）
 * MetaProtocol-videoPacket（腾讯融媒体内部协议）
-* MetaProtocol-tRPC（腾讯内部 rpc 协议）
-* MetaProtocol-其他协议：百度、灵雀云、腾讯游戏人生等的内部协议...
+* MetaProtocol-其他协议：灵雀云、腾讯游戏人生等的内部协议...
 * MetaProtocol-私有协议：需要在服务网格中接入你的私有协议？没有问题，几乎任何七层协议都可以基于 [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) 实现，并在 Aeraki Mesh 中进行流量管理
 
 支持的特性:
