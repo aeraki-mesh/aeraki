@@ -25,9 +25,13 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest
 
-ISTIOD_ADDR: "istiod.istio-system:15010"
-
-ISTIO_CONFIG_STORE_SECRET: ""
+AERAKI_ENV:
+  AERAKI_IS_MASTER:
+  AERAKI_ISTIOD_ADDR: "istiod.istio-system:15010"
+  AERAKI_CLUSTER_ID:
+  AERAKI_ISTIO_CONFIG_STORE_SECRET:
+  AERAKI_XDS_LISTEN_ADDR: ":15010"
+  AERAKI_LOG_LEVEL: "all:debug"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -89,3 +93,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+tcmapiservice:
+  create: false
