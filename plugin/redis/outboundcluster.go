@@ -197,7 +197,7 @@ func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host string
 	svcList.Values = append(svcList.Values, buildServiceMetadata(host, name, namespace))
 
 	cl.Filters = append(cl.Filters, &cluster.Filter{
-		Name:        filters.TCPMx.Name,
-		TypedConfig: filters.TCPMx.GetTypedConfig(),
+		Name:        filters.TCPClusterMx.Name,
+		TypedConfig: filters.TCPClusterMx.GetTypedConfig(),
 	})
 }
