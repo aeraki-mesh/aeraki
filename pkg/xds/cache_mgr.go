@@ -173,12 +173,16 @@ func (c *CacheMgr) updateRouteCache() error {
 		}
 	}
 
-	new := generateSnapshot(routes)
-	for _, node := range c.routeCache.GetStatusKeys() {
-		xdsLog.Debugf("set route cahe for: %s", node)
-		if err := c.routeCache.SetSnapshot(context.TODO(), node, new); err != nil {
-			xdsLog.Errorf("failed to set route cache: %v", err)
-			// We can't retry in this scenario
+	new, err := generateSnapshot(routes)
+	if err != nil {
+		xdsLog.Errorf("failed to generate route cache: %v", err)
+	} else {
+		for _, node := range c.routeCache.GetStatusKeys() {
+			xdsLog.Debugf("set route cahe for: %s", node)
+			if err := c.routeCache.SetSnapshot(context.TODO(), node, new); err != nil {
+				xdsLog.Errorf("failed to set route cache: %v", err)
+				// We can't retry in this scenario
+			}
 		}
 	}
 	return nil

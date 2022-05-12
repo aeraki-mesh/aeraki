@@ -18,6 +18,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
+
 	httpcore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 
 	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
@@ -113,20 +115,16 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 	return httpRoute
 }
 
-func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) cache.Snapshot {
+func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) (cache.Snapshot, error) {
 	var httpRoutes []types.Resource
 	for _, route := range metaRoutes {
 		httpRoutes = append(httpRoutes, metaProtocolRoute2HttpRoute(route))
 	}
 	return cache.NewSnapshot(
 		strconv.FormatInt(time.Now().Unix(), 10),
-		[]types.Resource{}, // endpoints
-		[]types.Resource{}, // clusters
-		httpRoutes,         //routes
-		[]types.Resource{}, //listeners
-		[]types.Resource{}, // runtimes
-		[]types.Resource{}, // secrets
-		[]types.Resource{}, // extensionconfig
+		map[resource.Type][]types.Resource{
+			resource.RouteType: httpRoutes,
+		},
 	)
 }
 

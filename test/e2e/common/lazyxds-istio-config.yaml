@@ -16,4 +16,4 @@ spec:
             memory: 100Mi
             cpu: 100m
       hub: istio
-      tag: 1.10.0
+      tag: 1.12.7
