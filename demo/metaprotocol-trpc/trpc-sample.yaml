@@ -88,6 +88,8 @@ spec:
         - name: trpc-sample-client
           image: aeraki/trpc-client
           env:
+            - name: version
+              value: "v1"  #version字段为trpc的透传字段，可以配合metarouter-multi-route.yaml实现多版本路由的功能
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
@@ -116,6 +118,8 @@ spec:
         - name: trpc-sample-client
           image: aeraki/trpc-client
           env:
+            - name: version
+              value: "v1"  #version字段为trpc的透传字段，可以配合metarouter-multi-route.yaml实现多版本路由的功能
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
@@ -144,6 +148,8 @@ spec:
         - name: trpc-sample-client
           image: aeraki/trpc-client
           env:
+            - name: version
+              value: "v1"  #version字段为trpc的透传字段，可以配合metarouter-multi-route.yaml实现多版本路由的功能
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
@@ -172,6 +178,8 @@ spec:
         - name: trpc-sample-client
           image: aeraki/trpc-client
           env:
+            - name: version
+              value: "v1"  #version字段为trpc的透传字段，可以配合metarouter-multi-route.yaml实现多版本路由的功能
             - name: server_addr
               value: "trpc-sample-server:8000"
             - name: cmd
