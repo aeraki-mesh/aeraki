@@ -22,7 +22,7 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 require (
 	github.com/aeraki-mesh/meta-protocol-control-plane-api v1.0.6
 	github.com/cenkalti/backoff v2.2.1+incompatible
-	github.com/envoyproxy/go-control-plane v0.9.10-0.20210804155723-c55ac1656905
+	github.com/envoyproxy/go-control-plane v0.10.2-0.20211130161932-f62def555c97
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.6
@@ -32,17 +32,17 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/zhaohuabing/debounce v1.0.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f
+	golang.org/x/net v0.0.0-20211020060615-d418f374d309
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/tools v0.1.8 // indirect
-	google.golang.org/grpc v1.40.0
-	google.golang.org/protobuf v1.27.1
-	istio.io/api v0.0.0-20210819145325-4e216752748c
-	istio.io/client-go v1.11.0
-	istio.io/gogo-genproto v0.0.0-20210806192525-32ebb2f9006c
-	istio.io/istio v0.0.0-20210825081007-437970b95b6a
-	istio.io/pkg v0.0.0-20210806192335-d58436bead18
-	k8s.io/apimachinery v0.22.0
-	k8s.io/client-go v0.22.0
-	sigs.k8s.io/controller-runtime v0.9.5
+	golang.org/x/text v0.3.7 // indirect
+	google.golang.org/grpc v1.42.0
+	google.golang.org/protobuf v1.27.2-0.20220217170731-3992ea83a23c
+	istio.io/api v0.0.0-20220413220906-0d07ea5cbef8
+	istio.io/client-go v1.12.7-0.20220413221605-4b21f100d914
+	istio.io/gogo-genproto v0.0.0-20220413221206-c6177de3a4de
+	istio.io/istio v0.0.0-20220502132137-56f057aaaf2a
+	istio.io/pkg v0.0.0-20220413221105-d9bc5148f7a7
+	k8s.io/apimachinery v0.22.2
+	k8s.io/client-go v0.22.2
+	sigs.k8s.io/controller-runtime v0.10.2
 )
