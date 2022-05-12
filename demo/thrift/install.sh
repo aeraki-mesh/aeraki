@@ -13,9 +13,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
+
 
 kubectl create ns thrift
-kubectl label namespace thrift istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel thrift
 kubectl apply -f $BASEDIR/thrift-sample.yaml -n thrift
 kubectl apply -f $BASEDIR/destinationrule.yaml -n thrift
 kubectl apply -f $BASEDIR/virtualservice-traffic-splitting.yaml -n thrift

@@ -13,9 +13,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
+
 
 kubectl create ns meta-dubbo
-kubectl label namespace meta-dubbo istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel meta-dubbo
 kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-dubbo
 kubectl apply -f $BASEDIR/dubbo-sample.yaml -n meta-dubbo
 kubectl apply -f $BASEDIR/serviceentry.yaml -n meta-dubbo
