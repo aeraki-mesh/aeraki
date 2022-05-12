@@ -13,9 +13,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
+
 
 kubectl create ns meta-videopacket
-kubectl label namespace meta-videopacket istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel meta-videopacket
 kubectl apply -f $BASEDIR/videopacket-protocol.yaml -n istio-system
 kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-videopacket
 kubectl apply -f $BASEDIR/videopacket-sample.yaml -n meta-videopacket

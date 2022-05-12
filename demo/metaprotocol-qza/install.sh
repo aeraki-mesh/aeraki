@@ -13,9 +13,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
+
 
 kubectl create ns meta-qza
-kubectl label namespace meta-qza istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel meta-qza
 kubectl apply -f $BASEDIR/qza-protocol.yaml -n istio-system
 kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-qza
 kubectl apply -f $BASEDIR/qza-sample.yaml -n meta-qza
