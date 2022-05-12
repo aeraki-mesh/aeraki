@@ -13,38 +13,20 @@
 # limitations under the License.
 
 ---
-{{- if .Values.service.create -}}
-apiVersion: v1
-kind: Service
+apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: ApplicationProtocol
 metadata:
-  name: aeraki
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: aeraki
+  name: dubbo
+  namespace: istio-system
 spec:
-  type: {{ .Values.service.type }}
-  ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
-  selector:
-    app: aeraki
-{{- end }}
-
+  protocol: dubbo
+  codec: aeraki.meta_protocol.codec.dubbo
 ---
-apiVersion: v1
-kind: Service
+apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: ApplicationProtocol
 metadata:
-  labels:
-    app: aeraki-xds
-  name: aeraki-xds
-  namespace: {{ .Release.Namespace }}
+  name: thrift
+  namespace: istio-system
 spec:
-  ports:
-    - name: grpc-xds
-      port: 15010
-      protocol: TCP
-      targetPort: 15010
-  selector:
-    app: aeraki
+  protocol: thrift
+  codec: aeraki.meta_protocol.codec.thrift
