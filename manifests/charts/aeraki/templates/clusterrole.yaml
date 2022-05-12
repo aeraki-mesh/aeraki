@@ -37,6 +37,7 @@ rules:
   - apiGroups:
       - redis.aeraki.io
       - dubbo.aeraki.io
+      - metaprotocol.aeraki.io
     resources:
       - '*'
     verbs:

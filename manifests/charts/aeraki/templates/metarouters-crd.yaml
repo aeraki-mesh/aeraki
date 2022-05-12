@@ -1,0 +1,308 @@
+# Copyright Aeraki Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    "helm.sh/resource-policy": keep
+  labels:
+    app: aeraki
+    chart: aeraki
+    heritage: Tiller
+    release: aeraki
+  name: metarouters.metaprotocol.aeraki.io
+spec:
+  group: metaprotocol.aeraki.io
+  names:
+    categories:
+    - aeraki-io
+    - metaprotocol-aeraki-io
+    kind: MetaRouter
+    listKind: MetaRouterList
+    plural: metarouters
+    singular: metarouter
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            description: MetaRouter defines route policies for MetaProtocol proxy.
+            properties:
+              globalRateLimit:
+                properties:
+                  denyOnFail:
+                    type: boolean
+                  descriptors:
+                    items:
+                      properties:
+                        descriptorKey:
+                          format: string
+                          type: string
+                        property:
+                          format: string
+                          type: string
+                      type: object
+                    type: array
+                  domain:
+                    description: The rate limit domain to use when calling the rate
+                      limit service.
+                    format: string
+                    type: string
+                  match:
+                    description: Match conditions to be satisfied for the rate limit
+                      rule to be activated.
+                    properties:
+                      attributes:
+                        additionalProperties:
+                          oneOf:
+                          - not:
+                              anyOf:
+                              - required:
+                                - exact
+                              - required:
+                                - prefix
+                              - required:
+                                - regex
+                          - required:
+                            - exact
+                          - required:
+                            - prefix
+                          - required:
+                            - regex
+                          properties:
+                            exact:
+                              format: string
+                              type: string
+                            prefix:
+                              format: string
+                              type: string
+                            regex:
+                              description: RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+                              format: string
+                              type: string
+                          type: object
+                        description: If the value is empty and only the name of attribute
+                          is specified, presence of the attribute is checked.
+                        type: object
+                    type: object
+                  rateLimitService:
+                    description: The cluster name of the external rate limit service
+                      provider.
+                    format: string
+                    type: string
+                  requestTimeout:
+                    description: The timeout in milliseconds for the rate limit service
+                      RPC.
+                    type: string
+                type: object
+              hosts:
+                items:
+                  format: string
+                  type: string
+                type: array
+              localRateLimit:
+                properties:
+                  conditions:
+                    description: The more specific rate limit conditions, the first
+                      match will be used.
+                    items:
+                      properties:
+                        match:
+                          description: Match conditions to be satisfied for the rate
+                            limit rule to be activated.
+                          properties:
+                            attributes:
+                              additionalProperties:
+                                oneOf:
+                                - not:
+                                    anyOf:
+                                    - required:
+                                      - exact
+                                    - required:
+                                      - prefix
+                                    - required:
+                                      - regex
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
+                                properties:
+                                  exact:
+                                    format: string
+                                    type: string
+                                  prefix:
+                                    format: string
+                                    type: string
+                                  regex:
+                                    description: RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+                                    format: string
+                                    type: string
+                                type: object
+                              description: If the value is empty and only the name
+                                of attribute is specified, presence of the attribute
+                                is checked.
+                              type: object
+                          type: object
+                        tokenBucket:
+                          properties:
+                            fillInterval:
+                              description: The fill interval that tokens are added
+                                to the bucket.
+                              type: string
+                            maxTokens:
+                              description: The maximum tokens that the bucket can
+                                hold.
+                              type: integer
+                            tokensPerFill:
+                              description: The number of tokens added to the bucket
+                                during each fill interval.
+                              nullable: true
+                              type: integer
+                          type: object
+                      type: object
+                    type: array
+                  tokenBucket:
+                    properties:
+                      fillInterval:
+                        description: The fill interval that tokens are added to the
+                          bucket.
+                        type: string
+                      maxTokens:
+                        description: The maximum tokens that the bucket can hold.
+                        type: integer
+                      tokensPerFill:
+                        description: The number of tokens added to the bucket during
+                          each fill interval.
+                        nullable: true
+                        type: integer
+                    type: object
+                type: object
+              routes:
+                items:
+                  properties:
+                    match:
+                      description: Match conditions to be satisfied for the rule to
+                        be activated.
+                      properties:
+                        attributes:
+                          additionalProperties:
+                            oneOf:
+                            - not:
+                                anyOf:
+                                - required:
+                                  - exact
+                                - required:
+                                  - prefix
+                                - required:
+                                  - regex
+                            - required:
+                              - exact
+                            - required:
+                              - prefix
+                            - required:
+                              - regex
+                            properties:
+                              exact:
+                                format: string
+                                type: string
+                              prefix:
+                                format: string
+                                type: string
+                              regex:
+                                description: RE2 style regex-based match (https://github.com/google/re2/wiki/Syntax).
+                                format: string
+                                type: string
+                            type: object
+                          description: If the value is empty and only the name of
+                            attribute is specified, presence of the attribute is checked.
+                          type: object
+                      type: object
+                    name:
+                      description: The name assigned to the route for debugging purposes.
+                      format: string
+                      type: string
+                    requestMutation:
+                      description: Specifies a list of key-value pairs that should
+                        be mutated for each request.
+                      items:
+                        properties:
+                          key:
+                            description: Key name.
+                            format: string
+                            type: string
+                          value:
+                            description: alue.
+                            format: string
+                            type: string
+                        type: object
+                      type: array
+                    responseMutation:
+                      description: Specifies a list of key-value pairs that should
+                        be mutated for each response.
+                      items:
+                        properties:
+                          key:
+                            description: Key name.
+                            format: string
+                            type: string
+                          value:
+                            description: alue.
+                            format: string
+                            type: string
+                        type: object
+                      type: array
+                    route:
+                      description: A Route rule can forward (default) traffic.
+                      items:
+                        properties:
+                          destination:
+                            properties:
+                              host:
+                                description: The name of a service from the service
+                                  registry.
+                                format: string
+                                type: string
+                              port:
+                                description: Specifies the port on the host that is
+                                  being addressed.
+                                properties:
+                                  number:
+                                    type: integer
+                                type: object
+                              subset:
+                                description: The name of a subset within the service.
+                                format: string
+                                type: string
+                            type: object
+                          weight:
+                            type: integer
+                        type: object
+                      type: array
+                  type: object
+                type: array
+            type: object
+          status:
+            type: object
+            x-kubernetes-preserve-unknown-fields: true
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

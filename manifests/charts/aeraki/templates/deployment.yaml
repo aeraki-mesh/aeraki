@@ -42,14 +42,33 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: ISTIOD_ADDR
-              value: {{ .Values.ISTIOD_ADDR }}
-            - name: NAMESPACE
+            - name: AERAKI_IS_MASTER
+              value: {{ .Values.AERAKI_ENV.AERAKI_IS_MASTER }}
+            - name: AERAKI_ISTIOD_ADDR
+              value: {{ .Values.AERAKI_ENV.AERAKI_ISTIOD_ADDR }}
+            - name: AERAKI_CLUSTER_ID
+              value: {{ .Values.AERAKI_ENV.AERAKI_CLUSTER_ID }}
+            # In case of TCM, Istio config store can be a different k8s API server from the one Aeraki is running with
+            - name: AERAKI_ISTIO_CONFIG_STORE_SECRET
+              value: {{ .Values.AERAKI_ENV.AERAKI_ISTIO_CONFIG_STORE_SECRET }}
+            - name: AERAKI_XDS_LISTEN_ADDR
+              value: {{ .Values.AERAKI_ENV.AERAKI_XDS_LISTEN_ADDR }}
+            - name: AERAKI_LOG_LEVEL
+              value: {{ .Values.AERAKI_ENV.AERAKI_LOG_LEVEL }}
+            - name: AERAKI_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-            - name: ISTIO_CONFIG_STORE_SECRET
-              value: {{ .Values.ISTIO_CONFIG_STORE_SECRET }}
+            - name: AERAKI_SERVER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: istiod-ca-cert
+              mountPath: /var/run/secrets/istio
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
 #          ports:
 #            - name: http
 #              containerPort: 80
@@ -62,8 +81,11 @@ spec:
 #            httpGet:
 #              path: /
 #              port: http
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: istiod-ca-cert
+          configMap:
+            name: istio-ca-root-cert
+            defaultMode: 420
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
