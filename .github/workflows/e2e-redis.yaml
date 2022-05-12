@@ -4,7 +4,7 @@ name: e2e-redis
 on: [push, pull_request]
 
 env:
-  ISTIO_VERSION: 1.10.0
+  ISTIO_VERSION: 1.12.7
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
 

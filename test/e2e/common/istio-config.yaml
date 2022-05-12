@@ -27,4 +27,4 @@ spec:
   components:
     pilot:
       hub: istio
-      tag: 1.10.0
+      tag: 1.12.7
