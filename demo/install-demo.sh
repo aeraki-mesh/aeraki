@@ -14,6 +14,8 @@
 
 BASEDIR=$(dirname "$0")/..
 
+DEMO=$1
+
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 COMMON_DIR=$BASEDIR/test/e2e/common
 export ISTIO_VERSION=1.12.7
@@ -37,9 +39,17 @@ helm install \
 kubectl apply -f $BASEDIR/demo/gateway/demo-ingress.yaml -n istio-system
 kubectl apply -f $BASEDIR/demo/gateway/istio-ingressgateway.yaml -n istio-system
 
-if [ $# == 0 ]
+if [ ${DEMO} == "default" ]
 then
-    bash $BASEDIR/demo/metaprotocol-dubbo/install.sh
-    bash $BASEDIR/demo/metaprotocol-thrift/install.sh
-    #bash ${BASEDIR}/demo/kafka/install.sh
+    echo "install default demo"
+    bash ${BASEDIR}/demo/metaprotocol-dubbo/install.sh
+    bash ${BASEDIR}/demo/metaprotocol-thrift/install.sh
+elif [ ${DEMO} == "brpc" ]
+then
+    echo "install brpc demo"
+    bash ${BASEDIR}/demo/metaprotocol-brpc/install.sh
+elif [ ${DEMO} == "kafka" ]
+then
+    echo "install kafka demo"
+    bash ${BASEDIR}/demo/kafka/install.sh
 fi

@@ -42,9 +42,17 @@ install:
 install-for-tcm:
 	bash demo/install-aeraki.sh mode=tcm
 demo:
-	bash demo/install-demo.sh
+	bash demo/install-demo.sh default
 uninstall-demo:
-	bash demo/uninstall-demo.sh
+	bash demo/uninstall-demo.sh default
+demo-kafka:
+	bash demo/install-demo.sh kafka
+uninstall-demo-kafka:
+	bash demo/uninstall-demo.sh kafka
+demo-brpc:
+	bash demo/install-demo.sh brpc
+uninstall-demo-brpc:
+	bash demo/uninstall-demo.sh brpc
 test: style-check
 	$(GOMOD) tidy
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
