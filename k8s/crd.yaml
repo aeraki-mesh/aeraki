@@ -392,6 +392,32 @@ spec:
                             attribute is specified, presence of the attribute is checked.
                           type: object
                       type: object
+                    mirror:
+                      properties:
+                        host:
+                          description: The name of a service from the service registry.
+                          format: string
+                          type: string
+                        port:
+                          description: Specifies the port on the host that is being
+                            addressed.
+                          properties:
+                            number:
+                              type: integer
+                          type: object
+                        subset:
+                          description: The name of a subset within the service.
+                          format: string
+                          type: string
+                      type: object
+                    mirrorPercentage:
+                      description: Percentage of the traffic to be mirrored by the
+                        `mirror` field.
+                      properties:
+                        value:
+                          format: double
+                          type: number
+                      type: object
                     name:
                       description: The name assigned to the route for debugging purposes.
                       format: string
