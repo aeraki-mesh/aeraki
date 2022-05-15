@@ -211,6 +211,17 @@ func (this *GlobalRateLimit_Descriptor) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 
+// MarshalJSON is a custom marshaler for Percent
+func (this *Percent) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for Percent
+func (this *Percent) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
 var (
 	MetaprotocolMetarouterMarshaler   = &github_com_gogo_protobuf_jsonpb.Marshaler{}
 	MetaprotocolMetarouterUnmarshaler = &github_com_gogo_protobuf_jsonpb.Unmarshaler{AllowUnknownFields: true}

@@ -114,12 +114,12 @@ message MetaRoute {
 
   //MetaFaultInjection fault = 4;
 
-  //MetaDestination mirror = 5;
+  Destination mirror = 5;
 
   // Percentage of the traffic to be mirrored by the `mirror` field.
   // If this field is absent, all the traffic (100%) will be mirrored.
   // Max value is 100.
-  // Percent mirror_percentage = 6;
+  Percent mirror_percentage = 6;
 
   // Specifies a list of key-value pairs that should be mutated for each request. How to interpret the key-value pairs
   // depends on the codec implementation
@@ -295,4 +295,9 @@ message GlobalRateLimit {
 
   // Defines what properties in the requests should be sent to the rate limit service
   repeated GlobalRateLimit.Descriptor descriptors = 6 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Percent specifies a percentage in the range of [0.0, 100.0].
+message Percent {
+  double value = 1;
 }

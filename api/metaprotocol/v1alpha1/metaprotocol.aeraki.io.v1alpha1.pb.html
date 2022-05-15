@@ -2,7 +2,7 @@
 title: metaprotocol.aeraki.io.v1alpha1
 layout: protoc-gen-docs
 generator: protoc-gen-docs
-number_of_entries: 15
+number_of_entries: 16
 ---
 <p>$schema: metaprotocol.aeraki.io.v1alpha1.ApplicationProtocol
 $title: Application Protocol
@@ -153,6 +153,28 @@ No
 can be one of several versions of a service (see glossary in
 beginning of document). Weights associated with the service version
 determine the proportion of traffic it receives.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRoute-mirror">
+<td><code>mirror</code></td>
+<td><code><a href="#Destination">Destination</a></code></td>
+<td>
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRoute-mirror_percentage">
+<td><code>mirrorPercentage</code></td>
+<td><code><a href="#Percent">Percent</a></code></td>
+<td>
+<p>Percentage of the traffic to be mirrored by the <code>mirror</code> field.
+If this field is absent, all the traffic (100%) will be mirrored.
+Max value is 100.</p>
 
 </td>
 <td>
@@ -566,6 +588,32 @@ Yes
 </td>
 <td>
 Yes
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<h2 id="Percent">Percent</h2>
+<section>
+<p>Percent specifies a percentage in the range of [0.0, 100.0].</p>
+
+<table class="message-fields">
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr id="Percent-value">
+<td><code>value</code></td>
+<td><code>double</code></td>
+<td>
+</td>
+<td>
+No
 </td>
 </tr>
 </tbody>
