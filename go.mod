@@ -20,7 +20,7 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 //replace github.com/aeraki-mesh/meta-protocol-control-plane-api => github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20220325074604-63adf119a7bc
 
 require (
-	github.com/aeraki-mesh/meta-protocol-control-plane-api v1.0.6
+	github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20220515142731-39ec5b3fe065
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.10.2-0.20211130161932-f62def555c97
 	github.com/gogo/protobuf v1.3.2

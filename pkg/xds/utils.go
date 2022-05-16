@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"time"
 
+	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 
 	httpcore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -66,6 +67,15 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 		} else {
 			routeAction.ClusterSpecifier = &httproute.RouteAction_Cluster{
 				Cluster: route.Route.GetCluster(),
+			}
+		}
+
+		routeAction.RequestMirrorPolicies = make([]*httproute.
+			RouteAction_RequestMirrorPolicy, len(route.Route.RequestMirrorPolicies))
+		for i, mirrorPolicy := range route.Route.RequestMirrorPolicies {
+			routeAction.RequestMirrorPolicies[i] = &httproute.RouteAction_RequestMirrorPolicy{
+				Cluster:         mirrorPolicy.Cluster,
+				RuntimeFraction: mirrorPolicy.RuntimeFraction,
 			}
 		}
 
@@ -177,4 +187,11 @@ func isCatchAllHeaderMatch(in *userapi.StringMatch) bool {
 	}
 
 	return catchall
+}
+
+func translatePercentToFractionalPercent(p float64) *typev3.FractionalPercent {
+	return &typev3.FractionalPercent{
+		Numerator:   uint32(p * 10000),
+		Denominator: typev3.FractionalPercent_MILLION,
+	}
 }

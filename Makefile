@@ -37,6 +37,8 @@ BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
 MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
 
+.DEFAULT_GOAL := build
+
 install:
 	bash demo/install-aeraki.sh
 install-for-tcm:

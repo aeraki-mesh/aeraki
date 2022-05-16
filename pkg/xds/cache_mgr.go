@@ -26,6 +26,7 @@ import (
 
 	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -261,6 +262,18 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 					Clusters: clusters,
 					TotalWeight: &wrappers.UInt32Value{
 						Value: totalWeight,
+					},
+				},
+			}
+		}
+
+		if route.Mirror != nil {
+			routeAction.RequestMirrorPolicies = []*metaroute.RouteAction_RequestMirrorPolicy{
+				{
+					Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, route.Mirror.Subset,
+						route.Mirror.Host, int(route.Mirror.Port.Number)),
+					RuntimeFraction: &corev3.RuntimeFractionalPercent{
+						DefaultValue: translatePercentToFractionalPercent(route.MirrorPercentage.Value),
 					},
 				},
 			}
