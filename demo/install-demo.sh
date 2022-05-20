@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,16 +41,16 @@ helm install \
 kubectl apply -f $BASEDIR/demo/gateway/demo-ingress.yaml -n istio-system
 kubectl apply -f $BASEDIR/demo/gateway/istio-ingressgateway.yaml -n istio-system
 
-if [ ${DEMO} == "default" ]
+if [ "${DEMO}" == "default" ]
 then
     echo "install default demo"
     bash ${BASEDIR}/demo/metaprotocol-dubbo/install.sh
     bash ${BASEDIR}/demo/metaprotocol-thrift/install.sh
-elif [ ${DEMO} == "brpc" ]
+elif [ "${DEMO}" == "brpc" ]
 then
     echo "install brpc demo"
     bash ${BASEDIR}/demo/metaprotocol-brpc/install.sh
-elif [ ${DEMO} == "kafka" ]
+elif [ "${DEMO}" == "kafka" ]
 then
     echo "install kafka demo"
     bash ${BASEDIR}/demo/kafka/install.sh
