@@ -23,14 +23,14 @@ kubectl delete -f $BASEDIR/demo/gateway/demo-ingress.yaml -n istio-system
 kubectl delete -f $BASEDIR/demo/gateway/istio-ingressgateway.yaml -n istio-system
 
 
-if [ ${DEMO} == "default" ]
+if [ "${DEMO}" == "default" ]
 then
     bash ${BASEDIR}/demo/metaprotocol-dubbo/uninstall.sh
     bash ${BASEDIR}/demo/metaprotocol-thrift/uninstall.sh
-elif [ ${DEMO} == "brpc" ]
+elif [ "${DEMO}" == "brpc" ]
 then
     bash ${BASEDIR}/demo/metaprotocol-brpc/uninstall.sh
-elif [ ${DEMO} == "kafka" ]
+elif [ "${DEMO}" == "kafka" ]
 then
     bash ${BASEDIR}/demo/kafka/uninstall.sh
 fi
