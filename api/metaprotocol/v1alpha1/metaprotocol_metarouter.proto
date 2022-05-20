@@ -22,6 +22,12 @@ import "google/protobuf/wrappers.proto";
 // $description: MetaRouter defines route policies for MetaProtocol proxy.
 //
 // MetaRouter defines route policies for MetaProtocol proxy.
+// *Note*: Only one MetaRouter should be defined for a MetaProtocol service.
+// If more than one MetaRouters are found for a service, Aeraki will choose
+// a random one to apply to that service.
+//
+// *Note *: MetaRouter is a mesh-scoped resource, so no matter which namespace
+// the MetaRouter is in, it will take effect on the services specified in the hosts.
 //
 // ```yaml
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
@@ -91,10 +97,34 @@ option go_package = "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1";
 // +k8s:deepcopy-gen=true
 // -->
 message MetaRouter {
+  // The destination service to which traffic is being sent.
+  // *Note for Kubernetes users*: It must be a fully qualified domain name
+  // (FQDN), (e.g. "thrift-sample-server.meta-thrift.svc.cluster.local" )
+  // instead of a short name (e.g. "thrift-sample-server").
+  // *Note*: Only one host is supported now. If multiple hosts are specified,
+  // Only the first one takes effect.
   repeated string hosts = 1;
+  // An ordered list of route rules for MetaProtocol traffic. The route rules
+  // will be applied to service ports named "tcp-metaprotocol-${applicationProtocol}-*",
+  // (e.g. "tcp-metaprotocol-thrift-hello-server"). Order maters in the routes,
+  // The first rule matching an incoming request is used.
   repeated MetaRoute routes = 2;
+  // Loacal rate limit policy.
   LocalRateLimit local_rate_limit= 3;
+  // Global rate limit policy.
   GlobalRateLimit global_rate_limit= 4;
+  // A list of namespaces to which this MetaRouter is exported. Exporting a
+  // MetaRouter allows it to be used by sidecars defined in other namespaces.
+  // This feature provides a mechanism for service owners and mesh administrators
+  // to control the visibility of MetaRouter across namespace boundaries.
+  //
+  // If no namespaces are specified then the MetaRouter is exported to all namespaces
+  // by default.
+  //
+  // The value "." is reserved and defines an export to the same namespace that
+  // the virtual service is declared in. Similarly the value "*" is reserved and
+  // defines an export to all namespaces.
+  repeated string export_to = 20;
 }
 
 // Describes match conditions and actions for routing MetaProtocol.
