@@ -160,12 +160,6 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 	return err
 }
 
-func (c *Controller) deleteEnvoyFilter(ef *model.EnvoyFilterWrapper) (err error) {
-	err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(ef.Namespace).Delete(context.TODO(), ef.Name,
-		v1.DeleteOptions{})
-	return err
-}
-
 func (c *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
 	envoyFilter := &v1alpha3.EnvoyFilter{
 		ObjectMeta: v1.ObjectMeta{
