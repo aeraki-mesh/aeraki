@@ -62,18 +62,20 @@ type Controller struct {
 	MetaRouterControllerClient client.Client
 	configStore                istiomodel.ConfigStore
 	generators                 map[protocol.Instance]Generator
+	namespaceScoped            bool
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 }
 
 // NewController creates a new controller instance based on the provided arguments.
 func NewController(istioClientset *istioclient.Clientset, store istiomodel.ConfigStore,
-	generators map[protocol.Instance]Generator) *Controller {
+	generators map[protocol.Instance]Generator, namespaceScoped bool) *Controller {
 	controller := &Controller{
-		istioClientset: istioClientset,
-		configStore:    store,
-		generators:     generators,
-		pushChannel:    make(chan istiomodel.Event, 100),
+		istioClientset:  istioClientset,
+		configStore:     store,
+		generators:      generators,
+		namespaceScoped: namespaceScoped,
+		pushChannel:     make(chan istiomodel.Event, 100),
 	}
 	return controller
 }
@@ -238,11 +240,15 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 							exportNSs = context.MetaRouter.Spec.ExportTo
 						}
 						if len(exportNSs) == 0 {
-							//The default scope is mesh wide
-							wrapper.Namespace = configRootNS
-							envoyFilters[envoyFilterMapKey(wrapper.Name, configRootNS)] = wrapper
+							wrapper.Namespace = c.defaultEnvoyFilterNS(context.ServiceEntry.Namespace)
+							envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
 						} else {
 							for _, exportNS := range exportNSs {
+								if exportNS == "." {
+									exportNS = context.MetaRouter.Namespace
+								} else if exportNS == "*" {
+									exportNS = configRootNS
+								}
 								wrapper.Namespace = exportNS
 								envoyFilters[envoyFilterMapKey(wrapper.Name, exportNS)] = wrapper
 							}
@@ -254,6 +260,13 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		}
 	}
 	return envoyFilters, nil
+}
+
+func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {
+	if c.namespaceScoped {
+		return serviceNS
+	}
+	return configRootNS
 }
 
 func envoyFilterMapKey(name, ns string) string {

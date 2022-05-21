@@ -81,7 +81,8 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	serviceEntryController := serviceentry.NewController(client)
 
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
-	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols)
+	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
+		args.EnableEnvoyFilterNSScope)
 	configController.RegisterEventHandler(func(_, curr istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})

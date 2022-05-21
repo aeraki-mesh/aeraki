@@ -122,7 +122,7 @@ message MetaRouter {
   // by default.
   //
   // The value "." is reserved and defines an export to the same namespace that
-  // the virtual service is declared in. Similarly the value "*" is reserved and
+  // the MetaRouter is declared in. Similarly the value "*" is reserved and
   // defines an export to all namespaces.
   repeated string export_to = 20;
 }

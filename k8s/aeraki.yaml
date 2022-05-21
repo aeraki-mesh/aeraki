@@ -48,6 +48,10 @@ spec:
               value: ${AERAKI_ISTIO_CONFIG_STORE_SECRET}
             - name: AERAKI_XDS_LISTEN_ADDR
               value: ":15010"
+            - name: AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE
+              # False(Default): The generated envoyFilters will be placed under Istio root namespace
+              # True: The generated envoyFilters will be placed under the service namespace
+              value: "${AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE}"
             - name: AERAKI_LOG_LEVEL
               value: "all:debug"
             - name: AERAKI_NAMESPACE
