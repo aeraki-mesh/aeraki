@@ -73,6 +73,11 @@ No
 <td><code>hosts</code></td>
 <td><code>string[]</code></td>
 <td>
+<p>The destination service to which traffic is being sent.
+<em>Note for Kubernetes users</em>: It must be a fully qualified domain name
+(FQDN), (e.g. &ldquo;thrift-sample-server.meta-thrift.svc.cluster.local&rdquo; )
+instead of a short name (e.g. &ldquo;thrift-sample-server&rdquo;).</p>
+
 </td>
 <td>
 No
@@ -82,6 +87,11 @@ No
 <td><code>routes</code></td>
 <td><code><a href="#MetaRoute">MetaRoute[]</a></code></td>
 <td>
+<p>An ordered list of route rules for MetaProtocol traffic. The route rules
+will be applied to service ports named &ldquo;tcp-metaprotocol-${applicationProtocol}-*&rdquo;,
+(e.g. &ldquo;tcp-metaprotocol-thrift-hello-server&rdquo;). Order maters in the routes,
+The first rule matching an incoming request is used.</p>
+
 </td>
 <td>
 No
@@ -91,6 +101,8 @@ No
 <td><code>localRateLimit</code></td>
 <td><code><a href="#LocalRateLimit">LocalRateLimit</a></code></td>
 <td>
+<p>Loacal rate limit policy.</p>
+
 </td>
 <td>
 No
@@ -100,6 +112,29 @@ No
 <td><code>globalRateLimit</code></td>
 <td><code><a href="#GlobalRateLimit">GlobalRateLimit</a></code></td>
 <td>
+<p>Global rate limit policy.</p>
+
+</td>
+<td>
+No
+</td>
+</tr>
+<tr id="MetaRouter-export_to">
+<td><code>exportTo</code></td>
+<td><code>string[]</code></td>
+<td>
+<p>A list of namespaces to which this MetaRouter is exported. Exporting a
+MetaRouter allows it to be used by sidecars defined in other namespaces.
+This feature provides a mechanism for service owners and mesh administrators
+to control the visibility of MetaRouter across namespace boundaries.</p>
+
+<p>If no namespaces are specified then the MetaRouter is exported to all namespaces
+by default.</p>
+
+<p>The value &ldquo;.&rdquo; is reserved and defines an export to the same namespace that
+the virtual service is declared in. Similarly the value &ldquo;*&rdquo; is reserved and
+defines an export to all namespaces.</p>
+
 </td>
 <td>
 No

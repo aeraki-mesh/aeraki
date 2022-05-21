@@ -23,15 +23,17 @@ ENV AERAKI_LOG_LEVEL="all:info"
 ENV AERAKI_SERVER_ID=""
 ENV AERAKI_CLUSTER_ID=""
 ENV AERAKI_IS_MASTER="true"
+ENV AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE="false"
 
 
 COPY aeraki /usr/local/bin/
-ENTRYPOINT /usr/local/bin/aeraki                                     \
-           -istiod-address=$AERAKI_ISTIOD_ADDR                       \
-           -namespace=$AERAKI_NAMESPACE                              \
-           -cluster-id=$AERAKI_CLUSTER_ID                            \
-           -config-store-secret=$AERAKI_ISTIO_CONFIG_STORE_SECRET    \
-           -xds-listen-address=$AERAKI_XDS_LISTEN_ADDR               \
-           -log-level=$AERAKI_LOG_LEVEL                              \
-           -server-id=$AERAKI_SERVER_ID                              \
-           -master=$AERAKI_IS_MASTER
+ENTRYPOINT /usr/local/bin/aeraki                                                     \
+           -istiod-address=$AERAKI_ISTIOD_ADDR                                       \
+           -namespace=$AERAKI_NAMESPACE                                              \
+           -cluster-id=$AERAKI_CLUSTER_ID                                            \
+           -config-store-secret=$AERAKI_ISTIO_CONFIG_STORE_SECRET                    \
+           -xds-listen-address=$AERAKI_XDS_LISTEN_ADDR                               \
+           -log-level=$AERAKI_LOG_LEVEL                                              \
+           -server-id=$AERAKI_SERVER_ID                                              \
+           -master=$AERAKI_IS_MASTER                                                 \
+           -enable-envoy-filter-namespace-scope=$AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE \

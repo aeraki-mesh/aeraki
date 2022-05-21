@@ -209,7 +209,6 @@ func (c *Controller) shouldHandleSeChange(seConfig istioconfig.Config) bool {
 	}
 	for _, port := range service.Ports {
 		if protocol.IsAerakiSupportedProtocols(port.Name) {
-			controllerLog.Infof("updating EnvoyFilter: %v", model.Struct2JSON(service))
 			return true
 		}
 	}

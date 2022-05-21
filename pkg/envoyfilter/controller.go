@@ -62,18 +62,20 @@ type Controller struct {
 	MetaRouterControllerClient client.Client
 	configStore                istiomodel.ConfigStore
 	generators                 map[protocol.Instance]Generator
+	namespaceScoped            bool
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 }
 
 // NewController creates a new controller instance based on the provided arguments.
 func NewController(istioClientset *istioclient.Clientset, store istiomodel.ConfigStore,
-	generators map[protocol.Instance]Generator) *Controller {
+	generators map[protocol.Instance]Generator, namespaceScoped bool) *Controller {
 	controller := &Controller{
-		istioClientset: istioClientset,
-		configStore:    store,
-		generators:     generators,
-		pushChannel:    make(chan istiomodel.Event, 100),
+		istioClientset:  istioClientset,
+		configStore:     store,
+		generators:      generators,
+		namespaceScoped: namespaceScoped,
+		pushChannel:     make(chan istiomodel.Event, 100),
 	}
 	return controller
 }
@@ -112,42 +114,48 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		return fmt.Errorf("failed to generate EnvoyFilter: %v", err)
 	}
 
-	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).List(context.TODO(), v1.ListOptions{
+	//TODO use cached informer instead of calling k8s API server
+	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters("").List(context.TODO(), v1.ListOptions{
 		LabelSelector: "manager=" + aerakiFieldManager,
 	})
 
+	// Deleted envoyFilters
 	for _, oldEnvoyFilter := range existingEnvoyFilters.Items {
-		if newEnvoyFilter, ok := generatedEnvoyFilters[oldEnvoyFilter.Name]; !ok {
-			controllerLog.Infof("deleting EnvoyFilter: %v", model.Struct2JSON(oldEnvoyFilter))
-			err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Delete(context.TODO(), oldEnvoyFilter.Name,
+		if _, ok := generatedEnvoyFilters[envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)]; !ok {
+			controllerLog.Infof("deleting EnvoyFilter: namespace: %s name: %s %v", oldEnvoyFilter.Namespace,
+				oldEnvoyFilter.Name, model.Struct2JSON(oldEnvoyFilter))
+			err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(oldEnvoyFilter.Namespace).Delete(context.TODO(),
+				oldEnvoyFilter.Name,
 				v1.DeleteOptions{})
-			if err != nil {
-				err = fmt.Errorf("failed to delete EnvoyFilter: %v", err)
-			}
-		} else {
-			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
-				controllerLog.Infof("updating EnvoyFilter: %v", model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
-				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Update(context.TODO(),
-					c.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
-					v1.UpdateOptions{FieldManager: aerakiFieldManager})
-				if err != nil {
-					err = fmt.Errorf("failed to update EnvoyFilter: %v", err)
-				}
-			} else {
-				controllerLog.Infof("envoyFilter: %s unchanged", oldEnvoyFilter.Name)
-			}
-			delete(generatedEnvoyFilters, oldEnvoyFilter.Name)
 		}
 	}
 
-	for _, wrapper := range generatedEnvoyFilters {
-		_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(configRootNS).Create(context.TODO(), c.toEnvoyFilterCRD(wrapper,
-			nil),
-			v1.CreateOptions{FieldManager: aerakiFieldManager})
-		controllerLog.Infof("creating EnvoyFilter: %v", model.Struct2JSON(*wrapper.Envoyfilter))
-		if err != nil {
-			err = fmt.Errorf("failed to create EnvoyFilter: %v", err)
+	// Changed envoyFilters
+	for _, oldEnvoyFilter := range existingEnvoyFilters.Items {
+		mapKey := envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)
+		if newEnvoyFilter, ok := generatedEnvoyFilters[mapKey]; ok {
+			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
+				controllerLog.Infof("updating EnvoyFilter: namespace: %s name: %s %v", newEnvoyFilter.Namespace,
+					newEnvoyFilter.Name, model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
+				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(newEnvoyFilter.Namespace).Update(context.TODO(),
+					c.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
+					v1.UpdateOptions{FieldManager: aerakiFieldManager})
+			} else {
+				controllerLog.Infof("envoyFilter: namespace: %s name: %s unchanged", oldEnvoyFilter.Namespace,
+					oldEnvoyFilter.Name)
+			}
+			delete(generatedEnvoyFilters, mapKey)
 		}
+	}
+
+	// New envoyFilters
+	for _, wrapper := range generatedEnvoyFilters {
+		controllerLog.Infof("creating EnvoyFilter: namespace: %s name: %s %v", wrapper.Namespace, wrapper.Name,
+			model.Struct2JSON(wrapper.Envoyfilter))
+		_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(wrapper.Namespace).Create(context.TODO(),
+			c.toEnvoyFilterCRD(wrapper,
+				nil),
+			v1.CreateOptions{FieldManager: aerakiFieldManager})
 	}
 	return err
 }
@@ -156,7 +164,7 @@ func (c *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alph
 	envoyFilter := &v1alpha3.EnvoyFilter{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      new.Name,
-			Namespace: configRootNS,
+			Namespace: new.Namespace,
 			Labels: map[string]string{
 				"manager": aerakiFieldManager,
 			},
@@ -221,7 +229,24 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 						port.Name, err)
 				} else {
 					for _, wrapper := range envoyFilterWrappers {
-						envoyFilters[wrapper.Name] = wrapper
+						var exportNSs []string
+						if context.MetaRouter != nil {
+							exportNSs = context.MetaRouter.Spec.ExportTo
+						}
+						if len(exportNSs) == 0 {
+							wrapper.Namespace = c.defaultEnvoyFilterNS(context.ServiceEntry.Namespace)
+							envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
+						} else {
+							for _, exportNS := range exportNSs {
+								if exportNS == "." {
+									exportNS = context.MetaRouter.Namespace
+								} else if exportNS == "*" {
+									exportNS = configRootNS
+								}
+								wrapper.Namespace = exportNS
+								envoyFilters[envoyFilterMapKey(wrapper.Name, exportNS)] = wrapper
+							}
+						}
 					}
 				}
 				break
@@ -229,6 +254,17 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		}
 	}
 	return envoyFilters, nil
+}
+
+func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {
+	if c.namespaceScoped {
+		return serviceNS
+	}
+	return configRootNS
+}
+
+func envoyFilterMapKey(name, ns string) string {
+	return ns + "-" + name
 }
 
 func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
@@ -266,6 +302,7 @@ func (c *Controller) findRelatedMetaRouter(service *networking.ServiceEntry) (*m
 
 	for _, metaRouter := range metaRouterList.Items {
 		for _, host := range metaRouter.Spec.Hosts {
+			// Aeraki now only supports one host in the MetaRouter
 			if host == service.Hosts[0] {
 				return &metaRouter, nil
 			}

@@ -37,6 +37,10 @@ if [ -z "$AERAKI_IS_MASTER" ]; then
   export AERAKI_IS_MASTER="true"
 fi
 
+if [ -z "$AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE" ]; then
+  export AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE="false"
+fi
+
 mkdir -p ~/.aeraki
 envsubst < $BASEDIR/../../../k8s/aeraki.yaml > ~/.aeraki/aeraki.yaml
 if [ "$1" == "mode=tcm" ]; then

@@ -56,6 +56,8 @@ func main() {
 	flag.StringVar(&args.ElectionID, "election-id", defaultElectionID, "ElectionID to elect master controller")
 	flag.StringVar(&args.ServerID, "server-id", "", "Aeraki server id")
 	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
+	flag.BoolVar(&args.EnableEnvoyFilterNSScope, "enable-envoy-filter-namespace-scope", false,
+		"Generate Envoy Filters in the service namespace")
 	flag.Parse()
 	if args.ServerID == "" {
 		args.ServerID = "Aeraki-" + uuid.New().String()

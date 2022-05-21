@@ -201,7 +201,14 @@ spec:
           spec:
             description: MetaRouter defines route policies for MetaProtocol proxy.
             properties:
+              exportTo:
+                description: A list of namespaces to which this MetaRouter is exported.
+                items:
+                  format: string
+                  type: string
+                type: array
               globalRateLimit:
+                description: Global rate limit policy.
                 properties:
                   denyOnFail:
                     type: boolean
@@ -269,11 +276,13 @@ spec:
                     type: string
                 type: object
               hosts:
+                description: The destination service to which traffic is being sent.
                 items:
                   format: string
                   type: string
                 type: array
               localRateLimit:
+                description: Loacal rate limit policy.
                 properties:
                   conditions:
                     description: The more specific rate limit conditions, the first
@@ -353,6 +362,7 @@ spec:
                     type: object
                 type: object
               routes:
+                description: An ordered list of route rules for MetaProtocol traffic.
                 items:
                   properties:
                     match:
