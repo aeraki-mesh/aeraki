@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: smwyzi/proxyv2:brpc-0.1
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.1.0
       labels:
         app: brpc-echo-server
         version: v1
@@ -57,7 +57,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: smwyzi/proxyv2:brpc-0.1
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.1.0
       labels:
         app: brpc-echo-server
         version: v2
@@ -86,7 +86,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: smwyzi/proxyv2:brpc-0.1
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.1.0
       labels:
         app: brpc-echo-client
     spec:
