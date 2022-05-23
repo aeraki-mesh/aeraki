@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.1.0
       labels:
         app: dubbo-sample-provider
         version: v1
@@ -55,7 +55,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.1.0
       labels:
         app: dubbo-sample-provider
         version: v2
@@ -82,7 +82,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.1.0
       labels:
         app: dubbo-sample-consumer
     spec:
