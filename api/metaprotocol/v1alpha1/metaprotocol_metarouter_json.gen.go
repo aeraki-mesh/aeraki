@@ -6,6 +6,12 @@
 // $description: MetaRouter defines route policies for MetaProtocol proxy.
 //
 // MetaRouter defines route policies for MetaProtocol proxy.
+// *Note*: Only one MetaRouter should be defined for a MetaProtocol service.
+// If more than one MetaRouters are found for a service, Aeraki will choose
+// a random one to apply to that service.
+//
+// *Note *: MetaRouter is a mesh-scoped resource, so no matter which namespace
+// the MetaRouter is in, it will take effect on the services specified in the hosts.
 //
 // ```yaml
 // apiVersion: metaprotocol.aeraki.io/v1alpha1

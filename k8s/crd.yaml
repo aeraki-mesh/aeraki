@@ -144,7 +144,7 @@ spec:
     listKind: ApplicationProtocolList
     plural: applicationprotocols
     singular: applicationprotocol
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1alpha1
     schema:

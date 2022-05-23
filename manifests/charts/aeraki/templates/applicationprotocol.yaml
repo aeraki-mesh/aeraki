@@ -17,7 +17,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: dubbo
-  namespace: istio-system
 spec:
   protocol: dubbo
   codec: aeraki.meta_protocol.codec.dubbo
@@ -26,7 +25,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: thrift
-  namespace: istio-system
 spec:
   protocol: thrift
   codec: aeraki.meta_protocol.codec.thrift
