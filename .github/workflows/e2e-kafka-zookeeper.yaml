@@ -7,7 +7,7 @@ env:
   ISTIO_VERSION: 1.12.7
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
-
+  AERAKI_IMG_PULL_POLICY: Never
 jobs:
   test:
     runs-on: ubuntu-latest

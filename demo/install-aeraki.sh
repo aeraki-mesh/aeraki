@@ -25,4 +25,10 @@ else
   export AERAKI_TAG=$AERAKI_TAG
 fi
 
+if [ -z "$AERAKI_IMG_PULL_POLICY" ]; then
+  export $AERAKI_IMG_PULL_POLICY=Always
+else
+  export AERAKI_IMG_PULL_POLICY=$AERAKI_IMG_PULL_POLICY
+fi
+
 bash ${SCRIPTS_DIR}/aeraki.sh $1
