@@ -17,6 +17,8 @@ package xds
 import (
 	"context"
 	"fmt"
+	"istio.io/istio/pkg/config/labels"
+	"istio.io/istio/pkg/config/validation"
 	"strings"
 	"time"
 
@@ -267,7 +269,7 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 			}
 		}
 
-		if route.Mirror != nil {
+		if c.validateMirror(route) {
 			routeAction.RequestMirrorPolicies = []*metaroute.RouteAction_RequestMirrorPolicy{
 				{
 					Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, route.Mirror.Subset,
@@ -287,6 +289,52 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 
 	return routeAction
 }
+
+func (c *CacheMgr) validateMirror(route *metaprotocolapi.MetaRoute) bool {
+	if route.MirrorPercentage != nil {
+		if value := route.MirrorPercentage.GetValue(); value > 100 {
+			xdsLog.Errorf("validate mirror failed, mirror_percentage must have a max value of 100 (it has %f)", value)
+			return false
+		}
+	}
+
+	if route.Mirror != nil {
+		hostname := route.Mirror.Host
+		if hostname == "" {
+			xdsLog.Errorf("validate mirror failed, hostname name cannot be empty")
+			return false
+		} else if hostname == "*" {
+			xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
+			return false
+		} else {
+			err := validation.ValidateWildcardDomain(hostname)
+			if err != nil {
+				xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
+				return false
+			}
+		}
+		subsetName := route.Mirror.Subset
+		if subsetName == "" {
+			xdsLog.Errorf("validate mirror failed, subset name cannot be empty")
+			return false
+		} else if !labels.IsDNS1123Label(subsetName) {
+			xdsLog.Errorf("validate mirror failed, invalid destination subset name %s", subsetName)
+			return false
+		}
+		portSelector := route.Mirror.Port
+		if portSelector == nil {
+			return false
+		} else {
+			err := validation.ValidatePort(int(portSelector.GetNumber()))
+			if err != nil {
+				xdsLog.Warnf("validate mirror failed, port number %d must be in the range 1..65535", portSelector.GetNumber())
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,
 	dr *model.DestinationRuleWrapper) *metaroute.RouteConfiguration {
 	metaRoute := metaroute.RouteConfiguration{
