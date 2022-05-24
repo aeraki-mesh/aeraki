@@ -36,7 +36,7 @@ spec:
       containers:
         - name: aeraki
           image: aeraki/aeraki:${AERAKI_TAG}
-          #imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
+          # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
           imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
           env:
             - name: AERAKI_IS_MASTER
