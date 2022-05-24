@@ -17,7 +17,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: videopacket
-  namespace: istio-system
 spec:
   codec: aeraki.meta_protocol.codec.videopacket
   protocol: videopacket

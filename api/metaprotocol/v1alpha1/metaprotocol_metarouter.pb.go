@@ -6,6 +6,12 @@
 // $description: MetaRouter defines route policies for MetaProtocol proxy.
 //
 // MetaRouter defines route policies for MetaProtocol proxy.
+// *Note*: Only one MetaRouter should be defined for a MetaProtocol service.
+// If more than one MetaRouters are found for a service, Aeraki will choose
+// a random one to apply to that service.
+//
+// *Note *: MetaRouter is a mesh-scoped resource, so no matter which namespace
+// the MetaRouter is in, it will take effect on the services specified in the hosts.
 //
 // ```yaml
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
@@ -100,6 +106,8 @@ type MetaRouter struct {
 	// *Note for Kubernetes users*: It must be a fully qualified domain name
 	// (FQDN), (e.g. "thrift-sample-server.meta-thrift.svc.cluster.local" )
 	// instead of a short name (e.g. "thrift-sample-server").
+	// *Note*: Only one host is supported now. If multiple hosts are specified,
+	// Only the first one takes effect.
 	Hosts []string `protobuf:"bytes,1,rep,name=hosts,proto3" json:"hosts,omitempty"`
 	// An ordered list of route rules for MetaProtocol traffic. The route rules
 	// will be applied to service ports named "tcp-metaprotocol-${applicationProtocol}-*",
@@ -119,7 +127,7 @@ type MetaRouter struct {
 	// by default.
 	//
 	// The value "." is reserved and defines an export to the same namespace that
-	// the virtual service is declared in. Similarly the value "*" is reserved and
+	// the MetaRouter is declared in. Similarly the value "*" is reserved and
 	// defines an export to all namespaces.
 	ExportTo             []string `protobuf:"bytes,20,rep,name=export_to,json=exportTo,proto3" json:"export_to,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`

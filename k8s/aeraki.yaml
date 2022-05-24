@@ -36,6 +36,8 @@ spec:
       containers:
         - name: aeraki
           image: aeraki/aeraki:${AERAKI_TAG}
+          # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
+          imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
           env:
             - name: AERAKI_IS_MASTER
               value: "${AERAKI_IS_MASTER}"
@@ -201,7 +203,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: dubbo
-  namespace: istio-system
 spec:
   protocol: dubbo
   codec: aeraki.meta_protocol.codec.dubbo
@@ -210,7 +211,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: thrift
-  namespace: istio-system
 spec:
   protocol: thrift
   codec: aeraki.meta_protocol.codec.thrift

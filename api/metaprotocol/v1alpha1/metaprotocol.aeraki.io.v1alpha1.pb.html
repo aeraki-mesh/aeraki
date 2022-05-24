@@ -76,7 +76,9 @@ No
 <p>The destination service to which traffic is being sent.
 <em>Note for Kubernetes users</em>: It must be a fully qualified domain name
 (FQDN), (e.g. &ldquo;thrift-sample-server.meta-thrift.svc.cluster.local&rdquo; )
-instead of a short name (e.g. &ldquo;thrift-sample-server&rdquo;).</p>
+instead of a short name (e.g. &ldquo;thrift-sample-server&rdquo;).
+<em>Note</em>: Only one host is supported now. If multiple hosts are specified,
+Only the first one takes effect.</p>
 
 </td>
 <td>
@@ -132,7 +134,7 @@ to control the visibility of MetaRouter across namespace boundaries.</p>
 by default.</p>
 
 <p>The value &ldquo;.&rdquo; is reserved and defines an export to the same namespace that
-the virtual service is declared in. Similarly the value &ldquo;*&rdquo; is reserved and
+the MetaRouter is declared in. Similarly the value &ldquo;*&rdquo; is reserved and
 defines an export to all namespaces.</p>
 
 </td>

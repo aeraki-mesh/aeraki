@@ -36,7 +36,7 @@ import (
 // +cue-gen:ApplicationProtocol:annotations:helm.sh/resource-policy=keep
 // +cue-gen:ApplicationProtocol:labels:app=aeraki,chart=aeraki,heritage=Tiller,release=aeraki
 // +cue-gen:ApplicationProtocol:subresource:status
-// +cue-gen:ApplicationProtocol:scope:Namespaced
+// +cue-gen:ApplicationProtocol:scope:Cluster
 // +cue-gen:ApplicationProtocol:resource:categories=aeraki-io,metaprotocol-aeraki-io
 // +cue-gen:ApplicationProtocol:preserveUnknownFields:false
 // -->

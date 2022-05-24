@@ -17,7 +17,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: brpc
-  namespace: istio-system
 spec:
   codec: aeraki.meta_protocol.codec.brpc
   protocol: brpc
