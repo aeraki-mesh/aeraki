@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/aeraki-mesh/aeraki/test/e2e/util"
-	 "istio.io/pkg/log"
+	"istio.io/pkg/log"
 )
 
 func TestMain(m *testing.M) {
@@ -66,7 +66,7 @@ func TestSidecarInboundConfig(t *testing.T) {
 	providerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-provider", "")
 	config, _ := util.PodExec("metaprotocol", providerPod, "istio-proxy", "curl -s 127.0.0.1:15000/config_dump", false, "")
 	config = strings.Join(strings.Fields(config), "")
-	want := "{\n\"name\":\"envoy.filters.network.meta_protocol_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy\",\n\"value\":{\n\"stat_prefix\":\"inbound|20880||\",\n\"application_protocol\":\"dubbo\",\n\"route_config\":{\n\"name\":\"inbound|20880||\",\n\"routes\":[\n{\n\"route\":{\n\"cluster\":\"inbound|20880||\"\n}\n}\n]\n},\n\"codec\":{\n\"name\":\"aeraki.meta_protocol.codec.dubbo\"\n}\n}\n}\n"
+	want := "{\n\"name\":\"envoy.filters.network.meta_protocol_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy\",\n\"value\":{\n\"stat_prefix\":\"inbound|20880||\",\n\"application_protocol\":\"dubbo\",\n\"route_config\":{\n\"name\":\"inbound|20880||\",\n\"routes\":[\n{\n\"route\":{\n\"cluster\":\"inbound|20880||\"\n}\n}\n]\n},\n\"codec\":{\n\"name\":\"aeraki.meta_protocol.codec.dubbo\"\n},\n\"meta_protocol_filters\":[\n{\n\"name\":\"aeraki.meta_protocol.filters.router\"\n}\n]\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
 		t.Errorf("cant't find metaprotocol proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
