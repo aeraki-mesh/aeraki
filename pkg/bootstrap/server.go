@@ -77,7 +77,10 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		NameSpace:  args.Namespace,
 	})
 
-	// Todo remove serviceEntryController, now Istio can allocate IP
+	// Istio can allocate a VIP for a serviceentry, but the IPs are allocated in a sidecar scope, hence the IP of a
+	// service is not consistent across sidecar border.
+	// Since Aeraki is using the VIP of a serviceEntry as match condition when generating EnvoyFilter,
+	// the VIP must be unique and consistent in the mesh.
 	serviceEntryController := serviceentry.NewController(client)
 
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters

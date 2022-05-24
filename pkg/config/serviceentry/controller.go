@@ -54,8 +54,7 @@ type Controller struct {
 }
 
 // NewController returns a new serviceEntry controller
-func NewController(
-	istioClientset *istioclient.Clientset) *Controller {
+func NewController(istioClientset *istioclient.Clientset) *Controller {
 	serviceEntryInformer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(opts meta_v1.ListOptions) (runtime.Object, error) {

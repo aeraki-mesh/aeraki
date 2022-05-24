@@ -114,7 +114,6 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		return fmt.Errorf("failed to generate EnvoyFilter: %v", err)
 	}
 
-	//TODO use cached informer instead of calling k8s API server
 	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters("").List(context.TODO(), v1.ListOptions{
 		LabelSelector: "manager=" + aerakiFieldManager,
 	})

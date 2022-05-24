@@ -66,25 +66,25 @@ type Options struct {
 
 // Controller watches Istio config xDS server and notifies the listeners when config changes.
 type Controller struct {
-	options    *Options
-	xdsMCP     *adsc.ADSC
-	Store      istiomodel.ConfigStore
-	controller istiomodel.ConfigStoreCache
+	options     *Options
+	xdsMCP      *adsc.ADSC
+	Store       istiomodel.ConfigStore
+	configCache istiomodel.ConfigStoreCache
 }
 
 // NewController creates a new Controller instance based on the provided arguments.
 func NewController(options *Options) *Controller {
 	store := memory.Make(configCollection)
 	return &Controller{
-		options:    options,
-		Store:      store,
-		controller: memory.NewController(store),
+		options:     options,
+		Store:       store,
+		configCache: memory.NewController(store),
 	}
 }
 
 // Run until a signal is received, this function won't block
 func (c *Controller) Run(stop <-chan struct{}) {
-	go c.controller.Run(stop)
+	go c.configCache.Run(stop)
 	go func() {
 		c.connectIstio()
 		for {
@@ -138,7 +138,7 @@ func (c *Controller) connectIstio() {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-		c.xdsMCP.Store = istiomodel.MakeIstioStore(c.controller)
+		c.xdsMCP.Store = istiomodel.MakeIstioStore(c.configCache)
 		if err = c.xdsMCP.Run(); err != nil {
 			controllerLog.Errorf("adsc: failed running %v", err)
 			time.Sleep(5 * time.Second)
@@ -196,7 +196,7 @@ func (c *Controller) RegisterEventHandler(handler func(istioconfig.Config, istio
 
 	schemas := configCollection.All()
 	for _, schema := range schemas {
-		c.controller.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
+		c.configCache.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
 	}
 }
 
