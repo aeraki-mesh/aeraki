@@ -298,36 +298,37 @@ func (c *CacheMgr) validateMirror(route *metaprotocolapi.MetaRoute) bool {
 		}
 	}
 
-	if route.Mirror != nil {
-		hostname := route.Mirror.Host
-		if hostname == "" {
-			xdsLog.Errorf("validate mirror failed, hostname name cannot be empty")
-			return false
-		} else if hostname == "*" {
+	if route.Mirror == nil {
+		return false
+	}
+	hostname := route.Mirror.Host
+	if hostname == "" {
+		xdsLog.Errorf("validate mirror failed, hostname name cannot be empty")
+		return false
+	} else if hostname == "*" {
+		xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
+		return false
+	} else {
+		err := validation.ValidateWildcardDomain(hostname)
+		if err != nil {
 			xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
 			return false
-		} else {
-			err := validation.ValidateWildcardDomain(hostname)
-			if err != nil {
-				xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
-				return false
-			}
 		}
-		subsetName := route.Mirror.Subset
-		if subsetName == "" {
-			xdsLog.Errorf("validate mirror failed, subset name cannot be empty")
-			return false
-		} else if !labels.IsDNS1123Label(subsetName) {
-			xdsLog.Errorf("validate mirror failed, invalid destination subset name %s", subsetName)
-			return false
-		}
-		portSelector := route.Mirror.Port
-		if portSelector == nil {
-			return false
-		} else if err := validation.ValidatePort(int(portSelector.GetNumber())); err != nil {
-			xdsLog.Warnf("validate mirror failed, port number %d must be in the range 1..65535", portSelector.GetNumber())
-			return false
-		}
+	}
+	subsetName := route.Mirror.Subset
+	if subsetName == "" {
+		xdsLog.Errorf("validate mirror failed, subset name cannot be empty")
+		return false
+	} else if !labels.IsDNS1123Label(subsetName) {
+		xdsLog.Errorf("validate mirror failed, invalid destination subset name %s", subsetName)
+		return false
+	}
+	portSelector := route.Mirror.Port
+	if portSelector == nil {
+		return false
+	} else if err := validation.ValidatePort(int(portSelector.GetNumber())); err != nil {
+		xdsLog.Warnf("validate mirror failed, port number %d must be in the range 1..65535", portSelector.GetNumber())
+		return false
 	}
 	return true
 }
