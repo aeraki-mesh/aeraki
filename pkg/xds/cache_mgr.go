@@ -324,12 +324,9 @@ func (c *CacheMgr) validateMirror(route *metaprotocolapi.MetaRoute) bool {
 		portSelector := route.Mirror.Port
 		if portSelector == nil {
 			return false
-		} else {
-			err := validation.ValidatePort(int(portSelector.GetNumber()))
-			if err != nil {
-				xdsLog.Warnf("validate mirror failed, port number %d must be in the range 1..65535", portSelector.GetNumber())
-				return false
-			}
+		} else if err := validation.ValidatePort(int(portSelector.GetNumber())); err != nil {
+			xdsLog.Warnf("validate mirror failed, port number %d must be in the range 1..65535", portSelector.GetNumber())
+			return false
 		}
 	}
 	return true
