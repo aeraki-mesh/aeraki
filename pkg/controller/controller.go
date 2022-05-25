@@ -23,10 +23,12 @@ import (
 var controllerLog = log.RegisterScope("controller", "crd controller", 0)
 
 // NewManager create a manager to manager all crd controllers.
-func NewManager(kubeConfig *rest.Config, namespace string) (manager.Manager, error) {
+func NewManager(kubeConfig *rest.Config, namespace string, leaderElection bool,
+	leaderElectionID string) (manager.Manager, error) {
 	mgrOpt := manager.Options{
 		MetricsBindAddress:      "0",
-		LeaderElection:          false,
+		LeaderElection:          leaderElection,
+		LeaderElectionID:        leaderElectionID,
 		LeaderElectionNamespace: namespace,
 	}
 	m, err := manager.New(kubeConfig, mgrOpt)
@@ -35,30 +37,5 @@ func NewManager(kubeConfig *rest.Config, namespace string) (manager.Manager, err
 	}
 
 	m.Elected()
-
-	//err = addRedisServiceController(m, triggerPush)
-	//if err != nil {
-	//	controllerLog.Fatalf("could not add RedisServiceController: %e", err)
-	//}
-	//err = addRedisDestinationController(m, triggerPush)
-	//if err != nil {
-	//	controllerLog.Fatalf("could not add RedisDestinationController: %e", err)
-	//}
-	//err = addDubboAuthorizationPolicyController(m, triggerPush)
-	//if err != nil {
-	//	controllerLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
-	//}
-	//err = addApplicationProtocolController(m, triggerPush)
-	//if err != nil {
-	//	controllerLog.Fatalf("could not add ApplicationProtocolController: %e", err)
-	//}
-	//err = addMetaRouterController(m, triggerPush)
-	//if err != nil {
-	//	controllerLog.Fatalf("could not add MetaRouterController: %e", err)
-	//}
-	//err = scheme.AddToScheme(m.GetScheme())
-	//if err != nil {
-	//	controllerLog.Fatalf("could not add schema: %e", err)
-	//}
 	return m, nil
 }

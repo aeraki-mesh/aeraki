@@ -21,15 +21,15 @@ import (
 
 	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
+	aerakischeme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
 	"github.com/aeraki-mesh/aeraki/pkg/config"
-	"github.com/aeraki-mesh/aeraki/pkg/config/serviceentry"
+	"github.com/aeraki-mesh/aeraki/pkg/controller"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/kube/controller"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
 	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
 	"github.com/aeraki-mesh/aeraki/plugin/redis"
+	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
@@ -48,15 +48,15 @@ var (
 
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
-	args                   *AerakiArgs
-	kubeClient             kubernetes.Interface
-	configController       *config.Controller
-	serviceEntryController *serviceentry.Controller
-	envoyFilterController  *envoyfilter.Controller
-	xdsCacheMgr            *xds.CacheMgr
-	xdsServer              *xds.Server
-	crdCtrlMgr             manager.Manager
-	stopCRDController      func()
+	args                  *AerakiArgs
+	kubeClient            kubernetes.Interface
+	configController      *config.Controller
+	envoyFilterController *envoyfilter.Controller
+	xdsCacheMgr           *xds.CacheMgr
+	xdsServer             *xds.Server
+	scalableCtrlMgr       manager.Manager
+	singletonCtrlMgr      manager.Manager
+	stopCRDController     func()
 }
 
 // NewServer creates a new Server instance based on the provided arguments.
@@ -77,12 +77,6 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		NameSpace:  args.Namespace,
 	})
 
-	// Istio can allocate a VIP for a serviceentry, but the IPs are allocated in a sidecar scope, hence the IP of a
-	// service is not consistent across sidecar border.
-	// Since Aeraki is using the VIP of a serviceEntry as match condition when generating EnvoyFilter,
-	// the VIP must be unique and consistent in the mesh.
-	serviceEntryController := serviceentry.NewController(client)
-
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
 		args.EnableEnvoyFilterNSScope)
@@ -101,36 +95,42 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	xdsServer := xds.NewServer(args.XdsAddr, routeCacheMgr)
 
 	// crdCtrlMgr watches Aeraki CRDs,  such as MetaRouter, ApplicationProtocol, etc.
-	crdCtrlMgr, err := createCrdControllers(args, kubeConfig, envoyFilterController, routeCacheMgr)
+	scalableCtrlMgr, err := createScalableControllers(args, kubeConfig, envoyFilterController, routeCacheMgr)
 	if err != nil {
 		return nil, err
 	}
 	// routeCacheMgr uses controller manager client to get route configuration in MetaRouters
-	routeCacheMgr.MetaRouterControllerClient = crdCtrlMgr.GetClient()
+	routeCacheMgr.MetaRouterControllerClient = scalableCtrlMgr.GetClient()
 	// envoyFilterController uses controller manager client to get the rate limit configuration in MetaRouters
-	envoyFilterController.MetaRouterControllerClient = crdCtrlMgr.GetClient()
+	envoyFilterController.MetaRouterControllerClient = scalableCtrlMgr.GetClient()
 
 	//todo replace config with cached client
-	cfg := crdCtrlMgr.GetConfig()
-	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(crdCtrlMgr.GetConfig())
+	cfg := scalableCtrlMgr.GetConfig()
+	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(scalableCtrlMgr.GetConfig())
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
 
+	// singletonCtrlMgr
+	singletonCtrlMgr, err := createSingletonControllers(args, kubeConfig)
+	if err != nil {
+		return nil, err
+	}
 	server := &Server{
-		args:                   args,
-		configController:       configController,
-		envoyFilterController:  envoyFilterController,
-		crdCtrlMgr:             crdCtrlMgr,
-		serviceEntryController: serviceEntryController,
-		xdsCacheMgr:            routeCacheMgr,
-		xdsServer:              xdsServer,
+		args:                  args,
+		configController:      configController,
+		envoyFilterController: envoyFilterController,
+		scalableCtrlMgr:       scalableCtrlMgr,
+		singletonCtrlMgr:      singletonCtrlMgr,
+		xdsCacheMgr:           routeCacheMgr,
+		xdsServer:             xdsServer,
 	}
 	err = server.initKubeClient()
 	return server, err
 }
 
-func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
+// These controllers are horizontally scalable, multiple instances can be deployed to share the load
+func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 	envoyFilterController *envoyfilter.Controller, xdsCacheMgr *xds.CacheMgr) (manager.Manager, error) {
-	crdCtrlMgr, err := controller.NewManager(kubeConfig, args.Namespace)
+	mgr, err := controller.NewManager(kubeConfig, args.Namespace, false, "")
 	if err != nil {
 		return nil, err
 	}
@@ -143,23 +143,23 @@ func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		xdsCacheMgr.UpdateRoute()
 		return nil
 	}
-	err = controller.AddRedisServiceController(crdCtrlMgr, updateEnvoyFilter)
+	err = controller.AddRedisServiceController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add RedisServiceController: %e", err)
 	}
-	err = controller.AddRedisDestinationController(crdCtrlMgr, updateEnvoyFilter)
+	err = controller.AddRedisDestinationController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add RedisDestinationController: %e", err)
 	}
-	err = controller.AddDubboAuthorizationPolicyController(crdCtrlMgr, updateEnvoyFilter)
+	err = controller.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
 	}
-	err = controller.AddApplicationProtocolController(crdCtrlMgr, updateEnvoyFilter)
+	err = controller.AddApplicationProtocolController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
 	}
-	err = controller.AddMetaRouterController(crdCtrlMgr, func() error {
+	err = controller.AddMetaRouterController(mgr, func() error {
 		if err := updateEnvoyFilter(); err != nil { //MetaRouter Rate limit config will cause update on EnvoyFilters
 			return err
 		}
@@ -171,11 +171,34 @@ func createCrdControllers(args *AerakiArgs, kubeConfig *rest.Config,
 	if err != nil {
 		aerakiLog.Fatalf("could not add MetaRouterController: %e", err)
 	}
-	err = scheme.AddToScheme(crdCtrlMgr.GetScheme())
+	err = aerakischeme.AddToScheme(mgr.GetScheme())
 	if err != nil {
 		aerakiLog.Fatalf("could not add schema: %e", err)
 	}
-	return crdCtrlMgr, nil
+	return mgr, nil
+}
+
+// The Service Entry Controller is used to assign a globally unique VIP to a service entry,
+// hence only one instance can get the lock to run
+//
+// Istio can allocate a VIP for a serviceentry, but the IPs are allocated in a sidecar scope, hence the IP of a
+// service is not consistent across sidecar border.
+// Since Aeraki is using the VIP of a serviceEntry as match condition when generating EnvoyFilter,
+// the VIP must be unique and consistent in the mesh.
+func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (manager.Manager, error) {
+	mgr, err := controller.NewManager(kubeConfig, args.Namespace, true, leaderelection.AllocateVIPController)
+	if err != nil {
+		return nil, err
+	}
+	err = controller.AddserviceEntryController(mgr)
+	if err != nil {
+		aerakiLog.Fatalf("could not add ServiceEntryController: %e", err)
+	}
+	err = istioscheme.AddToScheme(mgr.GetScheme())
+	if err != nil {
+		aerakiLog.Fatalf("could not add schema: %e", err)
+	}
+	return mgr, nil
 }
 
 // Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop channel.
@@ -192,14 +215,6 @@ func (s *Server) Start(stop <-chan struct{}) {
 				AddRunFunction(func(leaderStop <-chan struct{}) {
 					aerakiLog.Infof("starting EnvoyFilter creation controller")
 					s.envoyFilterController.Run(stop)
-				}).Run(stop)
-		}()
-		go func() {
-			leaderelection.
-				NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.AllocateVIPController, s.kubeClient).
-				AddRunFunction(func(leaderStop <-chan struct{}) {
-					aerakiLog.Infof("starting ServiceEntry IP allocation controller")
-					s.serviceEntryController.Run(stop)
 				}).Run(stop)
 		}()
 	} else {
@@ -223,7 +238,16 @@ func (s *Server) Start(stop <-chan struct{}) {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.stopCRDController = cancel
 	go func() {
-		_ = s.crdCtrlMgr.Start(ctx)
+		err := s.scalableCtrlMgr.Start(ctx)
+		if err != nil {
+			aerakiLog.Errorf("failed to start controllers: %v", err)
+		}
+	}()
+	go func() {
+		err := s.singletonCtrlMgr.Start(ctx)
+		if err != nil {
+			aerakiLog.Errorf("failed to start controllers: %v", err)
+		}
 	}()
 
 	s.waitForShutdown(stop)
