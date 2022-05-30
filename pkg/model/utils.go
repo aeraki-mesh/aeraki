@@ -16,6 +16,7 @@ package model
 
 import (
 	"encoding/json"
+	networking "istio.io/api/networking/v1alpha3"
 	"strconv"
 	"strings"
 
@@ -45,6 +46,30 @@ func BuildClusterName(direction TrafficDirection, subsetName string, hostname st
 // BuildMetaProtocolRouteName the route name for a given metaProtocol service
 func BuildMetaProtocolRouteName(host string, port int) string {
 	return host + "_" + strconv.Itoa(port)
+}
+
+// GetHashPolicy return consistent hash policy in dr
+// it will be overridden if subset named as subsetName in param is not nil
+func GetHashPolicy(dr *DestinationRuleWrapper, subsetName string) string {
+	if subsetName == "" {
+		return getConsistentHashHeaderName(dr.Spec.TrafficPolicy)
+	} else if dr != nil && dr.Spec != nil && dr.Spec.Subsets != nil && len(dr.Spec.Subsets) > 0 {
+		for _, subset := range dr.Spec.Subsets {
+			if subsetName == subset.GetName() {
+				return getConsistentHashHeaderName(subset.TrafficPolicy)
+			}
+		}
+	}
+	return ""
+}
+
+// getConsistentHashHeaderName return consistent hash header in TrafficPolicy
+func getConsistentHashHeaderName(tp *networking.TrafficPolicy) string {
+	if tp != nil && tp.LoadBalancer != nil && tp.LoadBalancer.GetConsistentHash() != nil &&
+		tp.LoadBalancer.GetConsistentHash().GetHttpHeaderName() != "" {
+		return tp.LoadBalancer.GetConsistentHash().GetHttpHeaderName()
+	}
+	return ""
 }
 
 // Struct2JSON convert a go struct to a json object
