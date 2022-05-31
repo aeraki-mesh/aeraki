@@ -116,6 +116,7 @@ func (c *CacheMgr) updateRouteCache() error {
 		xdsLog.Infof("no rds subscriber, ignore this update")
 		return nil
 	}
+
 	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
 		GroupVersionKind(), "")
 	if err != nil {
