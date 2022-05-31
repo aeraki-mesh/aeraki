@@ -53,7 +53,7 @@ func BuildMetaProtocolRouteName(host string, port int) string {
 func GetHashPolicy(dr *DestinationRuleWrapper, subsetName string) string {
 	if subsetName == "" {
 		return getConsistentHashHeaderName(dr.Spec.TrafficPolicy)
-	} else if dr != nil && dr.Spec != nil && dr.Spec.Subsets != nil && len(dr.Spec.Subsets) > 0 {
+	} else if dr != nil && dr.Spec != nil && dr.Spec.Subsets != nil {
 		for _, subset := range dr.Spec.Subsets {
 			if subsetName == subset.GetName() {
 				return getConsistentHashHeaderName(subset.TrafficPolicy)
@@ -65,8 +65,7 @@ func GetHashPolicy(dr *DestinationRuleWrapper, subsetName string) string {
 
 // getConsistentHashHeaderName return consistent hash header in TrafficPolicy
 func getConsistentHashHeaderName(tp *networking.TrafficPolicy) string {
-	if tp != nil && tp.LoadBalancer != nil && tp.LoadBalancer.GetConsistentHash() != nil &&
-		tp.LoadBalancer.GetConsistentHash().GetHttpHeaderName() != "" {
+	if tp != nil && tp.LoadBalancer != nil && tp.LoadBalancer.GetConsistentHash() != nil {
 		return tp.LoadBalancer.GetConsistentHash().GetHttpHeaderName()
 	}
 	return ""
