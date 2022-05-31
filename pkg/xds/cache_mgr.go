@@ -112,10 +112,10 @@ func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
 }
 
 func (c *CacheMgr) updateRouteCache() error {
-	//if len(c.routeCache.GetStatusKeys()) == 0 {
-	//	xdsLog.Infof("no rds subscriber, ignore this update")
-	//	return nil
-	//}
+	if len(c.routeCache.GetStatusKeys()) == 0 {
+		xdsLog.Infof("no rds subscriber, ignore this update")
+		return nil
+	}
 	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
 		GroupVersionKind(), "")
 	if err != nil {
