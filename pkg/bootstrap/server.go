@@ -15,9 +15,14 @@
 package bootstrap
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"sync"
 
 	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
 
@@ -54,9 +59,16 @@ type Server struct {
 	envoyFilterController *envoyfilter.Controller
 	xdsCacheMgr           *xds.CacheMgr
 	xdsServer             *xds.Server
+	httpsServer           *http.Server // webhooks HTTPS Server.
 	scalableCtrlMgr       manager.Manager
 	singletonCtrlMgr      manager.Manager
-	stopCRDController     func()
+	// httpsMux listens on the httpsAddr(15017), handling webhooks
+	// If the address os empty, the webhooks will be set on the default httpPort.
+	httpsMux        *http.ServeMux // webhooks
+	certMu          sync.RWMutex
+	istiodCert      *tls.Certificate
+	CABundle        *bytes.Buffer
+	stopControllers func()
 }
 
 // NewServer creates a new Server instance based on the provided arguments.
@@ -123,7 +135,19 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		xdsCacheMgr:           routeCacheMgr,
 		xdsServer:             xdsServer,
 	}
-	err = server.initKubeClient()
+
+	if err := server.initKubeClient(); err != nil {
+		return nil, fmt.Errorf("error initializing kube client: %v", err)
+	}
+	if err := server.initRootCA(); err != nil {
+		return nil, fmt.Errorf("error initializing root ca: %v", err)
+	}
+	if err := server.initSecureWebhookServer(args); err != nil {
+		return nil, fmt.Errorf("error initializing webhook server: %v", err)
+	}
+	if err := server.initConfigValidation(args); err != nil {
+		return nil, fmt.Errorf("error initializing config validator: %v", err)
+	}
 	return server, err
 }
 
@@ -236,7 +260,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 	}()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	s.stopCRDController = cancel
+	s.stopControllers = cancel
 	go func() {
 		err := s.scalableCtrlMgr.Start(ctx)
 		if err != nil {
@@ -250,14 +274,38 @@ func (s *Server) Start(stop <-chan struct{}) {
 		}
 	}()
 
+	httpsListener, err := net.Listen("tcp", s.httpsServer.Addr)
+	if err != nil {
+		aerakiLog.Errorf("failed to start webhook server: %v", err)
+	}
+	go func() {
+		log.Infof("starting webhook service at %s", httpsListener.Addr())
+		if err := s.httpsServer.ServeTLS(httpsListener, "", ""); isUnexpectedListenerError(err) {
+			log.Errorf("error serving https server: %v", err)
+		}
+	}()
+
 	s.waitForShutdown(stop)
+}
+
+func isUnexpectedListenerError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, net.ErrClosed) {
+		return false
+	}
+	if errors.Is(err, http.ErrServerClosed) {
+		return false
+	}
+	return true
 }
 
 // Wait for the stop, and do cleanups
 func (s *Server) waitForShutdown(stop <-chan struct{}) {
 	go func() {
 		<-stop
-		s.stopCRDController()
+		s.stopControllers()
 	}()
 }
 

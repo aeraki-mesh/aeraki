@@ -37,11 +37,12 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.2-0.20220217170731-3992ea83a23c
-	istio.io/api v0.0.0-20220413220906-0d07ea5cbef8
-	istio.io/client-go v1.12.7-0.20220413221605-4b21f100d914
-	istio.io/gogo-genproto v0.0.0-20220413221206-c6177de3a4de
-	istio.io/istio v0.0.0-20220502132137-56f057aaaf2a
-	istio.io/pkg v0.0.0-20220413221105-d9bc5148f7a7
+	istio.io/api v0.0.0-20220413220906-0d07ea5cbef8 //1.12.7
+	istio.io/client-go v1.12.7
+	istio.io/gogo-genproto v0.0.0-20220413221206-c6177de3a4de //1.12.7
+	istio.io/istio v0.0.0-20220502132137-56f057aaaf2a //1.12.7
+	istio.io/pkg v0.0.0-20220413221105-d9bc5148f7a7 //1.12.7
+	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
 	sigs.k8s.io/controller-runtime v0.10.2

@@ -60,7 +60,7 @@ data:
                                "endpoint":{
                                   "address":{
                                      "socket_address":{
-                                        "address":"aeraki-xds.istio-system",
+                                        "address":"aeraki.istio-system",
                                         "port_value":15010
                                      }
                                   }
