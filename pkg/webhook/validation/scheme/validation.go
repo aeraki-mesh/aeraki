@@ -21,12 +21,11 @@ import (
 	"strconv"
 	"strings"
 
-	"istio.io/istio/pkg/config/validation"
-
 	metaprotocol "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 
 	"github.com/hashicorp/go-multierror"
 	networking "istio.io/api/networking/v1alpha3"
+	"istio.io/istio/pkg/config/validation"
 	"istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/labels"
 	"istio.io/istio/pkg/config/protocol"
