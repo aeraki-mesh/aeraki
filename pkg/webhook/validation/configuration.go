@@ -26,6 +26,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
+// GenerateWebhookConfig creates ValidationWebhookConfiguration with the Aeraki ca
 func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 	var (
 		webhookNamespace = "istio-system"
@@ -70,8 +71,9 @@ func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 		}},
 	}
 
-	if old, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(
-		context.TODO(), webhookCfgName, metav1.GetOptions{}); err != nil {
+	old, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(
+		context.TODO(), webhookCfgName, metav1.GetOptions{})
+	if err != nil {
 		if errors.IsNotFound(err) {
 			if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Create(
 				context.TODO(), config, metav1.CreateOptions{}); err != nil {
@@ -80,13 +82,11 @@ func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 			return nil
 		}
 		return err
-	} else {
-		config.ResourceVersion = old.ResourceVersion
-		if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Update(
-			context.TODO(), config, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
-		return nil
+	}
+	config.ResourceVersion = old.ResourceVersion
+	if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Update(
+		context.TODO(), config, metav1.UpdateOptions{}); err != nil {
+		return err
 	}
 	return nil
 }

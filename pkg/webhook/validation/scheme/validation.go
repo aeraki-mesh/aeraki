@@ -15,7 +15,6 @@
 package scheme
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
@@ -40,6 +39,7 @@ type Validation struct {
 	Warning validation.Warning
 }
 
+// AnalysisAwareError ...
 type AnalysisAwareError struct {
 	Type       string
 	Msg        string
@@ -130,18 +130,8 @@ func ValidateMetaAttributeName(name string) error {
 
 // ValidatePercent checks that percent is in range
 func ValidatePercent(val uint32) error {
-	if val < 0 || val > 100 {
+	if val > 100 {
 		return fmt.Errorf("percentage %v is not in range 0..100", val)
-	}
-	return nil
-}
-
-// validatePercentage checks if the specified fractional percentage is valid.
-func validatePercentage(percentage *metaprotocol.Percent) error {
-	if percentage != nil {
-		if percentage.Value < 0.0 || percentage.Value > 100.0 || (percentage.Value > 0.0 && percentage.Value < 0.0001) {
-			return fmt.Errorf("percentage %v is neither 0.0, nor in range [0.0001, 100.0]", percentage.Value)
-		}
 	}
 	return nil
 }
@@ -337,25 +327,6 @@ var ValidateApplicationProtocol = func(cfg config.Config) (validation.Warning, e
 	return errs.Unwrap()
 }
 
-// asJSON() creates a JSON serialization of a match, to use for match comparison.  We don't use the JSON itself.
-func asJSON(data interface{}) string {
-	// Remove the name, so we can create a serialization that only includes traffic routing config
-	switch mr := data.(type) {
-	case *networking.HTTPMatchRequest:
-		if mr != nil && mr.Name != "" {
-			unnamed := *mr
-			unnamed.Name = ""
-			data = &unnamed
-		}
-	}
-
-	b, err := json.Marshal(data)
-	if err != nil {
-		return err.Error()
-	}
-	return string(b)
-}
-
 func routeName(route interface{}, routen int) string {
 	switch r := route.(type) {
 	case *networking.HTTPRoute:
@@ -491,18 +462,6 @@ func appendValidation(v Validation, vs ...error) Validation {
 	return v
 }
 
-// appendErrorf appends a formatted error string
-// nolint: unparam
-func appendErrorf(v Validation, format string, a ...interface{}) Validation {
-	return appendValidation(v, fmt.Errorf(format, a...))
-}
-
-// appendWarningf appends a formatted warning string
-// nolint: unparam
-func appendWarningf(v Validation, format string, a ...interface{}) Validation {
-	return appendValidation(v, Warningf(format, a...))
-}
-
 // wrapper around multierror.Append that enforces the invariant that if all input errors are nil, the output
 // error is nil (allowing validation without branching).
 func appendErrors(err error, errs ...error) error {
@@ -529,3 +488,4 @@ func appendErrors(err error, errs ...error) error {
 func (aae *AnalysisAwareError) Error() string {
 	return aae.Msg
 }
+
