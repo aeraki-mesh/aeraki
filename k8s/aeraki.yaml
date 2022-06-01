@@ -148,8 +148,10 @@ rules:
       - ""
     resources:
       - secrets
+      - namespaces
+      - configmaps
     verbs:
-      - get
+      - '*'
   - apiGroups:
       - networking.istio.io
     resources:

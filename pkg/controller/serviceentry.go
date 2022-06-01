@@ -96,8 +96,8 @@ func (c *serviceEntryController) Reconcile(ctx context.Context, request reconcil
 	return reconcile.Result{}, nil
 }
 
-// AddserviceEntryController adds serviceEntryController
-func AddserviceEntryController(mgr manager.Manager) error {
+// AddServiceEntryController adds serviceEntryController
+func AddServiceEntryController(mgr manager.Manager) error {
 	serviceEntryCtrl := &serviceEntryController{
 		Client:     mgr.GetClient(),
 		serviceIPs: make(map[string]client.ObjectKey),

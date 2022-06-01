@@ -19,6 +19,5 @@ source $BASEDIR/../common_func.sh
 kubectl create ns meta-videopacket
 LabelIstioInjectLabel meta-videopacket
 kubectl apply -f $BASEDIR/videopacket-protocol.yaml -n istio-system
-kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-videopacket
 kubectl apply -f $BASEDIR/videopacket-sample.yaml -n meta-videopacket
 kubectl apply -f $BASEDIR/destinationrule.yaml -n meta-videopacket
