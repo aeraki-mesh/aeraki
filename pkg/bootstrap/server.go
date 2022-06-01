@@ -214,9 +214,13 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 	if err != nil {
 		return nil, err
 	}
-	err = controller.AddserviceEntryController(mgr)
+	err = controller.AddServiceEntryController(mgr)
 	if err != nil {
 		aerakiLog.Fatalf("could not add ServiceEntryController: %e", err)
+	}
+	err = controller.AddNamespaceController(mgr)
+	if err != nil {
+		aerakiLog.Fatalf("could not add NamespaceController: %e", err)
 	}
 	err = istioscheme.AddToScheme(mgr.GetScheme())
 	if err != nil {
