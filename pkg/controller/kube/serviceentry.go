@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controller
+package kube
 
 import (
 	"context"
@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,8 +39,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
-
-const aerakiFieldManager = "Aeraki"
 
 var serviceEntryLog = log.RegisterScope("service-entry-controller", "service-entry-controller debugging", 0)
 
@@ -161,7 +160,7 @@ func (c *serviceEntryController) autoAllocateIP(key client.ObjectKey, s *network
 func (c *serviceEntryController) updateServiceEntry(s *networking.ServiceEntry, key client.ObjectKey) {
 	err := c.Client.Update(context.TODO(), s,
 		&controllerclient.UpdateOptions{
-			FieldManager: aerakiFieldManager,
+			FieldManager: constants.AerakiFieldManager,
 		})
 	if err == nil {
 		c.serviceIPs[s.Spec.Addresses[0]] = key

@@ -27,8 +27,9 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
 
 	aerakischeme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
-	"github.com/aeraki-mesh/aeraki/pkg/config"
-	"github.com/aeraki-mesh/aeraki/pkg/controller"
+	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
+	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
+
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
@@ -55,7 +56,7 @@ var (
 type Server struct {
 	args                  *AerakiArgs
 	kubeClient            kubernetes.Interface
-	configController      *config.Controller
+	configController      *istio.Controller
 	envoyFilterController *envoyfilter.Controller
 	xdsCacheMgr           *xds.CacheMgr
 	xdsServer             *xds.Server
@@ -83,10 +84,10 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	}
 
 	// configController watches Istiod through MCP over xDS to get service entry and virtual service updates
-	configController := config.NewController(&config.Options{
+	configController := istio.NewController(&istio.Options{
 		ClusterID:  args.ClusterID,
 		IstiodAddr: args.IstiodAddr,
-		NameSpace:  args.Namespace,
+		NameSpace:  args.RootNamespace,
 	})
 
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
@@ -154,7 +155,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 // These controllers are horizontally scalable, multiple instances can be deployed to share the load
 func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 	envoyFilterController *envoyfilter.Controller, xdsCacheMgr *xds.CacheMgr) (manager.Manager, error) {
-	mgr, err := controller.NewManager(kubeConfig, args.Namespace, false, "")
+	mgr, err := kube.NewManager(kubeConfig, args.RootNamespace, false, "")
 	if err != nil {
 		return nil, err
 	}
@@ -167,23 +168,23 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		xdsCacheMgr.UpdateRoute()
 		return nil
 	}
-	err = controller.AddRedisServiceController(mgr, updateEnvoyFilter)
+	err = kube.AddRedisServiceController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add RedisServiceController: %e", err)
 	}
-	err = controller.AddRedisDestinationController(mgr, updateEnvoyFilter)
+	err = kube.AddRedisDestinationController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add RedisDestinationController: %e", err)
 	}
-	err = controller.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter)
+	err = kube.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
 	}
-	err = controller.AddApplicationProtocolController(mgr, updateEnvoyFilter)
+	err = kube.AddApplicationProtocolController(mgr, updateEnvoyFilter)
 	if err != nil {
 		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
 	}
-	err = controller.AddMetaRouterController(mgr, func() error {
+	err = kube.AddMetaRouterController(mgr, func() error {
 		if err := updateEnvoyFilter(); err != nil { //MetaRouter Rate limit config will cause update on EnvoyFilters
 			return err
 		}
@@ -210,15 +211,15 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 // Since Aeraki is using the VIP of a serviceEntry as match condition when generating EnvoyFilter,
 // the VIP must be unique and consistent in the mesh.
 func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (manager.Manager, error) {
-	mgr, err := controller.NewManager(kubeConfig, args.Namespace, true, leaderelection.AllocateVIPController)
+	mgr, err := kube.NewManager(kubeConfig, args.RootNamespace, true, leaderelection.AllocateVIPController)
 	if err != nil {
 		return nil, err
 	}
-	err = controller.AddServiceEntryController(mgr)
+	err = kube.AddServiceEntryController(mgr)
 	if err != nil {
 		aerakiLog.Fatalf("could not add ServiceEntryController: %e", err)
 	}
-	err = controller.AddNamespaceController(mgr)
+	err = kube.AddNamespaceController(mgr)
 	if err != nil {
 		aerakiLog.Fatalf("could not add NamespaceController: %e", err)
 	}
@@ -239,7 +240,8 @@ func (s *Server) Start(stop <-chan struct{}) {
 		aerakiLog.Infof("aeraki is running as the master")
 		go func() {
 			leaderelection.
-				NewLeaderElection(s.args.Namespace, s.args.ServerID, leaderelection.EnvoyFilterController, s.kubeClient).
+				NewLeaderElection(s.args.RootNamespace, s.args.ServerID, leaderelection.EnvoyFilterController,
+					s.kubeClient).
 				AddRunFunction(func(leaderStop <-chan struct{}) {
 					aerakiLog.Infof("starting EnvoyFilter creation controller")
 					s.envoyFilterController.Run(stop)
@@ -330,13 +332,13 @@ func getConfigStoreKubeConfig(args *AerakiArgs) (*rest.Config, error) {
 
 	// Aeraki allows to use a dedicated API Server as the Istio config store.
 	// The credential to access this dedicated Istio config store should be stored in a secret
-	if args.Namespace != "" && args.ConfigStoreSecret != "" {
+	if args.RootNamespace != "" && args.ConfigStoreSecret != "" {
 		client, err := kubernetes.NewForConfig(kubeConfig)
 		if err != nil {
 			err = fmt.Errorf("failed to get Kube client: %v", err)
 			return nil, err
 		}
-		secret, err := client.CoreV1().Secrets(args.Namespace).Get(context.TODO(), args.ConfigStoreSecret,
+		secret, err := client.CoreV1().Secrets(args.RootNamespace).Get(context.TODO(), args.ConfigStoreSecret,
 			metav1.GetOptions{})
 		if err != nil {
 			err = fmt.Errorf("failed to get Istio config store secret: %v", err)

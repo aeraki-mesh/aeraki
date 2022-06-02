@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
+
 	"github.com/gogo/protobuf/proto"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -44,12 +46,6 @@ const (
 	// debounceMax is the maximum time to wait for events while debouncing.
 	// Defaults to 10 seconds. If events keep showing up with no break for this time, we'll trigger a push.
 	debounceMax = 10 * time.Second
-
-	// configRootNS is the root config root namespace
-	configRootNS = "istio-system"
-
-	// aerakiFieldManager is the FileldManager for Aeraki CRDs
-	aerakiFieldManager = "Aeraki"
 )
 
 var (
@@ -115,7 +111,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 	}
 
 	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters("").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "manager=" + aerakiFieldManager,
+		LabelSelector: "manager=" + constants.AerakiFieldManager,
 	})
 
 	// Deleted envoyFilters
@@ -138,7 +134,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 					newEnvoyFilter.Name, model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
 				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(newEnvoyFilter.Namespace).Update(context.TODO(),
 					c.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
-					v1.UpdateOptions{FieldManager: aerakiFieldManager})
+					v1.UpdateOptions{FieldManager: constants.AerakiFieldManager})
 			} else {
 				controllerLog.Infof("envoyFilter: namespace: %s name: %s unchanged", oldEnvoyFilter.Namespace,
 					oldEnvoyFilter.Name)
@@ -154,7 +150,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(wrapper.Namespace).Create(context.TODO(),
 			c.toEnvoyFilterCRD(wrapper,
 				nil),
-			v1.CreateOptions{FieldManager: aerakiFieldManager})
+			v1.CreateOptions{FieldManager: constants.AerakiFieldManager})
 	}
 	return err
 }
@@ -165,7 +161,7 @@ func (c *Controller) toEnvoyFilterCRD(new *model.EnvoyFilterWrapper, old *v1alph
 			Name:      new.Name,
 			Namespace: new.Namespace,
 			Labels: map[string]string{
-				"manager": aerakiFieldManager,
+				"manager": constants.AerakiFieldManager,
 			},
 		},
 		Spec: *new.Envoyfilter,
@@ -240,7 +236,7 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 								if exportNS == "." {
 									exportNS = context.MetaRouter.Namespace
 								} else if exportNS == "*" {
-									exportNS = configRootNS
+									exportNS = constants.DefaultRootNamespace
 								}
 								wrapper.Namespace = exportNS
 								envoyFilters[envoyFilterMapKey(wrapper.Name, exportNS)] = wrapper
@@ -259,7 +255,7 @@ func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {
 	if c.namespaceScoped {
 		return serviceNS
 	}
-	return configRootNS
+	return constants.DefaultRootNamespace
 }
 
 func envoyFilterMapKey(name, ns string) string {

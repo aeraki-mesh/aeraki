@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controller
+package kube
 
 var bootstrapConfig = `
     {
@@ -55,7 +55,7 @@ var bootstrapConfig = `
                                "endpoint":{
                                   "address":{
                                      "socket_address":{
-                                        "address":"aeraki-xds.istio-system",
+                                        "address":"aeraki.istio-system",
                                         "port_value":15010
                                      }
                                   }
