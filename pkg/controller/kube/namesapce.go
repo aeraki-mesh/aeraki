@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controller
+package kube
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	"istio.io/pkg/log"
@@ -100,7 +101,7 @@ func (c *namespaceController) createBootstrapConfigMap(ns string) {
 		"custom_bootstrap.json": bootstrapConfig,
 	}
 	if err := c.Client.Create(context.TODO(), cm, &controllerclient.CreateOptions{
-		FieldManager: aerakiFieldManager,
+		FieldManager: constants.AerakiFieldManager,
 	}); err != nil {
 		namespaceLog.Errorf("failed to create configMap: %v", err)
 	}

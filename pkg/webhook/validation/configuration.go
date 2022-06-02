@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"context"
 
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
@@ -29,8 +31,8 @@ import (
 // GenerateWebhookConfig creates ValidationWebhookConfiguration with the Aeraki ca
 func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 	var (
-		webhookNamespace = "istio-system"
-		webhookCfgName   = "aeraki-istio-system"
+		webhookNamespace = constants.DefaultRootNamespace
+		webhookCfgName   = "aeraki-" + webhookNamespace
 		webhookService   = "aeraki"
 	)
 

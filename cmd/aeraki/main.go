@@ -21,6 +21,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
+
 	"github.com/google/uuid"
 
 	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
@@ -36,7 +38,7 @@ import (
 
 const (
 	defaultIstiodAddr        = "istiod.istio-system:15010"
-	defaultNamespace         = "istio-system"
+	defaultRootNamespace     = constants.DefaultRootNamespace
 	defaultXdsAddr           = ":15010"
 	defaultElectionID        = "aeraki-controller"
 	defaultLogLevel          = "all:info"
@@ -48,7 +50,7 @@ func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.BoolVar(&args.Master, "master", true, "Istiod xds server address")
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
-	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The namespace where Aeraki is deployed")
+	flag.StringVar(&args.RootNamespace, "root-namespace", defaultRootNamespace, "The Root Namespace of Aeraki")
 	flag.StringVar(&args.ClusterID, "cluster-id", "", "The cluster where Aeraki is deployed")
 	flag.StringVar(&args.XdsAddr, "xds-listen-address", defaultXdsAddr, "Istiod xds server port")
 	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultConfigStoreSecret,

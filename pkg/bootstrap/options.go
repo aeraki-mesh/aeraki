@@ -26,7 +26,7 @@ type AerakiArgs struct {
 	XdsAddr    string
 	// The listening address for HTTPS (webhooks).
 	HTTPSAddr                string
-	Namespace                string
+	RootNamespace            string
 	ClusterID                string
 	ConfigStoreSecret        string
 	ElectionID               string

@@ -23,6 +23,8 @@ import (
 	"encoding/pem"
 	"math/big"
 	"time"
+
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 )
 
 // KeyCertBundle stores the cert, private key and root cert for aeraki.
@@ -68,7 +70,9 @@ func GenerateKeyCertBundle() (*KeyCertBundle, error) {
 		Bytes: caBytes,
 	})
 
-	dnsNames := []string{"aeraki", "aeraki.istio-system", "aeraki.istio-system.svc"}
+	dnsNames := []string{"aeraki",
+		"aeraki." + constants.DefaultRootNamespace,
+		"aeraki." + constants.DefaultRootNamespace + ".svc"}
 	commonName := "aeraki.default.svc"
 
 	// server cert config
