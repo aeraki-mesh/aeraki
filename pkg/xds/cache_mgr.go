@@ -116,6 +116,7 @@ func (c *CacheMgr) updateRouteCache() error {
 		xdsLog.Infof("no rds subscriber, ignore this update")
 		return nil
 	}
+
 	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
 		GroupVersionKind(), "")
 	if err != nil {
@@ -145,7 +146,6 @@ func (c *CacheMgr) updateRouteCache() error {
 		if len(service.Hosts) > 1 {
 			xdsLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", config.Name)
 		}
-
 		metaRouter, err := c.findRelatedMetaRouter(service)
 		if err != nil {
 			xdsLog.Errorf("failed to list meta router for service: %s", config.Name)
@@ -240,6 +240,10 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 				Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
 					host, int(dstPort)),
 			}
+			policy := model.GetHashPolicy(dr, subset)
+			if policy != "" {
+				routeAction.HashPolicy = []string{policy}
+			}
 		} else {
 			var clusters []*routev3.WeightedCluster_ClusterWeight
 			var totalWeight uint32
@@ -257,6 +261,10 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 						Value: routeDestination.Weight,
 					},
 				})
+				policy := model.GetHashPolicy(dr, subset)
+				if policy != "" {
+					routeAction.HashPolicy = append(routeAction.HashPolicy, policy)
+				}
 				totalWeight += routeDestination.Weight
 			}
 			routeAction.ClusterSpecifier = &metaroute.RouteAction_WeightedClusters{
@@ -280,11 +288,6 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 				},
 			}
 		}
-	}
-	if dr != nil && dr.Spec.TrafficPolicy != nil && dr.Spec.TrafficPolicy.LoadBalancer != nil && dr.Spec.TrafficPolicy.
-		LoadBalancer.GetConsistentHash() != nil && dr.Spec.TrafficPolicy.
-		LoadBalancer.GetConsistentHash().GetHttpHeaderName() != "" {
-		routeAction.HashPolicy = []string{dr.Spec.TrafficPolicy.LoadBalancer.GetConsistentHash().GetHttpHeaderName()}
 	}
 
 	return routeAction
