@@ -23,16 +23,15 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
-
+	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/aeraki-mesh/aeraki/plugin/kafka"
+	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
 	"github.com/aeraki-mesh/aeraki/plugin/thrift"
 	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
-	"istio.io/pkg/log"
 
-	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"istio.io/pkg/log"
 )
 
 const (
@@ -42,6 +41,7 @@ const (
 	defaultElectionID        = "aeraki-controller"
 	defaultLogLevel          = "all:info"
 	defaultConfigStoreSecret = ""
+	defaultKubernetesDomain  = "cluster.local"
 )
 
 func main() {
@@ -58,6 +58,9 @@ func main() {
 	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
 	flag.BoolVar(&args.EnableEnvoyFilterNSScope, "enable-envoy-filter-namespace-scope", false,
 		"Generate Envoy Filters in the service namespace")
+	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
+	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
+
 	flag.Parse()
 	if args.ServerID == "" {
 		args.ServerID = "Aeraki-" + uuid.New().String()

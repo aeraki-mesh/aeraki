@@ -21,15 +21,18 @@ import (
 
 // AerakiArgs provides all of the configuration parameters for the Aeraki service.
 type AerakiArgs struct {
-	Master                   bool
-	IstiodAddr               string
-	XdsAddr                  string
+	Master     bool
+	IstiodAddr string
+	XdsAddr    string
+	// The listening address for HTTPS (webhooks).
+	HTTPSAddr                string
 	Namespace                string
 	ClusterID                string
 	ConfigStoreSecret        string
 	ElectionID               string
 	ServerID                 string
 	LogLevel                 string
+	KubeDomainSuffix         string
 	EnableEnvoyFilterNSScope bool
 	Protocols                map[protocol.Instance]envoyfilter.Generator
 }
