@@ -25,10 +25,10 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	networking "istio.io/api/networking/v1alpha3"
-	"istio.io/istio/pkg/config/validation"
 	"istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/labels"
 	"istio.io/istio/pkg/config/protocol"
+	"istio.io/istio/pkg/config/validation"
 	"istio.io/istio/pkg/config/visibility"
 )
 
@@ -262,6 +262,10 @@ func validateMetaRoute(route *metaprotocol.MetaRoute) (errs Validation) {
 		}
 	}
 
+	if (route.MirrorPercentage != nil && route.Mirror == nil) || (route.MirrorPercentage == nil && route.Mirror != nil) {
+		errs = appendValidation(errs, fmt.Errorf("mirror_percentage and mirror must be set together"))
+	}
+
 	if route.MirrorPercentage != nil {
 		value := route.MirrorPercentage.GetValue()
 		if value > 100 {
@@ -487,4 +491,3 @@ func appendErrors(err error, errs ...error) error {
 func (aae *AnalysisAwareError) Error() string {
 	return aae.Msg
 }
-
