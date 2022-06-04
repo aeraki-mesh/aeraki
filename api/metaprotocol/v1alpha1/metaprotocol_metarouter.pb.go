@@ -784,9 +784,9 @@ func (m *LocalRateLimit) GetConditions() []*LocalRateLimit_Condition {
 // Configures a token bucket which is used for rate limiting.
 type LocalRateLimit_TokenBucket struct {
 	// The maximum tokens that the bucket can hold. This is also the number of tokens that the bucket
-	// initially contains. The value must be greater than 1.
+	// initially contains. The value must be greater than 0.
 	MaxTokens uint32 `protobuf:"varint,1,opt,name=max_tokens,json=maxTokens,proto3" json:"max_tokens,omitempty"`
-	// The number of tokens added to the bucket during each fill interval. The value must be greater than 1.
+	// The number of tokens added to the bucket during each fill interval. The value must be greater than 0.
 	//If not specified, defaults to a single token.
 	TokensPerFill *types.UInt32Value `protobuf:"bytes,2,opt,name=tokens_per_fill,json=tokensPerFill,proto3" json:"tokens_per_fill,omitempty"`
 	// The fill interval that tokens are added to the bucket. During each fill interval

@@ -17,6 +17,7 @@ package scheme
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -233,14 +234,89 @@ var ValidateMetaRouter = func(cfg config.Config) (validation.Warning, error) {
 
 	analyzeUnreachableMetaRules(metaRouter.Routes, warnUnused, warnIneffective)
 
-	//TODO check global rate limit and local rate limit
-
+	errs = appendValidation(errs, validateGlobalRateLimit(metaRouter.GlobalRateLimit))
+	errs = appendValidation(errs, validateLocalRateLimit(metaRouter.LocalRateLimit))
 	return errs.Unwrap()
+}
+
+func validateGlobalRateLimit(limit *metaprotocol.GlobalRateLimit) (errs Validation) {
+	if limit != nil {
+		errs = appendValidation(errs, validateNoneEmptyString(limit.Domain, "globalRateLimit domain"))
+		errs = appendValidation(errs, validateNoneEmptyString(limit.RateLimitService, "globalRateLimit cluster"))
+		errs = appendValidation(errs, validateMetaRouteMatch(limit.Match))
+		errs = appendValidation(errs, validateRateLimitDescriptors(limit.Descriptors))
+	}
+	return
+}
+
+func validateLocalRateLimit(limit *metaprotocol.LocalRateLimit) (errs Validation) {
+	if limit != nil {
+		if limit.TokenBucket == nil && len(limit.Conditions) == 0 {
+			errs = appendValidation(errs, errors.New("localRateLimit must have at least one of tokenBucket or conditions"))
+		}
+		errs = appendValidation(errs, validateTokenBucket(limit.TokenBucket))
+		for _, condition := range limit.Conditions {
+			errs = appendValidation(errs, validateLocalRateLimitCondition(condition))
+		}
+	}
+	return
+}
+
+func validateLocalRateLimitCondition(condition *metaprotocol.LocalRateLimit_Condition) (errs Validation) {
+	errs = appendValidation(errs, validateNoneNullObject(condition.Match, "localRateLimit condition match"))
+	errs = appendValidation(errs, validateMetaRouteMatch(condition.Match))
+	errs = appendValidation(errs, validateNoneNullObject(condition.TokenBucket, "localRateLimit condition tokenBucket"))
+	errs = appendValidation(errs, validateTokenBucket(condition.TokenBucket))
+	return
+}
+
+func validateTokenBucket(bucket *metaprotocol.LocalRateLimit_TokenBucket) (errs Validation) {
+	if bucket != nil {
+		errs = appendValidation(errs, validateNoneNullObject(bucket.FillInterval,
+			"localRateLimit tokenBucket fillInterval"))
+		errs = appendValidation(errs, validateNoneNullObject(bucket.TokensPerFill,
+			"localRateLimit tokenBucket tokensPerfFill"))
+		if bucket.TokensPerFill != nil && bucket.TokensPerFill.Value < 1 {
+			errs = appendValidation(errs,
+				errors.New("localRateLimit tokenBucket tokensPerfFill must be greater than 0"))
+		}
+		if bucket.MaxTokens < 1 {
+			errs = appendValidation(errs, errors.New("localRateLimit tokenBucket maxTokens must be greater than 0"))
+		}
+	}
+	return
+}
+
+func validateNoneEmptyString(str, name string) error {
+	if str == "" {
+		return errors.New(name + " cannot be empty")
+	}
+	return nil
+}
+
+func validateNoneNullObject(obj interface{}, name string) error {
+	if reflect.ValueOf(obj).Kind() == reflect.Ptr && reflect.ValueOf(obj).IsNil() {
+		return errors.New(name + " cannot be null")
+	}
+	return nil
+}
+
+func validateRateLimitDescriptors(descriptors []*metaprotocol.GlobalRateLimit_Descriptor) (errs Validation) {
+	if len(descriptors) == 0 {
+		errs = appendValidation(errs, fmt.Errorf("globalRateLimit must have descriptors"))
+	}
+	for _, descriptor := range descriptors {
+		errs = appendValidation(errs, validateNoneEmptyString(descriptor.DescriptorKey,
+			"globalRateLimit descriptor key"))
+		errs = appendValidation(errs, validateNoneEmptyString(descriptor.Property,
+			"globalRateLimit descriptor property"))
+	}
+	return
 }
 
 func validateMetaRoute(route *metaprotocol.MetaRoute) (errs Validation) {
 	// check meta route match requests
-	errs = appendValidation(errs, validateMetaRouteMatchRequest(route))
+	errs = appendValidation(errs, validateMetaRouteMatch(route.Match))
 
 	// request manipulation
 	for _, kv := range route.RequestMutation {
@@ -263,16 +339,16 @@ func validateMetaRoute(route *metaprotocol.MetaRoute) (errs Validation) {
 	}
 
 	if (route.MirrorPercentage != nil && route.Mirror == nil) || (route.MirrorPercentage == nil && route.Mirror != nil) {
-		errs = appendValidation(errs, fmt.Errorf("mirror_percentage and mirror must be set together"))
+		errs = appendValidation(errs, fmt.Errorf("mirrorPercentage and mirror must be set together"))
 	}
 
 	if route.MirrorPercentage != nil {
 		value := route.MirrorPercentage.GetValue()
 		if value > 100 {
-			errs = appendValidation(errs, fmt.Errorf("mirror_percentage must have a max value of 100 (it has %f)", value))
+			errs = appendValidation(errs, fmt.Errorf("mirrorPercentage must have a max value of 100 (it has %f)", value))
 		}
 		if value < 0 {
-			errs = appendValidation(errs, fmt.Errorf("mirror_percentage must have a min value of 0 (it has %f)", value))
+			errs = appendValidation(errs, fmt.Errorf("mirrorPercentage must have a min value of 0 (it has %f)", value))
 		}
 	}
 
@@ -282,9 +358,9 @@ func validateMetaRoute(route *metaprotocol.MetaRoute) (errs Validation) {
 	return
 }
 
-func validateMetaRouteMatchRequest(route *metaprotocol.MetaRoute) (errs error) {
-	if route.Match != nil {
-		for name, attribute := range route.Match.Attributes {
+func validateMetaRouteMatch(match *metaprotocol.MetaRouteMatch) (errs error) {
+	if match != nil {
+		for name, attribute := range match.Attributes {
 			if attribute == nil {
 				errs = appendErrors(errs, fmt.Errorf("attribute match %v cannot be null", name))
 			}
