@@ -22,14 +22,14 @@ spec:
   - org.apache.dubbo.samples.basic.api.demoservice
   routes:
   - name: default
-      match:
-        attributes:
-          method:
-            exact: sayHello
-      route:
-        - destination:
-            host: org.apache.dubbo.samples.basic.api.demoservice
-            subset: v1
+    match:
+      attributes:
+        method:
+          exact: sayHello
+    route:
+    - destination:
+        host: org.apache.dubbo.samples.basic.api.demoservice
+        subset: v1
   localRateLimit:
     tokenBucket:
       fillInterval: 60s
