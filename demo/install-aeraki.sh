@@ -26,7 +26,7 @@ else
 fi
 
 if [ -z "$AERAKI_IMG_PULL_POLICY" ]; then
-  export $AERAKI_IMG_PULL_POLICY=Always
+  export AERAKI_IMG_PULL_POLICY=Always
 else
   export AERAKI_IMG_PULL_POLICY=$AERAKI_IMG_PULL_POLICY
 fi
