@@ -21,34 +21,36 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
+
 	"github.com/google/uuid"
 
-	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
-
+	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/aeraki-mesh/aeraki/plugin/kafka"
+	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
 	"github.com/aeraki-mesh/aeraki/plugin/thrift"
 	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
-	"istio.io/pkg/log"
 
-	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"istio.io/pkg/log"
 )
 
 const (
 	defaultIstiodAddr        = "istiod.istio-system:15010"
-	defaultNamespace         = "istio-system"
+	defaultRootNamespace     = constants.DefaultRootNamespace
 	defaultXdsAddr           = ":15010"
 	defaultElectionID        = "aeraki-controller"
 	defaultLogLevel          = "all:info"
 	defaultConfigStoreSecret = ""
+	defaultKubernetesDomain  = "cluster.local"
 )
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.BoolVar(&args.Master, "master", true, "Istiod xds server address")
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
-	flag.StringVar(&args.Namespace, "namespace", defaultNamespace, "The namespace where Aeraki is deployed")
+	flag.StringVar(&args.RootNamespace, "root-namespace", defaultRootNamespace, "The Root Namespace of Aeraki")
 	flag.StringVar(&args.ClusterID, "cluster-id", "", "The cluster where Aeraki is deployed")
 	flag.StringVar(&args.XdsAddr, "xds-listen-address", defaultXdsAddr, "Istiod xds server port")
 	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultConfigStoreSecret,
@@ -58,6 +60,9 @@ func main() {
 	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
 	flag.BoolVar(&args.EnableEnvoyFilterNSScope, "enable-envoy-filter-namespace-scope", false,
 		"Generate Envoy Filters in the service namespace")
+	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
+	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
+
 	flag.Parse()
 	if args.ServerID == "" {
 		args.ServerID = "Aeraki-" + uuid.New().String()

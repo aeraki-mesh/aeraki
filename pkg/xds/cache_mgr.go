@@ -17,8 +17,6 @@ package xds
 import (
 	"context"
 	"fmt"
-	"istio.io/istio/pkg/config/labels"
-	"istio.io/istio/pkg/config/validation"
 	"strings"
 	"time"
 
@@ -116,6 +114,7 @@ func (c *CacheMgr) updateRouteCache() error {
 		xdsLog.Infof("no rds subscriber, ignore this update")
 		return nil
 	}
+
 	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
 		GroupVersionKind(), "")
 	if err != nil {
@@ -145,7 +144,6 @@ func (c *CacheMgr) updateRouteCache() error {
 		if len(service.Hosts) > 1 {
 			xdsLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", config.Name)
 		}
-
 		metaRouter, err := c.findRelatedMetaRouter(service)
 		if err != nil {
 			xdsLog.Errorf("failed to list meta router for service: %s", config.Name)
@@ -240,6 +238,10 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 				Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, subset,
 					host, int(dstPort)),
 			}
+			policy := model.GetHashPolicy(dr, subset)
+			if policy != "" {
+				routeAction.HashPolicy = []string{policy}
+			}
 		} else {
 			var clusters []*routev3.WeightedCluster_ClusterWeight
 			var totalWeight uint32
@@ -257,6 +259,10 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 						Value: routeDestination.Weight,
 					},
 				})
+				policy := model.GetHashPolicy(dr, subset)
+				if policy != "" {
+					routeAction.HashPolicy = append(routeAction.HashPolicy, policy)
+				}
 				totalWeight += routeDestination.Weight
 			}
 			routeAction.ClusterSpecifier = &metaroute.RouteAction_WeightedClusters{
@@ -269,7 +275,7 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 			}
 		}
 
-		if c.validateMirror(route) {
+		if c.hasMirrorPolicy(route) {
 			routeAction.RequestMirrorPolicies = []*metaroute.RouteAction_RequestMirrorPolicy{
 				{
 					Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, route.Mirror.Subset,
@@ -281,57 +287,15 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 			}
 		}
 	}
-	if dr != nil && dr.Spec.TrafficPolicy != nil && dr.Spec.TrafficPolicy.LoadBalancer != nil && dr.Spec.TrafficPolicy.
-		LoadBalancer.GetConsistentHash() != nil && dr.Spec.TrafficPolicy.
-		LoadBalancer.GetConsistentHash().GetHttpHeaderName() != "" {
-		routeAction.HashPolicy = []string{dr.Spec.TrafficPolicy.LoadBalancer.GetConsistentHash().GetHttpHeaderName()}
-	}
 
 	return routeAction
 }
 
-func (c *CacheMgr) validateMirror(route *metaprotocolapi.MetaRoute) bool {
-	if route.MirrorPercentage != nil {
-		if value := route.MirrorPercentage.GetValue(); value > 100 {
-			xdsLog.Errorf("validate mirror failed, mirror_percentage must have a max value of 100 (it has %f)", value)
-			return false
-		}
+func (c *CacheMgr) hasMirrorPolicy(route *metaprotocolapi.MetaRoute) bool {
+	if route.MirrorPercentage != nil && route.Mirror != nil {
+		return true
 	}
-
-	if route.Mirror == nil {
-		return false
-	}
-
-	hostname := route.Mirror.Host
-	if hostname == "" {
-		xdsLog.Errorf("validate mirror failed, hostname name cannot be empty")
-		return false
-	} else if hostname == "*" {
-		xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
-		return false
-	} else {
-		err := validation.ValidateWildcardDomain(hostname)
-		if err != nil {
-			xdsLog.Errorf("validate mirror failed, invalid destination host %s", hostname)
-			return false
-		}
-	}
-	subsetName := route.Mirror.Subset
-	if subsetName == "" {
-		xdsLog.Errorf("validate mirror failed, subset name cannot be empty")
-		return false
-	} else if !labels.IsDNS1123Label(subsetName) {
-		xdsLog.Errorf("validate mirror failed, invalid destination subset name %s", subsetName)
-		return false
-	}
-	portSelector := route.Mirror.Port
-	if portSelector == nil {
-		return false
-	} else if err := validation.ValidatePort(int(portSelector.GetNumber())); err != nil {
-		xdsLog.Warnf("validate mirror failed, port number %d must be in the range 1..65535", portSelector.GetNumber())
-		return false
-	}
-	return true
+	return false
 }
 
 func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,

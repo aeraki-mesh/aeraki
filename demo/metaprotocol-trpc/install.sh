@@ -19,6 +19,5 @@ source $BASEDIR/../common_func.sh
 kubectl create ns meta-trpc
 LabelIstioInjectLabel meta-trpc
 kubectl apply -f $BASEDIR/trpc-protocol.yaml -n istio-system
-kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-trpc
 kubectl apply -f $BASEDIR/trpc-sample.yaml -n meta-trpc
 kubectl apply -f $BASEDIR/destinationrule.yaml -n meta-trpc

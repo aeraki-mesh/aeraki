@@ -29,7 +29,7 @@ ENV AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE="false"
 COPY aeraki /usr/local/bin/
 ENTRYPOINT /usr/local/bin/aeraki                                                     \
            -istiod-address=$AERAKI_ISTIOD_ADDR                                       \
-           -namespace=$AERAKI_NAMESPACE                                              \
+           -root-namespace=$AERAKI_NAMESPACE                                              \
            -cluster-id=$AERAKI_CLUSTER_ID                                            \
            -config-store-secret=$AERAKI_ISTIO_CONFIG_STORE_SECRET                    \
            -xds-listen-address=$AERAKI_XDS_LISTEN_ADDR                               \

@@ -80,14 +80,14 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 		}
 
 		if route.Route.HashPolicy != nil && len(route.Route.HashPolicy) > 0 {
-			routeAction.HashPolicy = []*httproute.RouteAction_HashPolicy{
-				{
+			for _, hashPolicy := range route.Route.HashPolicy {
+				routeAction.HashPolicy = append(routeAction.HashPolicy, &httproute.RouteAction_HashPolicy{
 					PolicySpecifier: &httproute.RouteAction_HashPolicy_Header_{
 						Header: &httproute.RouteAction_HashPolicy_Header{
-							HeaderName: route.Route.HashPolicy[0],
+							HeaderName: hashPolicy,
 						},
 					},
-				},
+				})
 			}
 		}
 
