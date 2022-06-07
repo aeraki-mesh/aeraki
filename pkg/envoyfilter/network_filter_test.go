@@ -63,6 +63,22 @@ func Test_inboudEnvoyFilterWorkloadSelector(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "test3",
+			service: &model.ServiceEntryWrapper{
+				Meta: istioconfig.Meta{
+					Annotations: map[string]string{
+						"workloadSelector": "app.io: dubbo-sample-provider",
+					},
+				},
+				Spec: &networking.ServiceEntry{},
+			},
+			want: &networking.WorkloadSelector{
+				Labels: map[string]string{
+					"app.io": "dubbo-sample-provider",
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
