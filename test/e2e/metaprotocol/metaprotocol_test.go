@@ -38,6 +38,7 @@ func setup() {
 	util.KubeApply("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/serviceentry.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/destinationrule.yaml", "")
+	util.KubeApply("metaprotocol", "testdata/rate-limit-server/", "")
 }
 
 func shutdown() {
@@ -167,5 +168,56 @@ func TestConsistentHashLb(t *testing.T) {
 	}
 	if !(v1 == 10 || v2 == 10) {
 		t.Errorf("consistent hash lb failed, v1:v2 want: 0:10 or 10:0, got %d:%d", v1, v2)
+  }
+}
+
+func TestLocalRateLimit(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-local-ratelimit.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-local-ratelimit.yaml", "")
+
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	success := 0
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		response := "response from dubbo-sample-provider"
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, response) {
+			success++
+		}
+	}
+	if success != 2 {
+		t.Errorf("local rate limit failed, want: %v got:%v ", 2, success)
+	} else {
+		t.Logf("%v requests have been sent to server", success)
+	}
+}
+
+func TestGlobalRateLimit(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-global-ratelimit.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-global-ratelimit.yaml", "")
+
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	success := 0
+	for i := 0; i < 20; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		response := "response from dubbo-sample-provider"
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, response) {
+			success++
+		}
+	}
+
+	if success != 10 {
+		t.Errorf("global rate limit failed, want: %v got:%v ", 10, success)
+	} else {
+		t.Logf("%v requests have been sent to server", success)
 	}
 }
