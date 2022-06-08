@@ -13,3 +13,4 @@ spec:
       loadBalancer:
         consistentHash:
           httpHeaderName: method
+          
