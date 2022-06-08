@@ -13,8 +13,12 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
 
 kubectl create ns meta-brpc
-kubectl label namespace meta-brpc istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel meta-brpc
+
+kubectl apply -f $BASEDIR/brpc-protocol.yaml -n meta-brpc
+kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-brpc
 kubectl apply -f $BASEDIR/brpc-sample.yaml -n meta-brpc
 kubectl apply -f $BASEDIR/service.yaml -n meta-brpc
