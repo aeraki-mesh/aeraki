@@ -168,7 +168,7 @@ func TestConsistentHashLb(t *testing.T) {
 	}
 	if !(v1 == 10 || v2 == 10) {
 		t.Errorf("consistent hash lb failed, v1:v2 want: 0:10 or 10:0, got %d:%d", v1, v2)
-  }
+	}
 }
 
 func TestLocalRateLimit(t *testing.T) {
