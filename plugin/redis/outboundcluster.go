@@ -39,6 +39,7 @@ import (
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 )
 
+// nolint: funlen
 func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32, listenPortName string) *cluster.Cluster {
 	cl := &cluster.Cluster{
 		Name:           outboundClusterName(c.ServiceEntry.Spec.Hosts[0], listenPort),
