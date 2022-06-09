@@ -50,11 +50,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
 }
 
 func buildInboundProxy(context *model.EnvoyFilterContext, client dubbov1alpha1.DubboV1alpha1Interface) *dubbo.DubboProxy {
-	route, err := buildInboundRouteConfig(context)
-	if err != nil {
-		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v, %v", context.ServiceEntry, err)
-		return nil
-	}
+	route := buildInboundRouteConfig(context)
 
 	// Todo support Domain alias
 	tdBundle := trustdomain.NewBundle(spiffe.GetTrustDomain(), []string{})

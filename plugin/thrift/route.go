@@ -22,7 +22,7 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
-func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
+func buildOutboundRouteConfig(context *model.EnvoyFilterContext) *thrift.RouteConfiguration {
 	var route []*thrift.Route
 	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "",
 		context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
@@ -36,10 +36,10 @@ func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteC
 	return &thrift.RouteConfiguration{
 		Name:   clusterName,
 		Routes: route,
-	}, nil
+	}
 }
 
-func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {
+func buildInboundRouteConfig(context *model.EnvoyFilterContext) *thrift.RouteConfiguration {
 	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "",
 		context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
 
@@ -48,7 +48,7 @@ func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteCo
 		Routes: []*thrift.Route{
 			defaultRoute(clusterName),
 		},
-	}, nil
+	}
 }
 
 func defaultRoute(clusterName string) *thrift.Route {

@@ -63,15 +63,12 @@ func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
-		MetaProtocolFilters: buildOutboundFilters(context.MetaRouter),
+		MetaProtocolFilters: buildOutboundFilters(),
 	}, nil
 }
 
 func buildInboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
-	route, err := buildInboundRouteConfig(context, port)
-	if err != nil {
-		return nil, err
-	}
+	route := buildInboundRouteConfig(context, port)
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.
 		Name)
 	if err != nil {

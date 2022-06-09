@@ -447,7 +447,7 @@ func (c *CacheMgr) UpdateRoute() {
 	c.pushChannel <- istiomodel.EventUpdate
 }
 
-func (c *CacheMgr) initNode(node string) {
+func (c *CacheMgr) initNode(_ string) {
 	// send a update event to pushChannel to trigger initialization of cache for a node.
 	// we use update event here because update events are debounced, so the initialization of a large number of nodes
 	// won't cause high cpu consumption.

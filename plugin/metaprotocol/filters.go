@@ -33,7 +33,7 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
 )
 
-func buildOutboundFilters(metaRouter *mpclient.MetaRouter) []*mpdataplane.MetaProtocolFilter {
+func buildOutboundFilters() []*mpdataplane.MetaProtocolFilter {
 	var filters []*mpdataplane.MetaProtocolFilter
 	filters = appendRouter(filters)
 	return filters

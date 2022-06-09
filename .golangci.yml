@@ -94,7 +94,6 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-#    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -110,7 +109,7 @@ linters:
     - stylecheck
     - typecheck
     - unconvert
-#    - unparam
+    - unparam
     - unused
     - varcheck
     - whitespace

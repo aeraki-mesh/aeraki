@@ -43,7 +43,7 @@ import (
 
 // nolint: funlen,gocyclo
 func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext,
-	listenPort uint32, listenPortName string) *cluster.Cluster {
+	listenPort uint32) *cluster.Cluster {
 	cl := &cluster.Cluster{
 		Name:           outboundClusterName(c.ServiceEntry.Spec.Hosts[0], listenPort),
 		ConnectTimeout: &duration.Duration{Seconds: 10},

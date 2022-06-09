@@ -104,11 +104,11 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 		filterContext.ServiceEntry,
 		filterContext.ServiceEntry.Spec.Ports[0],
 		g.buildOutboundProxyWithFallback(ctx, filterContext, port, portName),
-		g.buildInboundProxy(filterContext, port, portName),
+		g.buildInboundProxy(filterContext),
 		"envoy.filters.network.redis_proxy",
 		"type.googleapis.com/envoy.extensions.filters.network.redis_proxy.v3.RedisProxy")
 
-	cluster := g.buildOutboundCluster(ctx, filterContext, port, portName)
+	cluster := g.buildOutboundCluster(ctx, filterContext, port)
 	if cluster != nil {
 		for _, filter := range filters {
 			if filter.Envoyfilter.WorkloadSelector == nil {

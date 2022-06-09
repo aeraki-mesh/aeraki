@@ -20,7 +20,7 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
-func (g *Generator) buildInboundProxy(context *model.EnvoyFilterContext, port uint32, portName string) *redis.RedisProxy {
+func (g *Generator) buildInboundProxy(context *model.EnvoyFilterContext) *redis.RedisProxy {
 	name := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
 	proxy := &redis.RedisProxy{
 		StatPrefix: name,

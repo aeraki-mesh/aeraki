@@ -161,45 +161,37 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		return nil, err
 	}
 
+	// nolint: unparam
 	updateEnvoyFilter := func() error {
 		envoyFilterController.ConfigUpdated(model.EventUpdate)
 		return nil
 	}
-	updateCache := func() error {
+	updateCache := func() {
 		xdsCacheMgr.UpdateRoute()
-		return nil
 	}
-	err = kube.AddRedisServiceController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add RedisServiceController: %e", err)
+	if err := kube.AddRedisServiceController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddRedisDestinationController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add RedisDestinationController: %e", err)
+	if err := kube.AddRedisDestinationController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
+	if err := kube.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddApplicationProtocolController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
+	if err := kube.AddApplicationProtocolController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddMetaRouterController(mgr, func() error {
+	if err := kube.AddMetaRouterController(mgr, func() error {
 		if err := updateEnvoyFilter(); err != nil { // MetaRouter Rate limit config will cause update on EnvoyFilters
 			return err
 		}
-		if err := updateCache(); err != nil { // MetaRouter route config will cause update on RDS cache
-			return err
-		}
+		updateCache() // MetaRouter route config will cause update on RDS cache
 		return nil
-	})
-	if err != nil {
-		aerakiLog.Fatalf("could not add MetaRouterController: %e", err)
+	}); err != nil {
+		return nil, err
 	}
-	err = aerakischeme.AddToScheme(mgr.GetScheme())
-	if err != nil {
-		aerakiLog.Fatalf("could not add schema: %e", err)
+	if err := aerakischeme.AddToScheme(mgr.GetScheme()); err != nil {
+		return nil, err
 	}
 	return mgr, nil
 }
