@@ -49,7 +49,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking
 								{
 									TargetSpecifier: &envoyconfig.GrpcService_EnvoyGrpc_{
 										EnvoyGrpc: &envoyconfig.GrpcService_EnvoyGrpc{
-											ClusterName: "aeraki-xds", //TODO make this configurable
+											ClusterName: "aeraki-xds", // TODO make this configurable
 										},
 									},
 								},

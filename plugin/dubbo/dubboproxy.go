@@ -56,7 +56,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext, client dubbov1alpha1.D
 		return nil
 	}
 
-	//Todo support Domain alias
+	// Todo support Domain alias
 	tdBundle := trustdomain.NewBundle(spiffe.GetTrustDomain(), []string{})
 	builder := builder.New(tdBundle, context.ServiceEntry.Namespace, client)
 	dubboFilters := builder.BuildDubboFilter()

@@ -39,7 +39,7 @@ type Validation struct {
 	Warning validation.Warning
 }
 
-// AnalysisAwareError ...
+// AnalysisAwareError wraps analysis error
 type AnalysisAwareError struct {
 	Type       string
 	Msg        string
@@ -77,7 +77,7 @@ func (v Validation) Error() string {
 
 // ValidatePort checks that the network port is in range
 func ValidatePort(port int) error {
-	if 1 <= port && port <= 65535 {
+	if port >= 1 && port <= 65535 {
 		return nil
 	}
 	return fmt.Errorf("port number %d must be in the range 1..65535", port)
@@ -96,7 +96,7 @@ func checkDNS1123Preconditions(name string) error {
 	if len(name) > 255 {
 		return fmt.Errorf("domain name %q too long (max 255)", name)
 	}
-	if len(name) == 0 {
+	if name == "" {
 		return fmt.Errorf("empty domain name not allowed")
 	}
 	return nil
@@ -385,7 +385,7 @@ func analyzeUnreachableMetaRules(routes []*metaprotocol.MetaRoute,
 			emptyMatchEncountered = rulen
 			continue
 		}
-		//TODO check duplicated or overlapping match
+		// TODO check duplicated or overlapping match
 	}
 }
 
@@ -396,10 +396,10 @@ var ValidateApplicationProtocol = func(cfg config.Config) (validation.Warning, e
 		return nil, errors.New("cannot cast to application protocol")
 	}
 	errs := Validation{}
-	if len(protocol.Protocol) == 0 {
+	if protocol.Protocol == "" {
 		errs = appendValidation(errs, fmt.Errorf("application protocol must have protocol"))
 	}
-	if len(protocol.Codec) == 0 {
+	if protocol.Codec == "" {
 		errs = appendValidation(errs, fmt.Errorf("application protocol must have codec"))
 	}
 
@@ -480,7 +480,7 @@ func validateDestination(destination *metaprotocol.Destination) (errs error) {
 }
 
 func validateSubsetName(name string) error {
-	if len(name) == 0 {
+	if name == "" {
 		return fmt.Errorf("subset name cannot be empty")
 	}
 	if !labels.IsDNS1123Label(name) {

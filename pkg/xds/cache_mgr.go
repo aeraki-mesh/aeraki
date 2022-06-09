@@ -122,7 +122,8 @@ func (c *CacheMgr) updateRouteCache() error {
 
 	var routes []*metaroute.RouteConfiguration
 
-	for _, config := range serviceEntries {
+	for i := range serviceEntries {
+		config := serviceEntries[i]
 		service, ok := config.Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
 			xdsLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
@@ -173,13 +174,13 @@ func (c *CacheMgr) updateRouteCache() error {
 		}
 	}
 
-	new, err := generateSnapshot(routes)
+	snapshot, err := generateSnapshot(routes)
 	if err != nil {
 		xdsLog.Errorf("failed to generate route cache: %v", err)
 	} else {
 		for _, node := range c.routeCache.GetStatusKeys() {
 			xdsLog.Debugf("set route cahe for: %s", node)
-			if err := c.routeCache.SetSnapshot(context.TODO(), node, new); err != nil {
+			if err := c.routeCache.SetSnapshot(context.TODO(), node, snapshot); err != nil {
 				xdsLog.Errorf("failed to set route cache: %v", err)
 				// We can't retry in this scenario
 			}
@@ -326,20 +327,20 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 }
 
 func (c *CacheMgr) findRelatedServiceEntry(dr *model.DestinationRuleWrapper) (*model.ServiceEntryWrapper, error) {
-	ses, err := c.configStore.List(
+	serviceEntries, err := c.configStore.List(
 		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list configs: %v", err)
 	}
 
-	for _, vsConfig := range ses {
-		se, ok := vsConfig.Spec.(*networking.ServiceEntry)
+	for i := range serviceEntries {
+		se, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a service entry: %s: %v", vsConfig.Name, err)
+			return nil, fmt.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
 		}
-		if model.IsFQDNEquals(dr.Spec.Host, dr.Namespace, se.Hosts[0], vsConfig.Namespace) {
+		if model.IsFQDNEquals(dr.Spec.Host, dr.Namespace, se.Hosts[0], serviceEntries[i].Namespace) {
 			return &model.ServiceEntryWrapper{
-				Meta: vsConfig.Meta,
+				Meta: serviceEntries[i].Meta,
 				Spec: se,
 			}, nil
 		}
@@ -354,13 +355,13 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 		return nil, err
 	}
 
-	for _, metaRouter := range metaRouterList.Items {
-		for _, host := range metaRouter.Spec.Hosts {
+	for i := range metaRouterList.Items {
+		for _, host := range metaRouterList.Items[i].Spec.Hosts {
 			if host == service.Hosts[0] {
-				if len(metaRouter.Spec.Routes) > 0 {
-					return &metaRouter, nil
+				if len(metaRouterList.Items[i].Spec.Routes) > 0 {
+					return &metaRouterList.Items[i], nil
 				}
-				xdsLog.Warnf("no route in metaRouter: %v", metaRouter)
+				xdsLog.Warnf("no route in metaRouter: %v", metaRouterList.Items[i])
 				return nil, nil
 			}
 		}
@@ -375,14 +376,14 @@ func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper
 		return nil, fmt.Errorf("failed to list configs: %v", err)
 	}
 
-	for _, config := range drs {
-		dr, ok := config.Spec.(*networking.DestinationRule)
+	for i := range drs {
+		dr, ok := drs[i].Spec.(*networking.DestinationRule)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", config.Name, err)
+			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", drs[i].Name, err)
 		}
-		if model.IsFQDNEquals(dr.Host, config.Namespace, service.Spec.Hosts[0], service.Namespace) {
+		if model.IsFQDNEquals(dr.Host, drs[i].Namespace, service.Spec.Hosts[0], service.Namespace) {
 			return &model.DestinationRuleWrapper{
-				Meta: config.Meta,
+				Meta: drs[i].Meta,
 				Spec: dr,
 			}, nil
 		}
@@ -391,7 +392,7 @@ func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper
 }
 
 // ConfigUpdated sends a config change event to the pushChannel when Istio config changed
-func (c *CacheMgr) ConfigUpdated(prev *istioconfig.Config, curr *istioconfig.Config, event istiomodel.Event) {
+func (c *CacheMgr) ConfigUpdated(prev, curr *istioconfig.Config, event istiomodel.Event) {
 	if c.shouldUpdateCache(curr) {
 		c.pushChannel <- event
 	} else if c.shouldUpdateCache(prev) {
@@ -410,7 +411,7 @@ func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 		serviceEntry = service
 	}
 
-	//Cache needs to be updated if dr changed, the hash policy in the dr is used to generate routes
+	// Cache needs to be updated if dr changed, the hash policy in the dr is used to generate routes
 	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 		dr, ok := config.Spec.(*networking.DestinationRule)
 		if !ok {
@@ -454,7 +455,7 @@ func (c *CacheMgr) initNode(node string) {
 }
 
 func (c *CacheMgr) hasNode(node string) bool {
-	if _, error := c.routeCache.GetSnapshot(node); error != nil {
+	if _, err := c.routeCache.GetSnapshot(node); err != nil {
 		return false
 	}
 	return true

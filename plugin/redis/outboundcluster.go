@@ -73,8 +73,8 @@ func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilt
 	}
 	var targetDestination *spec.RedisDestination
 L:
-	for _, destination := range destinations.Items {
-		destination := destination
+	for i := range destinations.Items {
+		destination := destinations.Items[i]
 		for _, host := range c.ServiceEntry.Spec.Hosts {
 			if destination.Spec.Host == host {
 				targetDestination = &destination.Spec
@@ -180,7 +180,7 @@ L:
 	return cl
 }
 
-func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host string, name string, namespace string) {
+func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host, name, namespace string) {
 	name = strings.TrimPrefix(name, "synthetic-")
 	metadata := getOrCreateIstioMetadata(cl)
 	// Add original_port field into istio metadata

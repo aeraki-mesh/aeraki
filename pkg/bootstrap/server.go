@@ -118,7 +118,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	// envoyFilterController uses controller manager client to get the rate limit configuration in MetaRouters
 	envoyFilterController.MetaRouterControllerClient = scalableCtrlMgr.GetClient()
 
-	//todo replace config with cached client
+	// todo replace config with cached client
 	cfg := scalableCtrlMgr.GetConfig()
 	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(scalableCtrlMgr.GetConfig())
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
@@ -186,10 +186,10 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
 	}
 	err = kube.AddMetaRouterController(mgr, func() error {
-		if err := updateEnvoyFilter(); err != nil { //MetaRouter Rate limit config will cause update on EnvoyFilters
+		if err := updateEnvoyFilter(); err != nil { // MetaRouter Rate limit config will cause update on EnvoyFilters
 			return err
 		}
-		if err := updateCache(); err != nil { //MetaRouter route config will cause update on RDS cache
+		if err := updateCache(); err != nil { // MetaRouter route config will cause update on RDS cache
 			return err
 		}
 		return nil

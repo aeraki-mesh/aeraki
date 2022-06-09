@@ -58,7 +58,8 @@ func New(trustDomainBundle trustdomain.Bundle, namespace string,
 	if err != nil {
 		authzLog.Errorf("failed to list DubboAuthorizationPolicy: %v", err)
 	} else {
-		for _, config := range dubboAuthorizationPolicyList.Items {
+		for i := range dubboAuthorizationPolicyList.Items {
+			config := dubboAuthorizationPolicyList.Items[i]
 			switch config.Spec.GetAction() {
 			case dubborulepb.DubboAuthorizationPolicy_ALLOW:
 				allowPolicies = append(allowPolicies, config)
@@ -103,9 +104,9 @@ func build(policies []dubboapi.DubboAuthorizationPolicy, tdBundle trustdomain.Bu
 		Policies: map[string]*rbacpb.Policy{},
 	}
 
-	for _, policy := range policies {
-		for i, rule := range policy.Spec.Rules {
-			name := fmt.Sprintf("ns[%s]-policy[%s]-rule[%d]", policy.Namespace, policy.Name, i)
+	for i := range policies {
+		for i, rule := range policies[i].Spec.Rules {
+			name := fmt.Sprintf("ns[%s]-policy[%s]-rule[%d]", policies[i].Namespace, policies[i].Name, i)
 			if rule == nil {
 				authzLog.Errorf("skipped nil rule %s", name)
 				continue

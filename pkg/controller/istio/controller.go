@@ -114,7 +114,7 @@ func (c *Controller) connectIstio() {
 		Meta: istiomodel.NodeMetadata{
 			Generator: "api",
 			// Currently we use clusterId="" to indicates that the result should not be filtered by the proxy
-			//location.
+			// location.
 			// For example, all the VIPs of the clusters should be included in the addresses of a service entry.
 			// https://github.com/istio/istio/pull/36820
 			ClusterID: "",
@@ -172,24 +172,23 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 		// * DestinationRule: the Load balancing policy in set in the dr,
 		//   httpHeaderName is used to convey the metadata key for generating hash
 		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
-			//controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
-			if c.shouldHandleSeChange(curr) {
+			if c.shouldHandleSeChange(&curr) {
 				handler(&prev, &curr, event)
-			} else if c.shouldHandleSeChange(prev) {
+			} else if c.shouldHandleSeChange(&prev) {
 				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
-			if c.shouldHandleVsChange(curr) {
+			if c.shouldHandleVsChange(&curr) {
 				handler(&prev, &curr, event)
-			} else if c.shouldHandleVsChange(prev) {
+			} else if c.shouldHandleVsChange(&prev) {
 				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
-			if c.shouldHandleDrChange(curr) {
+			if c.shouldHandleDrChange(&curr) {
 				handler(&prev, &curr, event)
-			} else if c.shouldHandleDrChange(prev) {
+			} else if c.shouldHandleDrChange(&prev) {
 				handler(&prev, &curr, event)
 			}
 		}
@@ -201,7 +200,7 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 	}
 }
 
-func (c *Controller) shouldHandleSeChange(seConfig istioconfig.Config) bool {
+func (c *Controller) shouldHandleSeChange(seConfig *istioconfig.Config) bool {
 	service, ok := seConfig.Spec.(*networking.ServiceEntry)
 	if !ok {
 		// This should never happen
@@ -216,7 +215,7 @@ func (c *Controller) shouldHandleSeChange(seConfig istioconfig.Config) bool {
 	return false
 }
 
-func (c *Controller) shouldHandleVsChange(vsConfig istioconfig.Config) bool {
+func (c *Controller) shouldHandleVsChange(vsConfig *istioconfig.Config) bool {
 	vs, ok := vsConfig.Spec.(*networking.VirtualService)
 	if !ok {
 		// This should never happen
@@ -228,15 +227,15 @@ func (c *Controller) shouldHandleVsChange(vsConfig istioconfig.Config) bool {
 		controllerLog.Errorf("failed to list configs: %v", err)
 		return false
 	}
-	for _, se := range serviceEntries {
-		service, ok := se.Spec.(*networking.ServiceEntry)
+	for i := range serviceEntries {
+		service, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			controllerLog.Errorf("failed in getting a service entry: %s: %v", se.Name, err)
+			controllerLog.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
 			return false
 		}
 		if len(vs.Hosts) > 0 {
 			for _, host := range service.Hosts {
-				if model.IsFQDNEquals(host, se.Namespace, vs.Hosts[0], vsConfig.Namespace) {
+				if model.IsFQDNEquals(host, serviceEntries[i].Namespace, vs.Hosts[0], vsConfig.Namespace) {
 					for _, port := range service.Ports {
 						if protocol.IsAerakiSupportedProtocols(port.Name) {
 							return true
@@ -249,7 +248,7 @@ func (c *Controller) shouldHandleVsChange(vsConfig istioconfig.Config) bool {
 	return false
 }
 
-func (c *Controller) shouldHandleDrChange(drConfig istioconfig.Config) bool {
+func (c *Controller) shouldHandleDrChange(drConfig *istioconfig.Config) bool {
 	// We only care about the Load balancing policy in the dr,
 	// httpHeaderName is used to convey the metadata key for generating hash
 	dr, ok := drConfig.Spec.(*networking.DestinationRule)
@@ -263,15 +262,15 @@ func (c *Controller) shouldHandleDrChange(drConfig istioconfig.Config) bool {
 		controllerLog.Errorf("failed to list configs: %v", err)
 		return false
 	}
-	for _, se := range serviceEntries {
-		service, ok := se.Spec.(*networking.ServiceEntry)
+	for i := range serviceEntries {
+		service, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			controllerLog.Errorf("failed in getting a service entry: %s: %v", se.Name, err)
+			controllerLog.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
 			return false
 		}
 
 		for _, host := range service.Hosts {
-			if model.IsFQDNEquals(host, se.Namespace, dr.Host, drConfig.Namespace) {
+			if model.IsFQDNEquals(host, serviceEntries[i].Namespace, dr.Host, drConfig.Namespace) {
 				for _, port := range service.Ports {
 					if protocol.IsAerakiSupportedProtocols(port.Name) {
 						return true

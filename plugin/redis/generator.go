@@ -163,7 +163,7 @@ func valueOf(message proto.Message) (out *types.Struct, err error) {
 	}
 
 	out = &types.Struct{}
-	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
+	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
 		return nil, err
 	}
 	return out, nil

@@ -81,7 +81,7 @@ func (c *serviceEntryController) Reconcile(ctx context.Context, request reconcil
 	se := &networking.ServiceEntry{}
 	err := c.Get(ctx, request.NamespacedName, se)
 	if errors.IsNotFound(err) {
-		//The service entry has been deleted, the IP will be recycled when we reach 255*255
+		// The service entry has been deleted, the IP will be recycled when we reach 255*255
 		return reconcile.Result{}, nil
 	}
 
