@@ -26,8 +26,8 @@ export AERAKI_TAG=1.1.0
 bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
 bash ${SCRIPTS_DIR}/aeraki.sh
 
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/addons/prometheus.yaml -n istio-system
-kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/addons/grafana.yaml -n istio-system
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.12/samples/addons/prometheus.yaml -n istio-system
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.12/samples/addons/grafana.yaml -n istio-system
 
 kubectl create namespace kiali-operator
 helm install \
