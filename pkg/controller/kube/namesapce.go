@@ -24,7 +24,6 @@ import (
 
 	"istio.io/pkg/log"
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	controllerclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -50,7 +49,7 @@ var (
 
 // namespaceController creates bootstrap configMap for sidecar proxies
 type namespaceController struct {
-	client.Client
+	controllerclient.Client
 }
 
 // Reconcile watch namespace change and create bootstrap configmap for sidecar proxies

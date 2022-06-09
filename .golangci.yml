@@ -88,11 +88,11 @@ linters:
     - lll
     - misspell
     - nakedret
-#    - noctx
-#    - nolintlint
-#    - staticcheck
-#    - structcheck
-#    - stylecheck
+    - noctx
+    - nolintlint
+    - staticcheck
+    - structcheck
+    - stylecheck
 #    - typecheck
 #    - unconvert
 #    - unparam

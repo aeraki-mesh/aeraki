@@ -17,7 +17,6 @@ package dubbo
 import (
 	"fmt"
 
-	envoy "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	routepb "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
@@ -210,13 +209,13 @@ func buildSingleCluster(http *networking.HTTPRoute, service *networking.ServiceE
 }
 
 func buildWeightedCluster(http *networking.HTTPRoute, service *networking.ServiceEntry) *dubbo.RouteAction {
-	var clusterWeights []*envoy.WeightedCluster_ClusterWeight
+	var clusterWeights []*routepb.WeightedCluster_ClusterWeight
 	var totalWeight uint32
 
 	for _, route := range http.Route {
 		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, route.Destination.Subset,
 			service.Hosts[0], int(service.Ports[0].Number))
-		clusterWeight := &envoy.WeightedCluster_ClusterWeight{
+		clusterWeight := &routepb.WeightedCluster_ClusterWeight{
 			Name:   clusterName,
 			Weight: &wrappers.UInt32Value{Value: uint32(route.Weight)},
 		}
@@ -226,7 +225,7 @@ func buildWeightedCluster(http *networking.HTTPRoute, service *networking.Servic
 
 	return &dubbo.RouteAction{
 		ClusterSpecifier: &dubbo.RouteAction_WeightedClusters{
-			WeightedClusters: &envoy.WeightedCluster{
+			WeightedClusters: &routepb.WeightedCluster{
 				Clusters:    clusterWeights,
 				TotalWeight: &wrappers.UInt32Value{Value: totalWeight},
 			},
