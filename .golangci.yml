@@ -82,8 +82,8 @@ linters:
 #    - gomnd
     - goprintffuncname
     - gosec
-#    - gosimple
-#    - govet
+    - gosimple
+    - govet
 #    - ineffassign
 #    - lll
 #    - misspell
@@ -115,6 +115,10 @@ linters:
   # - testpackage
   # - revive
   # - wsl
+
+issues:
+  exclude:
+    - 'declaration of "(err|ctx)" shadows declaration at'
 
 run:
   timeout: 5m
