@@ -217,7 +217,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: true
-    name: TestGlobalRateLimit
+    name: TestConsistentHashLb
     steps:
       - name: Check out code
         uses: actions/checkout@v2
