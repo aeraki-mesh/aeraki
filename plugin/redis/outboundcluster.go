@@ -20,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes/any"
@@ -33,10 +32,13 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 // nolint: funlen,gocyclo

@@ -26,7 +26,6 @@ import (
 
 	"istio.io/istio/security/pkg/nodeagent/cache"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	networking "istio.io/api/networking/v1alpha3"
@@ -38,6 +37,8 @@ import (
 	"istio.io/istio/pkg/config/schema/collections"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
 	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )
 
 const (

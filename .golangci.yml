@@ -78,10 +78,10 @@ linters:
 #    - gocritic
     - gocyclo
     - gofmt
-#    - goimports
+    - goimports
 #    - gomnd
-#    - goprintffuncname
-#    - gosec
+    - goprintffuncname
+    - gosec
 #    - gosimple
 #    - govet
 #    - ineffassign

@@ -15,8 +15,9 @@
 package thrift
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	thrift "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/thrift_proxy/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext) *thrift.ThriftProxy {

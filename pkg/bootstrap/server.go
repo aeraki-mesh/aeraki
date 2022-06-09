@@ -30,11 +30,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
 	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
 
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-	"github.com/aeraki-mesh/aeraki/pkg/xds"
-	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
-	"github.com/aeraki-mesh/aeraki/plugin/redis"
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
@@ -46,6 +41,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/xds"
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
+	"github.com/aeraki-mesh/aeraki/plugin/redis"
 )
 
 var (

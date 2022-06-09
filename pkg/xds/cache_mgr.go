@@ -24,15 +24,17 @@ import (
 
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 
-	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
+	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"

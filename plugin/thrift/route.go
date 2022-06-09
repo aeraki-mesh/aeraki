@@ -15,10 +15,11 @@
 package thrift
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	thrift "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/thrift_proxy/v3"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*thrift.RouteConfiguration, error) {

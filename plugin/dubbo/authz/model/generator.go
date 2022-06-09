@@ -20,8 +20,9 @@ import (
 
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 
-	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/matcher"
 	"istio.io/istio/pkg/spiffe"
+
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/matcher"
 )
 
 type generator interface {

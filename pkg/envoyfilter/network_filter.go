@@ -19,7 +19,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
@@ -27,6 +26,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 var generatorLog = log.RegisterScope("aeraki-generator", "aeraki generator", 0)

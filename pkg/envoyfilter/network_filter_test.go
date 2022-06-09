@@ -20,8 +20,9 @@ import (
 
 	istioconfig "istio.io/istio/pkg/config"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	networking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func Test_inboudEnvoyFilterWorkloadSelector(t *testing.T) {

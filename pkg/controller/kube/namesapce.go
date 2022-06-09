@@ -18,8 +18,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"k8s.io/apimachinery/pkg/api/errors"
+
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 
 	"istio.io/pkg/log"
 	v1 "k8s.io/api/core/v1"

@@ -17,8 +17,6 @@ package redis
 import (
 	"math"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
@@ -27,6 +25,9 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/networking/util"
+
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func getOrCreateIstioMetadata(cluster *cluster.Cluster) *structpb.Struct {

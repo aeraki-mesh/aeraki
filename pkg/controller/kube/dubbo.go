@@ -18,7 +18,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
 	"istio.io/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -27,6 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
 )
 
 var dubboLog = log.RegisterScope("dubbo-controller", "dubbo-controller debugging", 0)

@@ -19,9 +19,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
 	metav1alpha1 "istio.io/api/meta/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
 )
 
 //

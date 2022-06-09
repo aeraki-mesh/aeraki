@@ -20,8 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 )
 
 func TestMain(m *testing.M) {

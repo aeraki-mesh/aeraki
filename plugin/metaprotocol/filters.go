@@ -17,9 +17,6 @@ package metaprotocol
 import (
 	"fmt"
 
-	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	mpclient "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
-	"github.com/aeraki-mesh/aeraki/pkg/xds"
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	grldataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/filters/global_ratelimit/v1alpha"
 	lrldataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
@@ -30,6 +27,10 @@ import (
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	mpclient "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/xds"
 )
 
 func buildOutboundFilters(metaRouter *mpclient.MetaRouter) []*mpdataplane.MetaProtocolFilter {
