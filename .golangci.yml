@@ -84,9 +84,9 @@ linters:
     - gosec
     - gosimple
     - govet
-#    - ineffassign
-#    - lll
-#    - misspell
+    - ineffassign
+    - lll
+    - misspell
 #    - nakedret
 #    - noctx
 #    - nolintlint

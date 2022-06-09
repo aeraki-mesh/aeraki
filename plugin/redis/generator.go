@@ -92,7 +92,8 @@ func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters [
 	return filters, nil
 }
 
-func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext, targetPort *networking.Port) []*model.EnvoyFilterWrapper {
+func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext,
+	targetPort *networking.Port) []*model.EnvoyFilterWrapper {
 	port := targetPort.Number
 	portName := targetPort.Name
 	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace, filterContext.ServiceEntry.Name, portName)

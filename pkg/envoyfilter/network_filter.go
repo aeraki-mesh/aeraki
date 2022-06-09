@@ -50,7 +50,8 @@ func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *netw
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
 func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port, outboundProxy proto.Message,
-	inboundProxy proto.Message, filterName string, filterType string, operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
+	inboundProxy proto.Message, filterName string, filterType string,
+	operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	var envoyFilters []*model.EnvoyFilterWrapper
 
 	var outboundProxyPatch, inboundProxyPatch *networking.EnvoyFilter_EnvoyConfigObjectPatch

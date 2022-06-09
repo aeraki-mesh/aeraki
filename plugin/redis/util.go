@@ -118,7 +118,20 @@ type HostPort struct {
 
 func toLbEndpoints(addrs ...HostPort) (endpoints []*endpoint.LbEndpoint) {
 	for _, addr := range addrs {
-		ep := &endpoint.LbEndpoint{HostIdentifier: &endpoint.LbEndpoint_Endpoint{Endpoint: &endpoint.Endpoint{Address: &envoycore.Address{Address: &envoycore.Address_SocketAddress{SocketAddress: &envoycore.SocketAddress{Address: addr.Host, PortSpecifier: &envoycore.SocketAddress_PortValue{PortValue: addr.Port}}}}}}}
+		ep := &endpoint.LbEndpoint{
+			HostIdentifier: &endpoint.LbEndpoint_Endpoint{
+				Endpoint: &endpoint.Endpoint{
+					Address: &envoycore.Address{
+						Address: &envoycore.Address_SocketAddress{
+							SocketAddress: &envoycore.SocketAddress{
+								Address:       addr.Host,
+								PortSpecifier: &envoycore.SocketAddress_PortValue{PortValue: addr.Port},
+							},
+						},
+					},
+				},
+			},
+		}
 		endpoints = append(endpoints, ep)
 	}
 	return endpoints

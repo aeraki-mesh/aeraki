@@ -47,7 +47,8 @@ var (
 	defaultInboundOpTimeout = gogo.DurationToProtoDuration(types.DurationProto(time.Hour))
 )
 
-func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32, listenPortName string) *redis.RedisProxy {
+func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32,
+	listenPortName string) *redis.RedisProxy {
 	proxy, err := g.buildOutboundProxy(ctx, c, listenPort, listenPortName)
 	if err != nil {
 		generatorLog.Errorf("build outbound %s/%s :%e", c.ServiceEntry.Namespace, c.ServiceEntry.Name, err)
@@ -69,7 +70,8 @@ func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model
 	return proxy
 }
 
-func (g *Generator) buildOutboundProxy(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32, listenPortName string) (*redis.RedisProxy, error) {
+func (g *Generator) buildOutboundProxy(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32,
+	listenPortName string) (*redis.RedisProxy, error) {
 	targetHost, rs, err := g.findTargetHostAndRedisService(ctx, c.ServiceEntry.Namespace, c.ServiceEntry.Spec.Hosts)
 	if err != nil {
 		return nil, err
@@ -172,7 +174,8 @@ func (g *Generator) buildAuth(proxy *redis.RedisProxy, rs *v1alpha1.RedisService
 	return nil
 }
 
-func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string, hosts []string) (targetHost string, rs *v1alpha1.RedisService, err error) {
+func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string, hosts []string) (targetHost string,
+	rs *v1alpha1.RedisService, err error) {
 	generatorLog.Debugf("try find target host and RedisService %s %v", ns, hosts)
 	redisServices, err := g.redis.RedisServices(ns).List(ctx, v1.ListOptions{
 		LabelSelector: labels.Everything().String(),
@@ -226,7 +229,8 @@ func (g *Generator) convertPolicy(policy spec.RedisService_ReadPolicy) redis.Red
 	return redis.RedisProxy_ConnPoolSettings_MASTER
 }
 
-func (g *Generator) buildPrefixRoute(r *spec.RedisService_Route, hostServices map[string]*networking.ServiceEntry, listenPort uint32, listenPortName string) (route *redis.RedisProxy_PrefixRoutes_Route, all bool) {
+func (g *Generator) buildPrefixRoute(r *spec.RedisService_Route, hostServices map[string]*networking.ServiceEntry,
+	listenPort uint32, listenPortName string) (route *redis.RedisProxy_PrefixRoutes_Route, all bool) {
 	port := r.Route.Port
 	if port == 0 {
 		port = findServicePort(hostServices[r.Route.Host], listenPort, listenPortName)
