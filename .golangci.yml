@@ -93,12 +93,12 @@ linters:
     - staticcheck
     - structcheck
     - stylecheck
-#    - typecheck
-#    - unconvert
+    - typecheck
+    - unconvert
 #    - unparam
-#    - unused
-#    - varcheck
-#    - whitespace
+    - unused
+    - varcheck
+    - whitespace
 
   # don't enable:
   # - asciicheck

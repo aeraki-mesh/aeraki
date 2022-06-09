@@ -105,7 +105,6 @@ func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
 		case <-stop:
 			break
 		}
-
 	}
 }
 

@@ -65,7 +65,6 @@ func (srcNamespaceGenerator) principal(_, value string) (*rbacpb.Principal, erro
 	v := strings.Replace(value, "*", ".*", -1)
 	m := matcher.StringMatcherRegex(fmt.Sprintf(".*/ns/%s/.*", v))
 	return principalAuthenticated(m), nil
-
 }
 
 type srcPrincipalGenerator struct {
