@@ -12,11 +12,12 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	proto "github.com/gogo/protobuf/proto"
 	io "io"
-	_ "istio.io/gogo-genproto/googleapis/google/api"
 	math "math"
 	math_bits "math/bits"
+
+	proto "github.com/gogo/protobuf/proto"
+	_ "istio.io/gogo-genproto/googleapis/google/api"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

@@ -15,8 +15,9 @@
 package kafka
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	kafka "github.com/envoyproxy/go-control-plane/contrib/envoy/extensions/filters/network/kafka_broker/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext) *kafka.KafkaBroker {

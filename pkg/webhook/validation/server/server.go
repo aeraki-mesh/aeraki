@@ -54,6 +54,7 @@ var (
 	}
 )
 
+// nolint: gochecknoinits
 func init() {
 	_ = kubeApiApps.AddToScheme(runtimeScheme)
 	_ = kubeApiAdmissionv1.AddToScheme(runtimeScheme)

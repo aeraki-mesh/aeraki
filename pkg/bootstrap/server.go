@@ -30,11 +30,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
 	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
 
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-	"github.com/aeraki-mesh/aeraki/pkg/xds"
-	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
-	"github.com/aeraki-mesh/aeraki/plugin/redis"
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
@@ -46,6 +41,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/xds"
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
+	"github.com/aeraki-mesh/aeraki/plugin/redis"
 )
 
 var (
@@ -93,13 +94,13 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
 		args.EnableEnvoyFilterNSScope)
-	configController.RegisterEventHandler(func(_, curr istioconfig.Config, event model.Event) {
+	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
 
 	// routeCacheMgr watches service entry and generate the routes for meta protocol services
 	routeCacheMgr := xds.NewCacheMgr(configController.Store)
-	configController.RegisterEventHandler(func(prev istioconfig.Config, curr istioconfig.Config,
+	configController.RegisterEventHandler(func(prev *istioconfig.Config, curr *istioconfig.Config,
 		event model.Event) {
 		routeCacheMgr.ConfigUpdated(prev, curr, event)
 	})

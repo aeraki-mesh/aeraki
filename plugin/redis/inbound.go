@@ -15,8 +15,9 @@
 package redis
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func (g *Generator) buildInboundProxy(context *model.EnvoyFilterContext, port uint32, portName string) *redis.RedisProxy {

@@ -20,12 +20,13 @@ import (
 	"context"
 	"time"
 
-	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
-	scheme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
+
+	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	scheme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
 )
 
 // RedisDestinationsGetter has a method to return a RedisDestinationInterface.

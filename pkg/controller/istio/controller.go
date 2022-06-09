@@ -26,7 +26,6 @@ import (
 
 	"istio.io/istio/security/pkg/nodeagent/cache"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	networking "istio.io/api/networking/v1alpha3"
@@ -38,6 +37,8 @@ import (
 	"istio.io/istio/pkg/config/schema/collections"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
 	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )
 
 const (
@@ -160,7 +161,7 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 }
 
 // RegisterEventHandler adds a handler to receive config update events for a configuration type
-func (c *Controller) RegisterEventHandler(handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
+func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *istioconfig.Config, istiomodel.Event)) {
 	handlerWrapper := func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
 		if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
 			return
@@ -173,23 +174,23 @@ func (c *Controller) RegisterEventHandler(handler func(istioconfig.Config, istio
 		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 			//controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleSeChange(curr) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			} else if c.shouldHandleSeChange(prev) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleVsChange(curr) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			} else if c.shouldHandleVsChange(prev) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleDrChange(curr) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			} else if c.shouldHandleDrChange(prev) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			}
 		}
 	}

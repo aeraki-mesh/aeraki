@@ -25,8 +25,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	istionapi "istio.io/api/networking/v1alpha3"
 	networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/pkg/log"
@@ -70,8 +68,8 @@ var (
 
 // serviceEntryController allocate VIPs to service entries
 type serviceEntryController struct {
-	client.Client
-	serviceIPs map[string]client.ObjectKey
+	controllerclient.Client
+	serviceIPs map[string]controllerclient.ObjectKey
 	maxIP      int
 }
 
@@ -99,7 +97,7 @@ func (c *serviceEntryController) Reconcile(ctx context.Context, request reconcil
 func AddServiceEntryController(mgr manager.Manager) error {
 	serviceEntryCtrl := &serviceEntryController{
 		Client:     mgr.GetClient(),
-		serviceIPs: make(map[string]client.ObjectKey),
+		serviceIPs: make(map[string]controllerclient.ObjectKey),
 	}
 	c, err := controller.New("aeraki-service-entry-controller", mgr,
 		controller.Options{Reconciler: serviceEntryCtrl})
@@ -121,7 +119,7 @@ func AddServiceEntryController(mgr manager.Manager) error {
 // The IPs are allocated from the reserved Class E subnet (240.240.0.0/16) that is not reachable outside the pod.
 // When DNS capture is enabled, Envoy will resolve the DNS to these IPs.
 // The listeners for TCP services will also be set up on these IPs.
-func (c *serviceEntryController) autoAllocateIP(key client.ObjectKey, s *networking.ServiceEntry) {
+func (c *serviceEntryController) autoAllocateIP(key controllerclient.ObjectKey, s *networking.ServiceEntry) {
 	if s.Spec.Resolution == istionapi.ServiceEntry_NONE {
 		return
 	}
@@ -157,7 +155,7 @@ func (c *serviceEntryController) autoAllocateIP(key client.ObjectKey, s *network
 	}
 }
 
-func (c *serviceEntryController) updateServiceEntry(s *networking.ServiceEntry, key client.ObjectKey) {
+func (c *serviceEntryController) updateServiceEntry(s *networking.ServiceEntry, key controllerclient.ObjectKey) {
 	err := c.Client.Update(context.TODO(), s,
 		&controllerclient.UpdateOptions{
 			FieldManager: constants.AerakiFieldManager,

@@ -15,9 +15,10 @@
 package metaprotocol
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	istionetworking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func buildInboundRouteConfig(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaroute.RouteConfiguration, error) {

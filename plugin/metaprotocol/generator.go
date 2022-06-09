@@ -15,10 +15,11 @@
 package metaprotocol
 
 import (
+	"istio.io/pkg/log"
+
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-	"istio.io/pkg/log"
 )
 
 var generatorLog = log.RegisterScope("metaprotocol-generator", "metaprotocol generator", 0)

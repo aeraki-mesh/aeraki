@@ -15,9 +15,10 @@
 package bootstrap
 
 import (
+	"istio.io/pkg/log"
+
 	"github.com/aeraki-mesh/aeraki/pkg/webhook/validation/scheme"
 	"github.com/aeraki-mesh/aeraki/pkg/webhook/validation/server"
-	"istio.io/pkg/log"
 )
 
 func (s *Server) initConfigValidation(args *AerakiArgs) error {

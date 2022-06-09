@@ -21,15 +21,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
-	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	"github.com/gogo/protobuf/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
+	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
+
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -37,6 +36,9 @@ import (
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/pkg/log"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 var generatorLog = log.RegisterScope("redis-generator", "redis generator", 0)
@@ -90,7 +92,8 @@ func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters [
 	return filters, nil
 }
 
-func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext, targetPort *networking.Port) []*model.EnvoyFilterWrapper {
+func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext,
+	targetPort *networking.Port) []*model.EnvoyFilterWrapper {
 	port := targetPort.Number
 	portName := targetPort.Name
 	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace, filterContext.ServiceEntry.Name, portName)

@@ -24,15 +24,15 @@ import (
 
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 
-	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/model"
-	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -105,7 +105,6 @@ func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
 		case <-stop:
 			break
 		}
-
 	}
 }
 
@@ -306,7 +305,7 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 			{
 				Name: "default",
 				Match: &metaroute.RouteMatch{
-					Metadata: []*httproute.HeaderMatcher{},
+					Metadata: []*routev3.HeaderMatcher{},
 				},
 				Route: &metaroute.RouteAction{
 					ClusterSpecifier: &metaroute.RouteAction_Cluster{
@@ -392,7 +391,7 @@ func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper
 }
 
 // ConfigUpdated sends a config change event to the pushChannel when Istio config changed
-func (c *CacheMgr) ConfigUpdated(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
+func (c *CacheMgr) ConfigUpdated(prev *istioconfig.Config, curr *istioconfig.Config, event istiomodel.Event) {
 	if c.shouldUpdateCache(curr) {
 		c.pushChannel <- event
 	} else if c.shouldUpdateCache(prev) {
@@ -400,7 +399,7 @@ func (c *CacheMgr) ConfigUpdated(prev istioconfig.Config, curr istioconfig.Confi
 	}
 }
 
-func (c *CacheMgr) shouldUpdateCache(config istioconfig.Config) bool {
+func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	var serviceEntry *networking.ServiceEntry
 	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 		service, ok := config.Spec.(*networking.ServiceEntry)

@@ -27,7 +27,7 @@ var applicationProtocols = map[string]string{
 }
 
 // SetApplicationProtocolCodec sets the codec for a specific protocol
-func SetApplicationProtocolCodec(protocol string, codec string) {
+func SetApplicationProtocolCodec(protocol, codec string) {
 	lock.Lock()
 	defer lock.Unlock()
 	applicationProtocols[protocol] = codec

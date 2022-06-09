@@ -17,9 +17,10 @@
 package fake
 
 import (
-	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
+
+	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 )
 
 type FakeDubboV1alpha1 struct {

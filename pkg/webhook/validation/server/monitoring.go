@@ -64,6 +64,7 @@ var (
 	)
 )
 
+// nolint: gochecknoinits
 func init() {
 	monitoring.MustRegister(
 		metricValidationPassed,
