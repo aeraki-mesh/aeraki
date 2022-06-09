@@ -147,6 +147,30 @@ func testAttributeMatch(matchPattern string, t *testing.T) {
 	}
 }
 
+func TestConsistentHashLb(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/consistent-hash-lb/destinationrule.yaml", "")
+	util.KubeApply("metaprotocol", "testdata/consistent-hash-lb/metarouter-sample.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	var v1, v2 int
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, "response from dubbo-sample-provider-v1") {
+			v1++
+		}
+		if strings.Contains(dubboResponse, "response from dubbo-sample-provider-v2") {
+			v2++
+		}
+	}
+	if !(v1 == 10 || v2 == 10) {
+		t.Errorf("consistent hash lb failed, v1:v2 want: 0:10 or 10:0, got %d:%d", v1, v2)
+  }
+}
+
 func TestLocalRateLimit(t *testing.T) {
 	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	util.KubeApply("metaprotocol", "testdata/metarouter-local-ratelimit.yaml", "")
