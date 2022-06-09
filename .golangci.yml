@@ -137,7 +137,7 @@ issues:
 
 run:
   timeout: 5m
-  go: '1.17' 
+  go: '1.17'
   skip-dirs:
     - api
     - client-go
