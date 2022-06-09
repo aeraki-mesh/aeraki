@@ -87,7 +87,7 @@ linters:
     - ineffassign
     - lll
     - misspell
-#    - nakedret
+    - nakedret
 #    - noctx
 #    - nolintlint
 #    - staticcheck

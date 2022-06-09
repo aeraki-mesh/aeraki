@@ -179,7 +179,7 @@ func validateExportTo(namespace string, exportTo []string) (errs error) {
 		}
 	}
 
-	return
+	return errs
 }
 
 // ValidateMetaRouter checks that a v1alpha1 route rule is well-formed.
@@ -355,7 +355,7 @@ func validateMetaRoute(route *metaprotocol.MetaRoute) (errs Validation) {
 	errs = appendValidation(errs, validateDestination(route.Mirror))
 	errs = appendValidation(errs, validateMetaRouteDestinations(route.Route))
 
-	return
+	return errs
 }
 
 func validateMetaRouteMatch(match *metaprotocol.MetaRouteMatch) (errs error) {
@@ -368,7 +368,7 @@ func validateMetaRouteMatch(match *metaprotocol.MetaRouteMatch) (errs error) {
 			errs = appendErrors(errs, validateStringMatchRegexp(attribute, "attributes"))
 		}
 	}
-	return
+	return errs
 }
 
 func analyzeUnreachableMetaRules(routes []*metaprotocol.MetaRoute,
