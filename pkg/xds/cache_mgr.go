@@ -392,7 +392,7 @@ func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper
 }
 
 // ConfigUpdated sends a config change event to the pushChannel when Istio config changed
-func (c *CacheMgr) ConfigUpdated(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
+func (c *CacheMgr) ConfigUpdated(prev *istioconfig.Config, curr *istioconfig.Config, event istiomodel.Event) {
 	if c.shouldUpdateCache(curr) {
 		c.pushChannel <- event
 	} else if c.shouldUpdateCache(prev) {
@@ -400,7 +400,7 @@ func (c *CacheMgr) ConfigUpdated(prev istioconfig.Config, curr istioconfig.Confi
 	}
 }
 
-func (c *CacheMgr) shouldUpdateCache(config istioconfig.Config) bool {
+func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	var serviceEntry *networking.ServiceEntry
 	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 		service, ok := config.Spec.(*networking.ServiceEntry)

@@ -160,7 +160,7 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 }
 
 // RegisterEventHandler adds a handler to receive config update events for a configuration type
-func (c *Controller) RegisterEventHandler(handler func(istioconfig.Config, istioconfig.Config, istiomodel.Event)) {
+func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *istioconfig.Config, istiomodel.Event)) {
 	handlerWrapper := func(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
 		if event == istiomodel.EventUpdate && reflect.DeepEqual(prev.Spec, curr.Spec) {
 			return
@@ -173,23 +173,23 @@ func (c *Controller) RegisterEventHandler(handler func(istioconfig.Config, istio
 		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 			//controllerLog.Infof("Service Entry changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleSeChange(curr) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			} else if c.shouldHandleSeChange(prev) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleVsChange(curr) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			} else if c.shouldHandleVsChange(prev) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleDrChange(curr) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			} else if c.shouldHandleDrChange(prev) {
-				handler(prev, curr, event)
+				handler(&prev, &curr, event)
 			}
 		}
 	}

@@ -106,7 +106,7 @@ func (m *Model) MigrateTrustDomain(tdBundle trustdomain.Bundle) {
 }
 
 // Generate generates the Envoy RBAC config from the model.
-func (m Model) Generate(action rbacpb.RBAC_Action) (*rbacpb.Policy, error) {
+func (m *Model) Generate(action rbacpb.RBAC_Action) (*rbacpb.Policy, error) {
 	var permissions []*rbacpb.Permission
 	for _, rl := range m.permissions {
 		permission, err := generatePermission(rl, action)
@@ -167,7 +167,7 @@ func generatePrincipal(rl ruleList, action rbacpb.RBAC_Action) (*rbacpb.Principa
 	return principalAnd(and), nil
 }
 
-func (r rule) permission(action rbacpb.RBAC_Action) ([]*rbacpb.Permission, error) {
+func (r *rule) permission(action rbacpb.RBAC_Action) ([]*rbacpb.Permission, error) {
 	var permissions []*rbacpb.Permission
 	var or []*rbacpb.Permission
 	for _, value := range r.values {
@@ -199,7 +199,7 @@ func (r rule) permission(action rbacpb.RBAC_Action) ([]*rbacpb.Permission, error
 	return permissions, nil
 }
 
-func (r rule) principal(action rbacpb.RBAC_Action) ([]*rbacpb.Principal, error) {
+func (r *rule) principal(action rbacpb.RBAC_Action) ([]*rbacpb.Principal, error) {
 	var principals []*rbacpb.Principal
 	var or []*rbacpb.Principal
 	for _, value := range r.values {
@@ -231,7 +231,7 @@ func (r rule) principal(action rbacpb.RBAC_Action) ([]*rbacpb.Principal, error) 
 	return principals, nil
 }
 
-func (r rule) checkError(action rbacpb.RBAC_Action, err error) error {
+func (r *rule) checkError(action rbacpb.RBAC_Action, err error) error {
 	if action == rbacpb.RBAC_ALLOW {
 		// Return the error as-is for allow policy. This will make all rules in the current permission ignored, effectively
 		// result in a smaller allow policy (i.e. less likely to allow a request).

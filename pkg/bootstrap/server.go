@@ -93,13 +93,13 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
 		args.EnableEnvoyFilterNSScope)
-	configController.RegisterEventHandler(func(_, curr istioconfig.Config, event model.Event) {
+	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
 
 	// routeCacheMgr watches service entry and generate the routes for meta protocol services
 	routeCacheMgr := xds.NewCacheMgr(configController.Store)
-	configController.RegisterEventHandler(func(prev istioconfig.Config, curr istioconfig.Config,
+	configController.RegisterEventHandler(func(prev *istioconfig.Config, curr *istioconfig.Config,
 		event model.Event) {
 		routeCacheMgr.ConfigUpdated(prev, curr, event)
 	})
