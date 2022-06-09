@@ -127,14 +127,15 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 	}
 
 	// Changed envoyFilters
-	for _, oldEnvoyFilter := range existingEnvoyFilters.Items {
+	for i := range existingEnvoyFilters.Items {
+		oldEnvoyFilter := &existingEnvoyFilters.Items[i]
 		mapKey := envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)
 		if newEnvoyFilter, ok := generatedEnvoyFilters[mapKey]; ok {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
 				controllerLog.Infof("updating EnvoyFilter: namespace: %s name: %s %v", newEnvoyFilter.Namespace,
 					newEnvoyFilter.Name, model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
 				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(newEnvoyFilter.Namespace).Update(context.TODO(),
-					c.toEnvoyFilterCRD(newEnvoyFilter, &oldEnvoyFilter),
+					c.toEnvoyFilterCRD(newEnvoyFilter, oldEnvoyFilter),
 					v1.UpdateOptions{FieldManager: constants.AerakiFieldManager})
 			} else {
 				controllerLog.Infof("envoyFilter: namespace: %s name: %s unchanged", oldEnvoyFilter.Namespace,
