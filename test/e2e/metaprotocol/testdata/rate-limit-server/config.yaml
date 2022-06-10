@@ -25,4 +25,4 @@ data:
         value: "sayHello"
         rate_limit:
           unit: minute
-          requests_per_unit: 10
+          requests_per_unit: 2
