@@ -234,17 +234,24 @@ func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext
 		exportNSs = ctx.MetaRouter.Spec.ExportTo
 	}
 	if len(exportNSs) == 0 {
+		// create an envoyfilter in the default export NS, which can be either the Root NS or the NS in which the
+		// service is located, depends on the aeraki command option
 		wrapper.Namespace = c.defaultEnvoyFilterNS(ctx.ServiceEntry.Namespace)
 		envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
 	} else {
+		// create an envoyfilter in each exported NS
 		for _, exportNS := range exportNSs {
 			if exportNS == "." {
 				exportNS = ctx.MetaRouter.Namespace
 			} else if exportNS == "*" {
 				exportNS = constants.DefaultRootNamespace
 			}
-			wrapper.Namespace = exportNS
-			envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
+			wrapperClone := &model.EnvoyFilterWrapper{
+				Name:        wrapper.Name,
+				Namespace:   exportNS,
+				Envoyfilter: wrapper.Envoyfilter,
+			}
+			envoyFilters[envoyFilterMapKey(wrapperClone.Name, wrapperClone.Namespace)] = wrapperClone
 		}
 	}
 	return envoyFilters

@@ -222,3 +222,32 @@ func TestGlobalRateLimit(t *testing.T) {
 		t.Logf("%v requests have been sent to server", success)
 	}
 }
+
+func TestExportToNS(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-v1.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-v1.yaml", "")
+
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	output, err := util.KubeCommand("get envoyfilter ", "metaprotocol", "", "")
+	if err != nil {
+		t.Errorf("failed to get envoyfilters %v", err)
+	}
+	checkNS("default", t)
+	checkNS("metaprotocol", t)
+	t.Logf(output)
+}
+
+func checkNS(ns string, t *testing.T) {
+	output, err := util.KubeCommand("get envoyfilter ", ns, "", "")
+	if err != nil {
+		t.Errorf("failed to get envoyfilters %v", err)
+	}
+	if count := strings.Count(output, "aeraki-inbound-org.apache.dubbo.samples.basic.api.demoservice"); count != 1 {
+		t.Errorf("test exportTo failed, want 1 inbound envoyfilter in ns %s, got %v", ns, count)
+	}
+	if count := strings.Count(output, "aeraki-outbound-org.apache.dubbo.samples.basic.api.demoservice"); count != 1 {
+		t.Errorf("test exportTo failed, want 1 outbound envoyfiltre in ns %s, got %v", ns, count)
+	}
+}

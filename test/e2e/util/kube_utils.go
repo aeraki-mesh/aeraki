@@ -173,7 +173,13 @@ func KubeApplyContents(namespace, yamlContents string, kubeconfig string) error 
 
 func kubeCommand(subCommand, namespace, yamlFileName string, kubeconfig string) string {
 	if namespace == "" {
+		if yamlFileName == "" {
+			return fmt.Sprintf("kubectl %s --kubeconfig=%s", subCommand, kubeconfig)
+		}
 		return fmt.Sprintf("kubectl %s -f %s --kubeconfig=%s", subCommand, yamlFileName, kubeconfig)
+	}
+	if yamlFileName == "" {
+		return fmt.Sprintf("kubectl %s -n %s --kubeconfig=%s", subCommand, namespace, kubeconfig)
 	}
 	return fmt.Sprintf("kubectl %s -n %s -f %s --kubeconfig=%s", subCommand, namespace, yamlFileName, kubeconfig)
 }
@@ -185,9 +191,9 @@ func KubeApply(namespace, yamlFileName string, kubeconfig string) error {
 }
 
 // KubeCommand executes the given kubectl command with the given yaml file
-func KubeCommand(command, namespace, yamlFileName string, kubeconfig string) error {
-	_, err := Shell(kubeCommand(command, namespace, yamlFileName, kubeconfig))
-	return err
+func KubeCommand(command, namespace, yamlFileName string, kubeconfig string) (string, error) {
+	result, err := Shell(kubeCommand(command, namespace, yamlFileName, kubeconfig))
+	return result, err
 }
 
 // KubeGetYaml kubectl get yaml content for given resource.
