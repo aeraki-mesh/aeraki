@@ -15,7 +15,7 @@
 package istio
 
 import (
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -286,7 +286,7 @@ func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {
 	var rootCert []byte
 	var err error
 
-	if rootCert, err = ioutil.ReadFile(istiodCACertPath); err != nil {
+	if rootCert, err = os.ReadFile(istiodCACertPath); err != nil {
 		log.Fatalf("invalid config -  missing a root certificate %s", istiodCACertPath)
 	}
 
