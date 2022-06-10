@@ -44,7 +44,7 @@ linters-settings:
       - whyNoLint
       - wrapperFunc
   gocyclo:
-    min-complexity: 20
+    min-complexity: 15
   goimports:
     local-prefixes: github.com/aeraki-mesh/aeraki
   gomnd:

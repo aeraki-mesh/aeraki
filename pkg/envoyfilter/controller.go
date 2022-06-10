@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	"istio.io/istio/pkg/config"
+
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 
 	"github.com/gogo/protobuf/proto"
@@ -194,6 +196,7 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 			// We can't retry in this scenario
 			return envoyFilters, nil
 		}
+
 		if len(service.Hosts) > 1 {
 			controllerLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", serviceEntries[i].Name)
 		}
@@ -203,55 +206,69 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 			if generator, ok := c.generators[instance]; ok {
 				controllerLog.Infof("found generator for port: %s", port.Name)
 
-				relatedVs, err := c.findRelatedVirtualService(service)
+				ctx, err := c.envoyFilterContext(service, &serviceEntries[i])
 				if err != nil {
-					return envoyFilters, fmt.Errorf("failed in finding the related virtual service : %s: %v", serviceEntries[i].Name, err)
+					return envoyFilters, err
 				}
-				relatedMr, err := c.findRelatedMetaRouter(service)
-				if err != nil {
-					return envoyFilters, fmt.Errorf("failed in finding the related meta router : %s: %v", serviceEntries[i].Name, err)
-				}
-				ctx := &model.EnvoyFilterContext{
-					ServiceEntry: &model.ServiceEntryWrapper{
-						Meta: serviceEntries[i].Meta,
-						Spec: service,
-					},
-					VirtualService: relatedVs,
-					MetaRouter:     relatedMr,
-				}
-
 				envoyFilterWrappers, err := generator.Generate(ctx)
-				if err != nil {
+				if err == nil {
+					for _, wrapper := range envoyFilterWrappers {
+						envoyFilters = c.createEnvoyFiltersOnExportNSs(ctx, wrapper, envoyFilters)
+					}
+				} else {
 					controllerLog.Errorf("failed to generate envoy filter: service: %s, port: %s, error: %v",
 						serviceEntries[i].Name,
 						port.Name, err)
-				} else {
-					for _, wrapper := range envoyFilterWrappers {
-						var exportNSs []string
-						if ctx.MetaRouter != nil {
-							exportNSs = ctx.MetaRouter.Spec.ExportTo
-						}
-						if len(exportNSs) == 0 {
-							wrapper.Namespace = c.defaultEnvoyFilterNS(ctx.ServiceEntry.Namespace)
-							envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
-						} else {
-							for _, exportNS := range exportNSs {
-								if exportNS == "." {
-									exportNS = ctx.MetaRouter.Namespace
-								} else if exportNS == "*" {
-									exportNS = constants.DefaultRootNamespace
-								}
-								wrapper.Namespace = exportNS
-								envoyFilters[envoyFilterMapKey(wrapper.Name, exportNS)] = wrapper
-							}
-						}
-					}
 				}
 				break
 			}
 		}
 	}
 	return envoyFilters, nil
+}
+
+func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext, wrapper *model.EnvoyFilterWrapper,
+	envoyFilters map[string]*model.EnvoyFilterWrapper) map[string]*model.EnvoyFilterWrapper {
+	var exportNSs []string
+	if ctx.MetaRouter != nil {
+		exportNSs = ctx.MetaRouter.Spec.ExportTo
+	}
+	if len(exportNSs) == 0 {
+		wrapper.Namespace = c.defaultEnvoyFilterNS(ctx.ServiceEntry.Namespace)
+		envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
+	} else {
+		for _, exportNS := range exportNSs {
+			if exportNS == "." {
+				exportNS = ctx.MetaRouter.Namespace
+			} else if exportNS == "*" {
+				exportNS = constants.DefaultRootNamespace
+			}
+			wrapper.Namespace = exportNS
+			envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
+		}
+	}
+	return envoyFilters
+}
+
+// envoyFilterContext wraps all the resources needed to create the EnvoyFilter
+func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
+	serviceEntry *config.Config) (*model.EnvoyFilterContext, error) {
+	relatedVs, err := c.findRelatedVirtualService(service)
+	if err != nil {
+		return nil, fmt.Errorf("failed in finding the related virtual service : %s: %v", service.Hosts[0], err)
+	}
+	relatedMr, err := c.findRelatedMetaRouter(service)
+	if err != nil {
+		return nil, fmt.Errorf("failed in finding the related meta router : %s: %v", service.Hosts[0], err)
+	}
+	return &model.EnvoyFilterContext{
+		ServiceEntry: &model.ServiceEntryWrapper{
+			Meta: serviceEntry.Meta,
+			Spec: service,
+		},
+		VirtualService: relatedVs,
+		MetaRouter:     relatedMr,
+	}, nil
 }
 
 func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {
