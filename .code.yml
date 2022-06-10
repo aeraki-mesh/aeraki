@@ -15,7 +15,6 @@
 ---
 source:
     test_source:
-        filepath_regex:
         filepath_regex: ["test/e2e/redis/testdata/redisservice.yaml"]
     auto_generate_source:
         filepath_regex: [".*/*.pb.go", ".*/*.gen.go"]
