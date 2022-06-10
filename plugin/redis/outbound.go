@@ -184,8 +184,8 @@ func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string
 		return "", nil, err
 	}
 	svcs := map[string]*v1alpha1.RedisService{}
-	for _, service := range redisServices.Items {
-		service := service
+	for i := range redisServices.Items {
+		service := redisServices.Items[i]
 		for _, svcHost := range service.Spec.Host {
 			generatorLog.Debugf("related host: %s => %s", svcHost, service.Name)
 			svcs[svcHost] = &service
@@ -204,8 +204,8 @@ func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string
 func (g *Generator) hostServices(ns string) (hostServices map[string]*networking.ServiceEntry) {
 	hostServices = map[string]*networking.ServiceEntry{}
 	entries, _ := g.store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), ns)
-	for _, cfg := range entries {
-		se := cfg.Spec.(*networking.ServiceEntry)
+	for i := range entries {
+		se := entries[i].Spec.(*networking.ServiceEntry)
 		for _, host := range se.Hosts {
 			hostServices[host] = se
 		}

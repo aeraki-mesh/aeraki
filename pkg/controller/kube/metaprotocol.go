@@ -84,7 +84,8 @@ func (r *MetaProtocolController) Reconcile(ctx context.Context, request reconcil
 	if err != nil {
 		return reconcile.Result{}, err
 	}
-	for _, p := range protocols.Items {
+	for i := range protocols.Items {
+		p := protocols.Items[i]
 		metaProtocolLog.Debugf("register application protocol : %s, codec: %s", p.Spec.Protocol, p.Spec.Codec)
 		metaprotocolmodel.SetApplicationProtocolCodec(p.Spec.Protocol, p.Spec.Codec)
 	}

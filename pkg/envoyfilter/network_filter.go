@@ -58,7 +58,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.
 	if outboundProxy != nil {
 		outboundProxyStruct, err := generateValue(outboundProxy, filterName, filterType)
 		if err != nil {
-			//This should not happen
+			// This should not happen
 			generatorLog.Errorf("Failed to generate outbound EnvoyFilter: %v", err)
 			return nil
 		}
@@ -102,7 +102,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.
 	if inboundProxy != nil && hasInboundWorkloadSelector(WorkloadSelector) {
 		inboundProxyStruct, err := generateValue(inboundProxy, filterName, filterType)
 		if err != nil {
-			//This should not happen
+			// This should not happen
 			generatorLog.Errorf("Failed to generate inbound EnvoyFilter: %v", err)
 		} else {
 			inboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
@@ -171,7 +171,7 @@ func inboundEnvoyFilterName(host string, port int) string {
 	return "aeraki" + "-inbound-" + host + "-" + strconv.Itoa(port)
 }
 
-func generateValue(proxy proto.Message, filterName string, filterType string) (*types.Struct, error) {
+func generateValue(proxy proto.Message, filterName, filterType string) (*types.Struct, error) {
 	var buf []byte
 	var err error
 
@@ -180,7 +180,7 @@ func generateValue(proxy proto.Message, filterName string, filterType string) (*
 	}
 
 	var value = &types.Struct{}
-	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), value); err != nil {
+	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), value); err != nil {
 		return nil, err
 	}
 

@@ -90,11 +90,10 @@ linters:
     - funlen
     - gochecknoinits
     - goconst
-#    - gocritic
+    - gocritic
     - gocyclo
     - gofmt
     - goimports
-#    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -110,7 +109,7 @@ linters:
     - stylecheck
     - typecheck
     - unconvert
-#    - unparam
+    - unparam
     - unused
     - varcheck
     - whitespace
@@ -134,6 +133,8 @@ linters:
 issues:
   exclude:
     - 'declaration of "(err|ctx)" shadows declaration at'
+    - 'shadow of imported from'
+    - "singleCaseSwitch: should rewrite switch statement to if statement"
 
 run:
   timeout: 5m

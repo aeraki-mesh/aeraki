@@ -21,22 +21,13 @@ import (
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext) *thrift.ThriftProxy {
-	route, err := buildOutboundRouteConfig(context)
-	if err != nil {
-		generatorLog.Errorf("Failed to generate Thrift EnvoyFilter: %v, %v", context.ServiceEntry, err)
-		return nil
-	}
+	route := buildOutboundRouteConfig(context)
 
 	return newThriftProxy(context, route, model.TrafficDirectionOutbound)
 }
 
 func buildInboundProxy(context *model.EnvoyFilterContext) *thrift.ThriftProxy {
-	route, err := buildInboundRouteConfig(context)
-	if err != nil {
-		generatorLog.Errorf("Failed to generate Thrift EnvoyFilter: %v, %v", context.ServiceEntry, err)
-		return nil
-	}
-
+	route := buildInboundRouteConfig(context)
 	return newThriftProxy(context, route, model.TrafficDirectionInbound)
 }
 

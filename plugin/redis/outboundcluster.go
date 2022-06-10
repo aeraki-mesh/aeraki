@@ -43,7 +43,7 @@ import (
 
 // nolint: funlen,gocyclo
 func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext,
-	listenPort uint32, listenPortName string) *cluster.Cluster {
+	listenPort uint32) *cluster.Cluster {
 	cl := &cluster.Cluster{
 		Name:           outboundClusterName(c.ServiceEntry.Spec.Hosts[0], listenPort),
 		ConnectTimeout: &duration.Duration{Seconds: 10},
@@ -73,8 +73,8 @@ func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilt
 	}
 	var targetDestination *spec.RedisDestination
 L:
-	for _, destination := range destinations.Items {
-		destination := destination
+	for i := range destinations.Items {
+		destination := destinations.Items[i]
 		for _, host := range c.ServiceEntry.Spec.Hosts {
 			if destination.Spec.Host == host {
 				targetDestination = &destination.Spec
@@ -180,7 +180,7 @@ L:
 	return cl
 }
 
-func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host string, name string, namespace string) {
+func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host, name, namespace string) {
 	name = strings.TrimPrefix(name, "synthetic-")
 	metadata := getOrCreateIstioMetadata(cl)
 	// Add original_port field into istio metadata

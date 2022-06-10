@@ -59,14 +59,14 @@ func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteCo
 	}, nil
 }
 
-func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfiguration, error) {
+func buildInboundRouteConfig(context *model.EnvoyFilterContext) *dubbo.RouteConfiguration {
 	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
 	route := []*dubbo.Route{defaultRoute(clusterName)}
 	return &dubbo.RouteConfiguration{
 		Name:      clusterName,
 		Interface: "*", // Use wildcard to catch all the dubbo interfaces at this inbound port
 		Routes:    route,
-	}, nil
+	}
 }
 
 func defaultRoute(clusterName string) *dubbo.Route {
