@@ -120,13 +120,32 @@ func (c *CacheMgr) updateRouteCache() error {
 		return fmt.Errorf("failed to list service entries from the config store: %v", err)
 	}
 
+	routes := c.generateMetaRoutes(serviceEntries)
+	snapshot, err := generateSnapshot(routes)
+	if err != nil {
+		xdsLog.Errorf("failed to generate route cache: %v", err)
+		// We don't retry in this scenario
+		return nil
+	}
+
+	for _, node := range c.routeCache.GetStatusKeys() {
+		xdsLog.Debugf("set route cahe for: %s", node)
+		if err := c.routeCache.SetSnapshot(context.TODO(), node, snapshot); err != nil {
+			xdsLog.Errorf("failed to set route cache: %v", err)
+			// We don't retry in this scenario
+		}
+	}
+	return nil
+}
+
+func (c *CacheMgr) generateMetaRoutes(serviceEntries []istioconfig.Config) []*metaroute.RouteConfiguration {
 	var routes []*metaroute.RouteConfiguration
 
 	for i := range serviceEntries {
 		config := serviceEntries[i]
 		service, ok := config.Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			xdsLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
+			xdsLog.Errorf("failed in getting a service entry: %s", config.Name)
 			continue
 		}
 
@@ -173,20 +192,7 @@ func (c *CacheMgr) updateRouteCache() error {
 			}
 		}
 	}
-
-	snapshot, err := generateSnapshot(routes)
-	if err != nil {
-		xdsLog.Errorf("failed to generate route cache: %v", err)
-	} else {
-		for _, node := range c.routeCache.GetStatusKeys() {
-			xdsLog.Debugf("set route cahe for: %s", node)
-			if err := c.routeCache.SetSnapshot(context.TODO(), node, snapshot); err != nil {
-				xdsLog.Errorf("failed to set route cache: %v", err)
-				// We can't retry in this scenario
-			}
-		}
-	}
-	return nil
+	return routes
 }
 
 func isMetaProtocolService(service *networking.ServiceEntry) bool {
