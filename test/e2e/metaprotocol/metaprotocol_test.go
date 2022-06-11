@@ -234,20 +234,21 @@ func TestExportToNS(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to get envoyfilters %v", err)
 	}
-	checkNS("default", t)
-	checkNS("metaprotocol", t)
+	checkNS("default", 1, t)
+	checkNS("metaprotocol", 1, t)
+	checkNS("istio-system", 0, t)
 	t.Logf(output)
 }
 
-func checkNS(ns string, t *testing.T) {
+func checkNS(ns string, num int, t *testing.T) {
 	output, err := util.KubeCommand("get envoyfilter ", ns, "", "")
 	if err != nil {
 		t.Errorf("failed to get envoyfilters %v", err)
 	}
-	if count := strings.Count(output, "aeraki-inbound-org.apache.dubbo.samples.basic.api.demoservice"); count != 1 {
-		t.Errorf("test exportTo failed, want 1 inbound envoyfilter in ns %s, got %v", ns, count)
+	if count := strings.Count(output, "aeraki-inbound-org.apache.dubbo.samples.basic.api.demoservice"); count != num {
+		t.Errorf("test exportTo failed, want %v inbound envoyfilter in ns %s, got %v", num, ns, count)
 	}
-	if count := strings.Count(output, "aeraki-outbound-org.apache.dubbo.samples.basic.api.demoservice"); count != 1 {
-		t.Errorf("test exportTo failed, want 1 outbound envoyfiltre in ns %s, got %v", ns, count)
+	if count := strings.Count(output, "aeraki-outbound-org.apache.dubbo.samples.basic.api.demoservice"); count != num {
+		t.Errorf("test exportTo failed, want %v outbound envoyfiltre in ns %s, got %v", num, ns, count)
 	}
 }
