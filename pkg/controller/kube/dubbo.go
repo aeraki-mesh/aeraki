@@ -66,6 +66,7 @@ func AddDubboAuthorizationPolicyController(mgr manager.Manager, triggerPush func
 	return nil
 }
 
+// nolint: dupl
 var (
 	dubboPredicates = predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {

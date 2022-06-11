@@ -34,6 +34,7 @@ import (
 
 var metaRouterLog = log.RegisterScope("meta-router-controller", "meta-routerl-controller debugging", 0)
 
+// nolint: dupl
 var (
 	metaRouterlPredicates = predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {

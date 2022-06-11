@@ -36,6 +36,7 @@ import (
 
 var metaProtocolLog = log.RegisterScope("meta-protocol-controller", "meta-protocol-controller debugging", 0)
 
+// nolint: dupl
 var (
 	metaProtocolPredicates = predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
