@@ -73,22 +73,14 @@ type MetaProtocolController struct {
 // Reconcile will try to trigger once mcp push.
 func (r *MetaProtocolController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	metaProtocolLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
-	if r.triggerPush != nil {
-		err := r.triggerPush()
-		if err != nil {
-			return reconcile.Result{Requeue: true}, err
-		}
-	}
-	protocols := &v1alpha1.ApplicationProtocolList{}
-	err := r.List(ctx, protocols)
+	protocol := &v1alpha1.ApplicationProtocol{}
+	err := r.Get(ctx, request.NamespacedName, protocol)
 	if err != nil {
-		return reconcile.Result{}, err
+		return reconcile.Result{Requeue: true}, err
 	}
-	for i := range protocols.Items {
-		p := protocols.Items[i]
-		metaProtocolLog.Debugf("register application protocol : %s, codec: %s", p.Spec.Protocol, p.Spec.Codec)
-		metaprotocolmodel.SetApplicationProtocolCodec(p.Spec.Protocol, p.Spec.Codec)
-	}
+	metaProtocolLog.Debugf("register application protocol : %s, codec: %s", protocol.Spec.Protocol, protocol.Spec.Codec)
+	metaprotocolmodel.SetApplicationProtocolCodec(protocol.Spec.Protocol, protocol.Spec.Codec)
+
 	if r.triggerPush != nil {
 		err := r.triggerPush()
 		if err != nil {
