@@ -92,15 +92,18 @@ func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
 	callback := func() {
 		err := c.updateRouteCache()
 		if err != nil {
-			xdsLog.Errorf("%v", err)
-			// Retry if failed to push envoyFilters to AP IServer
-			if retries++; retries <= maxRetries {
-				c.pushChannel <- istiomodel.EventUpdate
+			xdsLog.Errorf("failed to update route cache: %v", err)
+			// Retry if failed to update route cache
+			if retries >= maxRetries {
+				retries = 0
+				return
 			}
+			retries++
+			c.pushChannel <- istiomodel.EventUpdate
 			return
 		}
-		xdsLog.Infof("route cache updated")
 		retries = 0
+		xdsLog.Infof("route cache updated")
 	}
 	debouncer := debounce.New(debounceAfter, debounceMax, callback, stop)
 	for {

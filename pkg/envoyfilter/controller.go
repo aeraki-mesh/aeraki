@@ -92,11 +92,14 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 	callback := func() {
 		err := c.pushEnvoyFilters2APIServer()
 		if err != nil {
-			controllerLog.Errorf("%v", err)
-			// Retry if failed to push envoyFilters to AP IServer
-			if retries++; retries <= maxRetries {
-				c.ConfigUpdated(istiomodel.EventUpdate)
+			controllerLog.Errorf("failed to create envoyFilters: %v", err)
+			// Retry if failed to create envoyFilters
+			if retries >= maxRetries {
+				retries = 0
+				return
 			}
+			retries++
+			c.ConfigUpdated(istiomodel.EventUpdate)
 			return
 		}
 		retries = 0
