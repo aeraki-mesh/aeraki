@@ -171,24 +171,20 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 		// * VirtualService: Route rules for dubbo and thrift
 		// * DestinationRule: the Load balancing policy in set in the dr,
 		//   httpHeaderName is used to convey the metadata key for generating hash
-		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
-			if c.shouldHandleSeChange(&curr) {
-				handler(&prev, &curr, event)
-			} else if !c.isNilConfig(&prev) && c.shouldHandleSeChange(&prev) {
+		switch curr.GroupVersionKind {
+		case collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind():
+			controllerLog.Infof("service entry changed: %s %s", event.String(), curr.Name)
+			if c.shouldHandleServiceEntryChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
+		case collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind():
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
-			if c.shouldHandleVsChange(&curr) {
-				handler(&prev, &curr, event)
-			} else if !c.isNilConfig(&prev) && c.shouldHandleVsChange(&prev) {
+			if c.shouldHandleVirtualServiceChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
+		case collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind():
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
-			if c.shouldHandleDrChange(&curr) {
-				handler(&prev, &curr, event)
-			} else if !c.isNilConfig(&prev) && c.shouldHandleDrChange(&prev) {
+			if c.shouldHandleDestinationRuleChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
 		}
@@ -200,6 +196,18 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 	}
 }
 
+func (c *Controller) shouldHandleDestinationRuleChange(prev, curr *istioconfig.Config) bool {
+	return c.shouldHandleDestinationRule(curr) || (!c.isNilConfig(prev) && c.shouldHandleDestinationRule(prev))
+}
+
+func (c *Controller) shouldHandleVirtualServiceChange(prev, curr *istioconfig.Config) bool {
+	return c.shouldHandleVirtualService(curr) || (!c.isNilConfig(prev) && c.shouldHandleVirtualService(prev))
+}
+
+func (c *Controller) shouldHandleServiceEntryChange(prev, curr *istioconfig.Config) bool {
+	return c.shouldHandleServiceEntry(curr) || (!c.isNilConfig(prev) && c.shouldHandleServiceEntry(prev))
+}
+
 func (c *Controller) isNilConfig(config *istioconfig.Config) bool {
 	if config.Name == "" && config.Spec == nil {
 		return true
@@ -207,7 +215,7 @@ func (c *Controller) isNilConfig(config *istioconfig.Config) bool {
 	return false
 }
 
-func (c *Controller) shouldHandleSeChange(seConfig *istioconfig.Config) bool {
+func (c *Controller) shouldHandleServiceEntry(seConfig *istioconfig.Config) bool {
 	service, ok := seConfig.Spec.(*networking.ServiceEntry)
 	if !ok {
 		// This should never happen
@@ -222,7 +230,7 @@ func (c *Controller) shouldHandleSeChange(seConfig *istioconfig.Config) bool {
 	return false
 }
 
-func (c *Controller) shouldHandleVsChange(vsConfig *istioconfig.Config) bool {
+func (c *Controller) shouldHandleVirtualService(vsConfig *istioconfig.Config) bool {
 	vs, ok := vsConfig.Spec.(*networking.VirtualService)
 	if !ok {
 		// This should never happen
@@ -255,7 +263,7 @@ func (c *Controller) shouldHandleVsChange(vsConfig *istioconfig.Config) bool {
 	return false
 }
 
-func (c *Controller) shouldHandleDrChange(drConfig *istioconfig.Config) bool {
+func (c *Controller) shouldHandleDestinationRule(drConfig *istioconfig.Config) bool {
 	// We only care about the Load balancing policy in the dr,
 	// httpHeaderName is used to convey the metadata key for generating hash
 	dr, ok := drConfig.Spec.(*networking.DestinationRule)
