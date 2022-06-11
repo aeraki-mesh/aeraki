@@ -87,13 +87,19 @@ func (c *Controller) Run(stop <-chan struct{}) {
 }
 
 func (c *Controller) mainLoop(stop <-chan struct{}) {
+	const maxRetries = 3
+	retries := 0
 	callback := func() {
 		err := c.pushEnvoyFilters2APIServer()
 		if err != nil {
 			controllerLog.Errorf("%v", err)
 			// Retry if failed to push envoyFilters to AP IServer
-			c.ConfigUpdated(istiomodel.EventUpdate)
+			if retries++; retries <= maxRetries {
+				c.ConfigUpdated(istiomodel.EventUpdate)
+			}
+			return
 		}
+		retries = 0
 	}
 	debouncer := debounce.New(debounceAfter, debounceMax, callback, stop)
 	for {
