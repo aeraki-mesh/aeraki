@@ -44,9 +44,11 @@ import (
 // nolint: funlen,gocyclo
 func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext,
 	listenPort uint32) *cluster.Cluster {
+	const defaultConnectTimeout = 10
+
 	cl := &cluster.Cluster{
 		Name:           outboundClusterName(c.ServiceEntry.Spec.Hosts[0], listenPort),
-		ConnectTimeout: &duration.Duration{Seconds: 10},
+		ConnectTimeout: &duration.Duration{Seconds: defaultConnectTimeout},
 		ClusterDiscoveryType: &cluster.Cluster_Type{
 			Type: cluster.Cluster_EDS,
 		},

@@ -71,10 +71,8 @@ type Generator struct {
 	store         istiomodel.ConfigStore
 }
 
-var (
-	// Timeout is the default timeout for listing object from apiserver
-	Timeout = time.Second * 10
-)
+// Timeout is the default timeout for listing object from apiserver
+const Timeout = time.Second * 10
 
 // Generate redis envoy filter
 func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters []*model.EnvoyFilterWrapper, err error) {
