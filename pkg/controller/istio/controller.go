@@ -174,21 +174,21 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 		if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 			if c.shouldHandleSeChange(&curr) {
 				handler(&prev, &curr, event)
-			} else if c.shouldHandleSeChange(&prev) {
+			} else if !c.isNilConfig(&prev) && c.shouldHandleSeChange(&prev) {
 				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind() {
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleVsChange(&curr) {
 				handler(&prev, &curr, event)
-			} else if c.shouldHandleVsChange(&prev) {
+			} else if !c.isNilConfig(&prev) && c.shouldHandleVsChange(&prev) {
 				handler(&prev, &curr, event)
 			}
 		} else if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleDrChange(&curr) {
 				handler(&prev, &curr, event)
-			} else if c.shouldHandleDrChange(&prev) {
+			} else if !c.isNilConfig(&prev) && c.shouldHandleDrChange(&prev) {
 				handler(&prev, &curr, event)
 			}
 		}
@@ -198,6 +198,13 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 	for _, schema := range schemas {
 		c.configCache.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
 	}
+}
+
+func (c *Controller) isNilConfig(config *istioconfig.Config) bool {
+	if config.Name == "" && config.Spec == nil {
+		return true
+	}
+	return false
 }
 
 func (c *Controller) shouldHandleSeChange(seConfig *istioconfig.Config) bool {

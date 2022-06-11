@@ -103,7 +103,9 @@ func (c *namespaceController) createBootstrapConfigMap(ns string) {
 	if err := c.Client.Create(context.TODO(), cm, &controllerclient.CreateOptions{
 		FieldManager: constants.AerakiFieldManager,
 	}); err != nil {
-		namespaceLog.Errorf("failed to create configMap: %v", err)
+		if !errors.IsAlreadyExists(err) {
+			namespaceLog.Errorf("failed to create configMap: %v", err)
+		}
 	}
 }
 func (c *namespaceController) shouldHandle(ns *v1.Namespace) bool {
