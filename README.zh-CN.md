@@ -25,6 +25,11 @@
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-kafka-zookeeper/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-kafka-zookeeper%22)
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
 
+<a href="https://www.aeraki.net/zh/">
+    <img src="docs/aeraki-log.png"
+         alt="Aeraki logo" title="Istio" />
+</a>
+
 # 在服务网格中管理任何七层流量!
 
 **Aeraki** [Air-rah-ki] 是希腊语 ”微风“ 的意思。 虽然服务网格已经成为微服务的重要基础设施，但许多（也许是全部？）服务网格的实现主要关注 HTTP 协议，而将其他七层协议视为普通的 TCP 流量。Aeraki Mesh 提供了一种非侵入的、高度可扩展的解决方案来管理服务网格中的任何7层流量。
@@ -59,14 +64,12 @@
 * Aeraki: [Aeraki](https://github.com/aeraki-mesh/aeraki) 为运维提供了高层次的、用户友好的流量管理规则，将规则转化为 envoy 代理配置，并利用 Istio 的`EnvoyFilter` API 将配置推送给数据面的 sidecar 代理。 Aeraki 还在控制面中充当了 MetaProtocol Proxy 的 RDS（路由发现服务）服务器。不同于专注于 HTTP 的 Envoy RDS，Aeraki RDS 旨在为所有七层协议提供通用的动态路由能力。
 * MetaProtocol Proxy: [MetaProtocol Proxy](https://github.com/aeraki-mesh/meta-protocol-proxy) 是一个七层代理框架，为七层协议提供了常用的流量管理能力，如负载均衡、熔断、路由、本地/全局限流、故障注入、指标收集、调用跟踪等等。我们可以基于 MetaProtocol Proxy 提供的通用能力创建自己专有协议的七层代理。要在服务网格中加入一个新的协议，唯一需要做的就是实现 [编解码器接口](https://github.com/aeraki-mesh/meta-protocol-proxy/blob/ac788327239bd794e745ce18b382da858ddf3355/src/meta_protocol_proxy/codec/codec.h#L118) （通常只需数百行代码）和几行 yaml 配置。如果有特殊的要求，而内置的功能又不能满足，MetaProtocol Proxy 还提供了一个扩展机制，允许用户编写自己的七层过滤器，将自定义的逻辑加入 MetaProtocol Proxy 中。
 
-MetaProtocol Proxy 中已经内置了 [Dubbo](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/dubbo) 和 [Thrift](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/thrift) 支持。如果你正在使用一个闭源的专有协议，也可以在服务网格中管理它，只需为它编写一个 MetaProtocol 编解码器即可。
+MetaProtocol Proxy 中已经支持了 [Dubbo](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/dubbo)，
+[Thrift](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/thrift) 
+，[bRPC](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/brpc)
+和[一系列私有协议](https://github.com/aeraki-mesh/aeraki/issues/105)。如果你正在使用一个闭源的专有协议，也可以在服务网格中管理它，只需为它编写一个 MetaProtocol 编解码器即可。
 
 大多数请求/响应式的无状态协议和流式调用都可以建立在 MetaProtocol Proxy 之上。但是，由于有些协议的路由策略过于 "特殊"，无法在 MetaProtocol 中规范化。例如，Redis 代理使用 slot number 将客户端查询映射到特定的Redis服务器节点，slot number 是由请求中的密钥计算出来的。只要在 Envoy Proxy 中有一个可用的 TCP filter，Aeraki 仍然可以管理这些协议。目前，对于这一类的协议，Aeraki 支持 [Redis](https://github.com/aeraki-mesh/aeraki/blob/master/docs/zh/redis.md) 和 Kafka。
-## 参考文档
-* [如何接入一个私有协议](https://www.aeraki.net/zh/docs/v1.0/tutorials/implement-a-custom-protocol/)
-* [Dubbo (中文) ](https://github.com/aeraki-mesh/dubbo2istio#readme)
-* [Redis (中文) ](docs/zh/redis.md)
-
 ## 支持的协议:
 Aeraki 已经支持下述协议：
 * Dubbo (Envoy 原生过滤器）
@@ -82,7 +85,7 @@ Aeraki 已经支持下述协议：
 * MetaProtocol-其他协议：灵雀云、腾讯游戏人生等的内部协议...
 * MetaProtocol-私有协议：需要在服务网格中接入你的私有协议？没有问题，几乎任何七层协议都可以基于 [MetaProtocol](https://github.com/aeraki-mesh/meta-protocol-proxy) 实现，并在 Aeraki Mesh 中进行流量管理
 
-支持的特性:
+## 支持的特性:
   * 流量管理
     * [x] 请求级负载均衡/地域感知负载均衡（支持一致哈希算法/会话保持）
     * [x] 熔断
