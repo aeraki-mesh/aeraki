@@ -160,8 +160,15 @@ make docker-build-e2e
 
 ## 联系我们
 * Wechat Group: 请联系微信ID：zhao_huabing，来加入 Aeraki 微信群聊
-* Slack: 加入 [我们的 Slack 频道](https://cloud-native.slack.com/messages/aeraki-mesh)
+* Slack Channel: 加入 [我们的 Slack 频道](https://cloud-native.slack.com/messages/aeraki-mesh)
 * 社区会议: [会议日程和录像](https://www.aeraki.net/community/#community-meetings)
+
+## 开源许可证
+
+本项目使用[Apache 2.0 License](LICENSE)
+
+## 行为准则
+我们的遵循 CNCF 行为准则[CNCF Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## CNCF 云原生全景图
 
