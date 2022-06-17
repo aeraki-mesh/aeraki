@@ -144,6 +144,10 @@ make docker-build tag=xxx
 make docker-build-e2e
 ```
 
+## 贡献代码
+
+如果您有兴趣向 Aeraki 项目贡献代码，请先阅读 [Contributing to Aeraki](CONTRIBUTING.md).
+
 ## 外部分享
 
 * IstioCon 2022：[Tencent Music’s service mesh practice with Istio and Aeraki(Istio + Aeraki 在腾讯音乐的服务网格落地)](https://events.istio.io/istiocon-2022/sessions/tencent-music-aeraki/)
@@ -155,14 +159,14 @@ make docker-build-e2e
 真诚地感谢大家选择、贡献和使用 Aeraki。我们创建了这个 issue 来收集 Aeraki 的使用案例，以便我们能够推动 Aeraki 社区向正确的方向发展，以更好地服务于真实的使用场景。我们鼓励您在这个问题上提交评论，包括您的使用方式：https://github.com/aeraki-mesh/aeraki/issues/105
 
 ## 联系我们
-* Mail: 如果你有兴趣为这个项目作出贡献，请联系 zhaohuabing@gmail.com
 * Wechat Group: 请联系微信ID：zhao_huabing，来加入 Aeraki 微信群聊
 * Slack: 加入 [Aeraki slack 频道](https://istio.slack.com/archives/C02UB8YJ600)
+* 社区会议: [会议日程和录像](https://www.aeraki.net/community/#community-meetings)
 
 ## CNCF 云原生全景图
 
 <p align="center">
 <img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
 <br/><br/>
-Aeraki Mesh 是<a href="https://landscape.cncf.io/?selected=aeraki-mesh"> CNCF 云原生全景图</a> 中服务网格领域的项目.
+Aeraki Mesh 是一个<a href="https://landscape.cncf.io/?selected=aeraki-mesh"> CNCF 沙箱项目</a>.
 </p>
