@@ -165,7 +165,7 @@ Sincerely thank everyone for choosing, contributing, and using Aeraki. We create
 
 ## Contact
 * WeChat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
-* Slack: Join [Aeraki slack channel](https://istio.slack.com/archives/C02UB8YJ600)
+* Slack: Join [our slack channel](https://cloud-native.slack.com/messages/aeraki-mesh)
 * Community meetings: [Meetings and recordings](https://www.aeraki.net/community/#community-meetings)
 
 ## Landscapes
