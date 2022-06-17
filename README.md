@@ -165,8 +165,16 @@ Sincerely thank everyone for choosing, contributing, and using Aeraki. We create
 
 ## Contact
 * WeChat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
-* Slack: Join [our slack channel](https://cloud-native.slack.com/messages/aeraki-mesh)
+* Slack Channel: Join [our slack channel](https://cloud-native.slack.com/messages/aeraki-mesh)
 * Community meetings: [Meetings and recordings](https://www.aeraki.net/community/#community-meetings)
+
+## License
+
+This project is licensed under [Apache 2.0 License](LICENSE)
+
+## Conduct
+
+We follow the [CNCF Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## Landscapes
 
