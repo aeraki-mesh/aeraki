@@ -168,5 +168,5 @@ make docker-build-e2e
 <p align="center">
 <img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
 <br/><br/>
-Aeraki Mesh 是一个<a href="https://landscape.cncf.io/?selected=aeraki-mesh"> CNCF 沙箱项目</a>.
+Aeraki Mesh 是一个<a href="https://landscape.cncf.io/?selected=aeraki-mesh"> CNCF 沙箱项目</a>
 </p>
