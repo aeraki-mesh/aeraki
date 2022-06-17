@@ -48,7 +48,7 @@ Before submitting a pull request, please make sure the followings are done:
 
 # Sign the CLA
 
-You must sign the Contributor License Agreement in order to contribute.
+You must sign the [Contributor License Agreement](https://github.com/cncf/cla) in order to contribute.
 
 # License
 
