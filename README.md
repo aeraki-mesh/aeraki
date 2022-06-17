@@ -149,6 +149,10 @@ make docker-build tag=xxx
 make docker-build-e2e
 ```
 
+## Contribute to Aeraki
+
+If you're interested in contributing to this project, please read [Contributing to Aeraki](CONTRIBUTING.md).
+
 ## Talks
 
 * IstioCon 2022: [Tencent Music’s service mesh practice with Istio and Aeraki](https://events.istio.io/istiocon-2022/sessions/tencent-music-aeraki/)
@@ -160,14 +164,14 @@ make docker-build-e2e
 Sincerely thank everyone for choosing, contributing, and using Aeraki. We created this issue to collect the use cases so we can drive the Aeraki community to evolve in the right direction and better serve your real-world scenarios. We encourage you to submit a comment on this issue to include your use case：https://github.com/aeraki-mesh/aeraki/issues/105
 
 ## Contact
-* Mail: If you're interested in contributing to this project, please reach out to zhaohuabing@gmail.com
 * WeChat Group: Please contact Wechat ID: zhao_huabing to join the Aeraki Wechat group
 * Slack: Join [Aeraki slack channel](https://istio.slack.com/archives/C02UB8YJ600)
+* Community meetings: [Meetings and recordings](https://www.aeraki.net/community/#community-meetings)
 
 ## Landscapes
 
 <p align="center">
 <img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
 <br/><br/>
-Aeraki Mesh enriches the <a href="https://landscape.cncf.io/?selected=aeraki-mesh">CNCF CLOUD NATIVE Landscape.</a>
+Aeraki Mesh is a <a href="https://landscape.cncf.io/?selected=aeraki-mesh">CNCF Sandbox Project.</a>
 </p>
