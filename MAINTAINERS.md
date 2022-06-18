@@ -20,8 +20,8 @@ Aeraki Mesh Maintainers are given in the list below, in no particular order.
 
 ## Maintainers
 
-| Maintainer Name |                  Github Name                     |      Company      |
-| :-------------: | :----------------------------------------------: | :---------------: |
-|   Huabing Zhao  | [zhaohuabing](https://github.com/zhaohuabing)    |      Tencent      |
-|   huanghuangzym | [huanghuangzym](https://github.com/huanghuangzym)|      Alauda       |
-|   smwyzi        | [smwyzi](https://github.com/smwyzi)              |      Baidu        |
+| Maintainer Name |           Repos             |                 Github Name                      |      Company      |
+| :-------------: | :-------------------------: | :----------------------------------------------: | :---------------: |
+|   Huabing Zhao  | Aeraki, meta-protocol-proxy | [zhaohuabing](https://github.com/zhaohuabing)    |      Tencent      |
+|   huanghuangzym | meta-protocol-proxy         | [huanghuangzym](https://github.com/huanghuangzym)|      Alauda       |
+|   smwyzi        | meta-protocol-proxy         | [smwyzi](https://github.com/smwyzi)              |      Baidu        |
