@@ -26,5 +26,5 @@ Aeraki Mesh Maintainers are given in the list below, in no particular order.
 |   huanghuangzym | meta-protocol-proxy         | [huanghuangzym](https://github.com/huanghuangzym)   |      Alauda       |
 |   smwyzi        | meta-protocol-proxy         | [smwyzi](https://github.com/smwyzi)                 |      Baidu        |
 |   ESTLing       | Aeraki                      | [ESTLing](https://github.com/ESTLing)               |   Tencent Music   |
-|  Sad-polar-bear | Aeraki                      | [Sad-polar-bear](https://github.com/Sad-polar-bear) |                   |
+|  Sad-polar-bear | Aeraki                      | [Sad-polar-bear](https://github.com/Sad-polar-bear) |   BOSS Zhipin     |
 |   Xunzhou       | Aeraki                      | [Xunzhou](https://github.com/Xunzhuo)               |      Tencent      |
