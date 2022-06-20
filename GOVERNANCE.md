@@ -53,8 +53,7 @@ To become a Maintainer you need to demonstrate the following:
 
   * commitment to the project
     * participate in discussions, contributions, code reviews for 3 months or more,
-    * perform code reviews for 5 non-trivial pull requests,
-    * contribute 5 non-trivial pull requests and have them merged into the `main` branch,
+    * contribute 5 non-trivial pull requests and have them merged into the `master` branch,
   * ability to write good code,
   * ability to collaborate with the team,
   * understanding of how the team works (policies, processes for testing and code review, etc),
