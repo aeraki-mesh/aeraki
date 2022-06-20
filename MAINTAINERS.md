@@ -25,6 +25,6 @@ Aeraki Mesh Maintainers are given in the list below, in no particular order.
 |   Huabing Zhao  | Aeraki, meta-protocol-proxy | [zhaohuabing](https://github.com/zhaohuabing)       |      Tencent      |
 |   huanghuangzym | meta-protocol-proxy         | [huanghuangzym](https://github.com/huanghuangzym)   |      Alauda       |
 |   smwyzi        | meta-protocol-proxy         | [smwyzi](https://github.com/smwyzi)                 |      Baidu        |
-|   ESTLing       | Aeraki                      | [ESTLing](https://github.com/ESTLing)               |   Tencent Music   |
+|   whitefirer    | Aeraki                      | [whitefirer](https://github.com/whitefirer)         |   Tencent Music   |
 |  Sad-polar-bear | Aeraki                      | [Sad-polar-bear](https://github.com/Sad-polar-bear) |   BOSS Zhipin     |
 |   Xunzhou       | Aeraki                      | [Xunzhou](https://github.com/Xunzhuo)               |      Tencent      |
