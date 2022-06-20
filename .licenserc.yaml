@@ -23,6 +23,7 @@ header:
     - 'LICENSE'
     - 'NOTICE'
     - '**/*.json'
+    - '**/*.md'
     - '.github/'
     - 'go.mod'
     - 'go.sum'
