@@ -61,6 +61,7 @@ type Break struct {
 	Err error
 }
 
+// Error return err string
 func (e Break) Error() string {
 	return e.Err.Error()
 }

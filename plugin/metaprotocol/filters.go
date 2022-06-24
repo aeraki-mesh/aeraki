@@ -18,8 +18,8 @@ import (
 	"fmt"
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
-	grldataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/filters/global_ratelimit/v1alpha"
-	lrldataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
+	grldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/filters/global_ratelimit/v1alpha"
+	lrldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
 	mpdataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoyrl "github.com/envoyproxy/go-control-plane/envoy/config/ratelimit/v3"
@@ -72,7 +72,7 @@ func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 	if localRateLimit.TokenBucket == nil && len(localRateLimit.Conditions) == 0 {
 		return nil, fmt.Errorf("either tokenBucket or conditions should be specified")
 	}
-	lrt := &lrldataplane.LocalRateLimit{
+	lrt := &lrldpl.LocalRateLimit{
 		StatPrefix: metaRouter.Spec.Hosts[0],
 	}
 	if localRateLimit.TokenBucket != nil {
@@ -103,15 +103,15 @@ func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 		return nil, fmt.Errorf("then length of global rate [lmit actions should not be zero")
 	}
 
-	var descriptors []*grldataplane.Descriptor
+	var descriptors []*grldpl.Descriptor
 	for _, action := range globalRateLimit.Descriptors {
-		descriptors = append(descriptors, &grldataplane.Descriptor{
+		descriptors = append(descriptors, &grldpl.Descriptor{
 			Property:      action.Property,
 			DescriptorKey: action.DescriptorKey,
 		})
 	}
 
-	grt := &grldataplane.RateLimit{
+	grt := &grldpl.RateLimit{
 		Match: &metaroute.RouteMatch{
 			Metadata: xds.MetaMatch2HttpHeaderMatch(globalRateLimit.Match),
 		},
@@ -145,12 +145,12 @@ func appendGlobalRateLimitFilter(metaRouter *mpclient.MetaRouter,
 	return filters, nil
 }
 
-func crd2Conditions(conditions []*userapi.LocalRateLimit_Condition) []*lrldataplane.LocalRateLimitCondition {
-	var localConditions []*lrldataplane.LocalRateLimitCondition
+func crd2Conditions(conditions []*userapi.LocalRateLimit_Condition) []*lrldpl.LocalRateLimitCondition {
+	var localConditions []*lrldpl.LocalRateLimitCondition
 	for _, condition := range conditions {
 		if condition.TokenBucket != nil {
 			tokenBucket := crd2tokenBucket(condition.TokenBucket)
-			localConditions = append(localConditions, &lrldataplane.LocalRateLimitCondition{
+			localConditions = append(localConditions, &lrldpl.LocalRateLimitCondition{
 				TokenBucket: tokenBucket,
 				Match: &metaroute.RouteMatch{
 					Metadata: xds.MetaMatch2HttpHeaderMatch(condition.Match),

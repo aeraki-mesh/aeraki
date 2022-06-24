@@ -169,7 +169,8 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 	return err
 }
 
-func (c *Controller) toEnvoyFilterCRD(newEf *model.EnvoyFilterWrapper, oldEf *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
+func (c *Controller) toEnvoyFilterCRD(newEf *model.EnvoyFilterWrapper,
+	oldEf *v1alpha3.EnvoyFilter) *v1alpha3.EnvoyFilter {
 	envoyFilter := &v1alpha3.EnvoyFilter{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      newEf.Name,
@@ -207,7 +208,8 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 		}
 
 		if len(service.Hosts) > 1 {
-			controllerLog.Warnf("multiple hosts found for service: %s, only the first one will be processed", serviceEntries[i].Name)
+			controllerLog.Warnf("multiple hosts found for service: %s, only the first one will be processed",
+				serviceEntries[i].Name)
 		}
 
 		for _, port := range service.Ports {

@@ -29,7 +29,8 @@ import (
 var (
 	// TODO: In the current version of Envoy, MaxProgramSize has been deprecated. However even if we do not send
 	// MaxProgramSize, Envoy is enforcing max size of 100 via runtime.
-	// See https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/regex.proto.html#type-matcher-v3-regexmatcher-googlere2.
+	// See https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/regex.proto.html
+	// #type-matcher-v3-regexmatcher-googlere2.
 	regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 )
 
@@ -53,14 +54,16 @@ func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteCo
 	}
 
 	return &dubbo.RouteConfiguration{
-		Name:      clusterName,
-		Interface: serviceInterface, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
+		Name: clusterName,
+		// To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
+		Interface: serviceInterface,
 		Routes:    route,
 	}, nil
 }
 
 func buildInboundRouteConfig(context *model.EnvoyFilterContext) *dubbo.RouteConfiguration {
-	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "",
+		int(context.ServiceEntry.Spec.Ports[0].Number))
 	route := []*dubbo.Route{defaultRoute(clusterName)}
 	return &dubbo.RouteConfiguration{
 		Name:      clusterName,

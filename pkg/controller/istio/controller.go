@@ -237,7 +237,8 @@ func (c *Controller) shouldHandleVirtualService(vsConfig *istioconfig.Config) bo
 		controllerLog.Errorf("failed in getting a virtual service: %v", vsConfig.Name)
 		return false
 	}
-	serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	serviceEntries, err := c.Store.List(
+		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		controllerLog.Errorf("failed to list configs: %v", err)
 		return false
@@ -272,7 +273,8 @@ func (c *Controller) shouldHandleDestinationRule(drConfig *istioconfig.Config) b
 		controllerLog.Errorf("failed in getting a destination rule: %s", drConfig.Name)
 		return false
 	}
-	serviceEntries, err := c.Store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
+	serviceEntries, err := c.Store.List(
+		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		controllerLog.Errorf("failed to list configs: %v", err)
 		return false

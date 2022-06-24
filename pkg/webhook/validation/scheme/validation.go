@@ -64,10 +64,12 @@ func Warningf(format string, a ...interface{}) Validation {
 	return WrapWarning(fmt.Errorf(format, a...))
 }
 
+// Unwrap a validation
 func (v Validation) Unwrap() (validation.Warning, error) {
 	return v.Warning, v.Err
 }
 
+// Error return the error string
 func (v Validation) Error() string {
 	if v.Err == nil {
 		return ""
@@ -565,6 +567,7 @@ func appendErrors(err error, errs ...error) error {
 	return err
 }
 
+// Error return the error string
 func (aae *AnalysisAwareError) Error() string {
 	return aae.Msg
 }

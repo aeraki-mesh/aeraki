@@ -58,7 +58,8 @@ func AddDubboAuthorizationPolicyController(mgr manager.Manager, triggerPush func
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.DubboAuthorizationPolicy{}}, &handler.EnqueueRequestForObject{}, dubboPredicates)
+	err = c.Watch(&source.Kind{Type: &v1alpha1.DubboAuthorizationPolicy{}},
+		&handler.EnqueueRequestForObject{}, dubboPredicates)
 	if err != nil {
 		return err
 	}

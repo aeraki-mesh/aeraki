@@ -223,7 +223,8 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 	return mgr, nil
 }
 
-// Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop channel.
+// Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop
+// channel.
 // This method won't block
 func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")
