@@ -94,7 +94,8 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 	targetPort *networking.Port) []*model.EnvoyFilterWrapper {
 	port := targetPort.Number
 	portName := targetPort.Name
-	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace, filterContext.ServiceEntry.Name, portName)
+	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace,
+		filterContext.ServiceEntry.Name, portName)
 	// copy and replace ports
 	spec := *filterContext.ServiceEntry.Spec
 	spec.Ports = []*networking.Port{targetPort}
@@ -110,7 +111,8 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 	if cluster != nil {
 		for _, filter := range filters {
 			if filter.Envoyfilter.WorkloadSelector == nil {
-				filter.Envoyfilter.ConfigPatches = append(filter.Envoyfilter.ConfigPatches, ReplaceClusterPatches(cluster)...)
+				filter.Envoyfilter.ConfigPatches = append(filter.Envoyfilter.ConfigPatches,
+					ReplaceClusterPatches(cluster)...)
 			}
 		}
 	}

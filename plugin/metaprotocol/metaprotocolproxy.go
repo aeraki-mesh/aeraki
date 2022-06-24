@@ -23,7 +23,8 @@ import (
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
 )
 
-func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+func buildOutboundProxy(context *model.EnvoyFilterContext,
+	port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.Name)
 	if err != nil {
 		return nil, err
@@ -67,7 +68,8 @@ func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking
 	}, nil
 }
 
-func buildInboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+func buildInboundProxy(context *model.EnvoyFilterContext,
+	port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
 	route := buildInboundRouteConfig(context, port)
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.
 		Name)

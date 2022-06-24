@@ -25,9 +25,9 @@ function LabelIstioInjectLabel()
 	echo $label
 	if [ $label != "" ];then
 		kubectl label namespace $ns istio.io/rev=$label --overwrite
-	else 
+	else
 		kubectl label namespace $ns istio-injection=enabled --overwrite=true
 	fi
-    return 0;  
+    return 0;
 }
 

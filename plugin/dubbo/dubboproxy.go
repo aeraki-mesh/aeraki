@@ -49,7 +49,8 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
 	}
 }
 
-func buildInboundProxy(context *model.EnvoyFilterContext, client dubbov1alpha1.DubboV1alpha1Interface) *dubbo.DubboProxy {
+func buildInboundProxy(context *model.EnvoyFilterContext,
+	client dubbov1alpha1.DubboV1alpha1Interface) *dubbo.DubboProxy {
 	route := buildInboundRouteConfig(context)
 
 	// Todo support Domain alias

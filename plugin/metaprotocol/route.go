@@ -21,8 +21,10 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
-func buildInboundRouteConfig(context *model.EnvoyFilterContext, port *istionetworking.Port) *metaroute.RouteConfiguration {
-	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", context.ServiceEntry.Spec.Hosts[0], int(port.Number))
+func buildInboundRouteConfig(context *model.EnvoyFilterContext,
+	port *istionetworking.Port) *metaroute.RouteConfiguration {
+	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "",
+		context.ServiceEntry.Spec.Hosts[0], int(port.Number))
 
 	return &metaroute.RouteConfiguration{
 		Name: clusterName,

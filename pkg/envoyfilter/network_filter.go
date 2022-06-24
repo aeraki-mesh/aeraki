@@ -32,7 +32,8 @@ import (
 
 var generatorLog = log.RegisterScope("aeraki-generator", "aeraki generator", 0)
 
-// GenerateInsertBeforeNetworkFilter generates an EnvoyFilter that inserts a protocol specified filter before the tcp proxy
+// GenerateInsertBeforeNetworkFilter generates an EnvoyFilter that inserts a protocol specified filter before the tcp
+// proxy
 func GenerateInsertBeforeNetworkFilter(service *model.ServiceEntryWrapper, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
 	return generateNetworkFilter(service, service.Spec.Ports[0], outboundProxy, inboundProxy, filterName,
@@ -40,7 +41,8 @@ func GenerateInsertBeforeNetworkFilter(service *model.ServiceEntryWrapper, outbo
 		networking.EnvoyFilter_Patch_INSERT_BEFORE)
 }
 
-// GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
+// GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified
+// proxy
 func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port,
 	outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
@@ -48,92 +50,113 @@ func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *netw
 		networking.EnvoyFilter_Patch_REPLACE)
 }
 
-// GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified proxy
+// GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified
+// proxy
 func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string,
 	operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	var envoyFilters []*model.EnvoyFilterWrapper
 
-	var outboundProxyPatch, inboundProxyPatch *networking.EnvoyFilter_EnvoyConfigObjectPatch
 	if outboundProxy != nil {
-		outboundProxyStruct, err := generateValue(outboundProxy, filterName, filterType)
-		if err != nil {
-			// This should not happen
-			generatorLog.Errorf("Failed to generate outbound EnvoyFilter: %v", err)
-			return nil
-		}
-
-		for i := 0; i < len(service.Spec.GetAddresses()); i++ {
-			outboundListenerName := service.Spec.GetAddresses()[i] + "_" + strconv.Itoa(int(port.
-				Number))
-			outboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
-				ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
-				Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
-					ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-						Listener: &networking.EnvoyFilter_ListenerMatch{
-							Name: outboundListenerName,
-							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
-									Name: wellknown.TCPProxy,
-								},
-							},
-						},
-					},
-				},
-				Patch: &networking.EnvoyFilter_Patch{
-					Operation: operation,
-					Value:     outboundProxyStruct,
-				},
-			}
-
-			envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
-				Name: outboundEnvoyFilterName(service.Spec.Hosts[0], service.Spec.Addresses[i], int(port.Number)),
-				Envoyfilter: &networking.EnvoyFilter{
-					ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
-				},
-			})
-		}
+		envoyFilters = generateOutboundListenerEnvoyFilters(service, port, outboundProxy, filterName, filterType,
+			operation)
 	}
 
 	WorkloadSelector := inboundEnvoyFilterWorkloadSelector(service)
 
-	// a workload selector should be set in an inbound envoy filter so we won't override the inbound config of other
+	// a workload selector should be set in an inbound envoy filter, so we won't override the inbound config of other
 	// services at the same port
 	if inboundProxy != nil && hasInboundWorkloadSelector(WorkloadSelector) {
-		inboundProxyStruct, err := generateValue(inboundProxy, filterName, filterType)
-		if err != nil {
-			// This should not happen
-			generatorLog.Errorf("Failed to generate inbound EnvoyFilter: %v", err)
-		} else {
-			inboundProxyPatch = &networking.EnvoyFilter_EnvoyConfigObjectPatch{
-				ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
-				Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
-					ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-						Listener: &networking.EnvoyFilter_ListenerMatch{
-							Name: "virtualInbound",
-							FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
-								DestinationPort: port.Number,
-								Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
-									Name: wellknown.TCPProxy,
-								},
+		inboundEnvoyFilters := generateInboundListenerEnvoyFilters(service, port, inboundProxy, filterName, filterType,
+			operation,
+			WorkloadSelector)
+		envoyFilters = append(envoyFilters, inboundEnvoyFilters...)
+	}
+	return envoyFilters
+}
+
+func generateOutboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, port *networking.Port,
+	outboundProxy proto.Message, filterName string, filterType string,
+	operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
+	outboundProxyStruct, err := generateValue(outboundProxy, filterName, filterType)
+	var envoyFilters []*model.EnvoyFilterWrapper
+	if err != nil {
+		// This should not happen
+		generatorLog.Errorf("Failed to generate outbound EnvoyFilter: %v", err)
+		return envoyFilters
+	}
+
+	for i := 0; i < len(service.Spec.GetAddresses()); i++ {
+		outboundListenerName := service.Spec.GetAddresses()[i] + "_" + strconv.Itoa(int(port.
+			Number))
+		outboundProxyPatch := &networking.EnvoyFilter_EnvoyConfigObjectPatch{
+			ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
+			Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
+				ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+					Listener: &networking.EnvoyFilter_ListenerMatch{
+						Name: outboundListenerName,
+						FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
+							Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
+								Name: wellknown.TCPProxy,
 							},
 						},
 					},
 				},
-				Patch: &networking.EnvoyFilter_Patch{
-					Operation: operation,
-					Value:     inboundProxyStruct,
-				},
-			}
-
-			envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
-				Name: inboundEnvoyFilterName(service.Spec.Hosts[0], int(port.Number)),
-				Envoyfilter: &networking.EnvoyFilter{
-					WorkloadSelector: WorkloadSelector,
-					ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
-				},
-			})
+			},
+			Patch: &networking.EnvoyFilter_Patch{
+				Operation: operation,
+				Value:     outboundProxyStruct,
+			},
 		}
+
+		envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
+			Name: outboundEnvoyFilterName(service.Spec.Hosts[0], service.Spec.Addresses[i], int(port.Number)),
+			Envoyfilter: &networking.EnvoyFilter{
+				ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{outboundProxyPatch},
+			},
+		})
+	}
+	return envoyFilters
+}
+
+func generateInboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, port *networking.Port,
+	inboundProxy proto.Message, filterName string, filterType string,
+	operation networking.EnvoyFilter_Patch_Operation,
+	workloadSelector *networking.WorkloadSelector) []*model.EnvoyFilterWrapper {
+	inboundProxyStruct, err := generateValue(inboundProxy, filterName, filterType)
+	var envoyFilters []*model.EnvoyFilterWrapper
+	if err != nil {
+		// This should not happen
+		generatorLog.Errorf("Failed to generate inbound EnvoyFilter: %v", err)
+	} else {
+		inboundProxyPatch := &networking.EnvoyFilter_EnvoyConfigObjectPatch{
+			ApplyTo: networking.EnvoyFilter_NETWORK_FILTER,
+			Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
+				ObjectTypes: &networking.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+					Listener: &networking.EnvoyFilter_ListenerMatch{
+						Name: "virtualInbound",
+						FilterChain: &networking.EnvoyFilter_ListenerMatch_FilterChainMatch{
+							DestinationPort: port.Number,
+							Filter: &networking.EnvoyFilter_ListenerMatch_FilterMatch{
+								Name: wellknown.TCPProxy,
+							},
+						},
+					},
+				},
+			},
+			Patch: &networking.EnvoyFilter_Patch{
+				Operation: operation,
+				Value:     inboundProxyStruct,
+			},
+		}
+
+		envoyFilters = append(envoyFilters, &model.EnvoyFilterWrapper{
+			Name: inboundEnvoyFilterName(service.Spec.Hosts[0], int(port.Number)),
+			Envoyfilter: &networking.EnvoyFilter{
+				WorkloadSelector: workloadSelector,
+				ConfigPatches:    []*networking.EnvoyFilter_EnvoyConfigObjectPatch{inboundProxyPatch},
+			},
+		})
 	}
 	return envoyFilters
 }

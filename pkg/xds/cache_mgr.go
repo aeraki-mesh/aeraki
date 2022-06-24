@@ -384,7 +384,8 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 	return nil, nil
 }
 
-func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper) (*model.DestinationRuleWrapper, error) {
+func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper) (*model.DestinationRuleWrapper,
+	error) {
 	drs, err := c.configStore.List(
 		collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind(), "")
 	if err != nil {
