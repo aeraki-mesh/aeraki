@@ -340,17 +340,20 @@ func validateMetaRoute(route *metaprotocol.MetaRoute) (errs Validation) {
 		}
 	}
 
-	if (route.MirrorPercentage != nil && route.Mirror == nil) || (route.MirrorPercentage == nil && route.Mirror != nil) {
+	if route.MirrorPercentage != nil && route.Mirror == nil {
 		errs = appendValidation(errs, fmt.Errorf("mirrorPercentage and mirror must be set together"))
 	}
 
 	if route.MirrorPercentage != nil {
 		value := route.MirrorPercentage.GetValue()
 		if value > 100 {
-			errs = appendValidation(errs, fmt.Errorf("mirrorPercentage must have a max value of 100 (it has %f)", value))
+			errs = appendValidation(errs, fmt.Errorf("mirrorPercentage must not be greater than 100 (it has %f)",
+				value))
 		}
-		if value < 0 {
-			errs = appendValidation(errs, fmt.Errorf("mirrorPercentage must have a min value of 0 (it has %f)", value))
+		if value <= 0 {
+			errs = appendValidation(errs, fmt.Errorf("mirrorPercentage must not be less than or equal to 0 ("+
+				"it has %f)",
+				value))
 		}
 	}
 
