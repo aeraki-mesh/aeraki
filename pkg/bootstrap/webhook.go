@@ -18,6 +18,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/aeraki-mesh/aeraki/pkg/webhook/validation"
 )
@@ -34,6 +35,7 @@ func (s *Server) initSecureWebhookServer(args *AerakiArgs) error {
 			GetCertificate: s.getAerakiCertificate,
 			MinVersion:     tls.VersionTLS12,
 		},
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	// Generate Webhook configuration
