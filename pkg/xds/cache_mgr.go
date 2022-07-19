@@ -20,11 +20,12 @@ import (
 	"strings"
 	"time"
 
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+
 	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 
-	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -290,27 +291,29 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 			}
 		}
 
-		if c.hasMirrorPolicy(route) {
+		if route.Mirror != nil {
+			dstPort := port.Number
+			if route.Mirror.Port != nil && route.Mirror.Port.Number != 0 {
+				dstPort = route.Mirror.Port.Number
+			}
 			routeAction.RequestMirrorPolicies = []*metaroute.RouteAction_RequestMirrorPolicy{
 				{
 					Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, route.Mirror.Subset,
-						route.Mirror.Host, int(route.Mirror.Port.Number)),
-					RuntimeFraction: &corev3.RuntimeFractionalPercent{
-						DefaultValue: translatePercentToFractionalPercent(route.MirrorPercentage.Value),
-					},
+						route.Mirror.Host, int(dstPort)),
 				},
+			}
+			var mirrorPercent float64
+			mirrorPercent = 100
+			if route.MirrorPercentage != nil && route.MirrorPercentage.Value != 0 {
+				mirrorPercent = route.MirrorPercentage.Value
+			}
+			routeAction.RequestMirrorPolicies[0].RuntimeFraction = &corev3.RuntimeFractionalPercent{
+				DefaultValue: translatePercentToFractionalPercent(mirrorPercent),
 			}
 		}
 	}
 
 	return routeAction
-}
-
-func (c *CacheMgr) hasMirrorPolicy(route *metaprotocolapi.MetaRoute) bool {
-	if route.MirrorPercentage != nil && route.Mirror != nil {
-		return true
-	}
-	return false
 }
 
 func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,

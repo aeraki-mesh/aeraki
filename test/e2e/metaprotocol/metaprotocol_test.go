@@ -252,3 +252,27 @@ func checkNS(ns string, num int, t *testing.T) {
 		t.Errorf("test exportTo failed, want %v outbound envoyfiltre in ns %s, got %v", num, ns, count)
 	}
 }
+
+func TestTrafficMirror(t *testing.T) {
+	util.KubeApply("metaprotocol", "testdata/traffic-mirroring.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		log.Info(dubboResponse)
+	}
+	v1log := util.GetPodLogsForLabel("metaprotocol", "version=v1", "dubbo-sample-provider", true, false, "")
+	want := 10
+	actual := strings.Count(v1log, "Hello Aeraki, request from consumer")
+	if actual != want {
+		t.Errorf("fail to send request to host, want: %v got:%v ", want, actual)
+	}
+	v1log = util.GetPodLogsForLabel("metaprotocol", "version=v2", "dubbo-sample-provider", true, false, "")
+	want = 5
+	actual = strings.Count(v1log, "Hello Aeraki, request from consumer")
+	if actual < 4 && actual > 6 {
+		t.Errorf("fail to send request to mirror host, want: %v got:%v ", want, actual)
+	}
+}
