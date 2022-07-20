@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.1.0
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.1.1
       labels:
         app: qza-sample-server
         version: v1
@@ -57,7 +57,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.1.0
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.1.1
       labels:
         app: qza-sample-server
         version: v2
@@ -86,7 +86,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.1.0
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.1.1
       labels:
         app: qza-sample-client
     spec:
