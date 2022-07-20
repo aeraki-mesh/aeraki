@@ -101,8 +101,7 @@ Aeraki can manage the below protocols in a service mesh：
     * [x] Local Rate Limit
     * [x] Global Rate Limit
     * [x] Message mutation
-    * [ ] Traffic Mirroring
-    * [ ] Request Transformation
+    * [x] Traffic Mirroring
   * Observability
     * [x] Request level Metrics (Request latency, count, error, etc)
     * [ ] Distributed Tracing
