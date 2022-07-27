@@ -607,7 +607,7 @@ func GetPodLogsForLabel(n, labelSelector string, container string, tail, alsoSho
 func GetPodLogs(n, pod, container string, tail, alsoShowPreviousPodLogs bool, kubeconfig string) string {
 	tailOption := ""
 	if tail {
-		tailOption = "--tail=40"
+		tailOption = "--tail=100"
 	}
 	o1 := ""
 	if alsoShowPreviousPodLogs {

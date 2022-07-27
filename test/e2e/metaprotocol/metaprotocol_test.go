@@ -49,6 +49,11 @@ func shutdown() {
 	util.DeleteNamespace("metaprotocol", "")
 }
 
+func redeployApplication() {
+	util.KubeDelete("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
+	util.KubeApply("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
+}
+
 func TestSidecarOutboundConfig(t *testing.T) {
 	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	time.Sleep(10 * time.Second) //wait for serviceentry vip allocation
@@ -82,6 +87,7 @@ func TestVersionRouting(t *testing.T) {
 }
 
 func testVersion(version string, t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	util.KubeApply("metaprotocol", "testdata/metarouter-"+version+".yaml", "")
 	defer util.KubeDelete("metaprotocol", "testdata/metarouter-"+version+".yaml", "")
 
@@ -133,6 +139,7 @@ func TestAttributeRouting(t *testing.T) {
 }
 
 func testAttributeMatch(matchPattern string, t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	util.KubeApply("metaprotocol", "testdata/metarouter-attribute-"+matchPattern+".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
@@ -254,6 +261,8 @@ func checkNS(ns string, num int, t *testing.T) {
 }
 
 func TestTrafficMirror(t *testing.T) {
+	redeployApplication()
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	util.KubeApply("metaprotocol", "testdata/traffic-mirroring.yaml", "")
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
@@ -274,5 +283,22 @@ func TestTrafficMirror(t *testing.T) {
 	actual = strings.Count(v1log, "Hello Aeraki, request from consumer")
 	if actual < 4 && actual > 6 {
 		t.Errorf("fail to send request to mirror host, want: %v got:%v ", want, actual)
+	}
+}
+
+func TestHeaderMutation(t *testing.T) {
+	redeployApplication()
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-header-mutation.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+		"curl -s 127.0.0.1:9009/hello", false, "")
+	log.Info(dubboResponse)
+	v1log := util.GetPodLogsForLabel("metaprotocol", "version=v1", "dubbo-sample-provider", true, false, "")
+	headerAdded := strings.Contains(v1log, "key: foo1 value: bar1")
+	if !headerAdded {
+		t.Errorf("fail to change header!")
 	}
 }
