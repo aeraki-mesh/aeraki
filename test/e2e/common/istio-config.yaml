@@ -10,6 +10,7 @@ spec:
   meshConfig:
     accessLogFile: /dev/stdout
     defaultConfig:
+      holdApplicationUntilProxyStarts: true
       proxyMetadata:
         ISTIO_META_DNS_CAPTURE: "true"
       proxyStatsMatcher:
