@@ -44,7 +44,7 @@ const (
 
 var protocolMap = make(map[string]Instance)
 
-// nolint: gochecknoinits
+//nolint: gochecknoinits
 func init() {
 	protocolMap["dubbo"] = Dubbo
 	protocolMap["thrift"] = Thrift

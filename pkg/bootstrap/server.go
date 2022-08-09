@@ -161,7 +161,7 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		return nil, err
 	}
 
-	// nolint: unparam
+	//nolint: unparam
 	updateEnvoyFilter := func() error {
 		envoyFilterController.ConfigUpdated(model.EventUpdate)
 		return nil

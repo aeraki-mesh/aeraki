@@ -41,7 +41,7 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
-// nolint: funlen,gocyclo
+//nolint: funlen,gocyclo
 func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext,
 	listenPort uint32) *cluster.Cluster {
 	const defaultConnectTimeout = 10
