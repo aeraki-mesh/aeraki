@@ -20,8 +20,9 @@ import (
 
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 
-	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/matcher"
 	"istio.io/istio/pkg/spiffe"
+
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/matcher"
 )
 
 type generator interface {
@@ -64,7 +65,6 @@ func (srcNamespaceGenerator) principal(_, value string) (*rbacpb.Principal, erro
 	v := strings.Replace(value, "*", ".*", -1)
 	m := matcher.StringMatcherRegex(fmt.Sprintf(".*/ns/%s/.*", v))
 	return principalAuthenticated(m), nil
-
 }
 
 type srcPrincipalGenerator struct {

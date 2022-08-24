@@ -15,14 +15,16 @@
 package metaprotocol
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
-	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
 	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	istionetworking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
 )
 
-func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+func buildOutboundProxy(context *model.EnvoyFilterContext,
+	port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.Name)
 	if err != nil {
 		return nil, err
@@ -48,7 +50,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking
 								{
 									TargetSpecifier: &envoyconfig.GrpcService_EnvoyGrpc_{
 										EnvoyGrpc: &envoyconfig.GrpcService_EnvoyGrpc{
-											ClusterName: "aeraki-xds", //TODO make this configurable
+											ClusterName: "aeraki-xds", // TODO make this configurable
 										},
 									},
 								},
@@ -62,15 +64,13 @@ func buildOutboundProxy(context *model.EnvoyFilterContext, port *istionetworking
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
-		MetaProtocolFilters: buildOutboundFilters(context.MetaRouter),
+		MetaProtocolFilters: buildOutboundFilters(),
 	}, nil
 }
 
-func buildInboundProxy(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
-	route, err := buildInboundRouteConfig(context, port)
-	if err != nil {
-		return nil, err
-	}
+func buildInboundProxy(context *model.EnvoyFilterContext,
+	port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+	route := buildInboundRouteConfig(context, port)
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.
 		Name)
 	if err != nil {

@@ -30,11 +30,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
 	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
 
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-	"github.com/aeraki-mesh/aeraki/pkg/xds"
-	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
-	"github.com/aeraki-mesh/aeraki/plugin/redis"
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
@@ -46,6 +41,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/xds"
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
+	"github.com/aeraki-mesh/aeraki/plugin/redis"
 )
 
 var (
@@ -93,13 +94,13 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
 		args.EnableEnvoyFilterNSScope)
-	configController.RegisterEventHandler(func(_, curr istioconfig.Config, event model.Event) {
+	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
 
 	// routeCacheMgr watches service entry and generate the routes for meta protocol services
 	routeCacheMgr := xds.NewCacheMgr(configController.Store)
-	configController.RegisterEventHandler(func(prev istioconfig.Config, curr istioconfig.Config,
+	configController.RegisterEventHandler(func(prev *istioconfig.Config, curr *istioconfig.Config,
 		event model.Event) {
 		routeCacheMgr.ConfigUpdated(prev, curr, event)
 	})
@@ -117,7 +118,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	// envoyFilterController uses controller manager client to get the rate limit configuration in MetaRouters
 	envoyFilterController.MetaRouterControllerClient = scalableCtrlMgr.GetClient()
 
-	//todo replace config with cached client
+	// todo replace config with cached client
 	cfg := scalableCtrlMgr.GetConfig()
 	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(scalableCtrlMgr.GetConfig())
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
@@ -160,45 +161,37 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 		return nil, err
 	}
 
+	//nolint: unparam
 	updateEnvoyFilter := func() error {
 		envoyFilterController.ConfigUpdated(model.EventUpdate)
 		return nil
 	}
-	updateCache := func() error {
+	updateCache := func() {
 		xdsCacheMgr.UpdateRoute()
-		return nil
 	}
-	err = kube.AddRedisServiceController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add RedisServiceController: %e", err)
+	if err := kube.AddRedisServiceController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddRedisDestinationController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add RedisDestinationController: %e", err)
+	if err := kube.AddRedisDestinationController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add DubboAuthorizationPolicyController: %e", err)
+	if err := kube.AddDubboAuthorizationPolicyController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddApplicationProtocolController(mgr, updateEnvoyFilter)
-	if err != nil {
-		aerakiLog.Fatalf("could not add ApplicationProtocolController: %e", err)
+	if err := kube.AddApplicationProtocolController(mgr, updateEnvoyFilter); err != nil {
+		return nil, err
 	}
-	err = kube.AddMetaRouterController(mgr, func() error {
-		if err := updateEnvoyFilter(); err != nil { //MetaRouter Rate limit config will cause update on EnvoyFilters
+	if err := kube.AddMetaRouterController(mgr, func() error {
+		if err := updateEnvoyFilter(); err != nil { // MetaRouter Rate limit config will cause update on EnvoyFilters
 			return err
 		}
-		if err := updateCache(); err != nil { //MetaRouter route config will cause update on RDS cache
-			return err
-		}
+		updateCache() // MetaRouter route config will cause update on RDS cache
 		return nil
-	})
-	if err != nil {
-		aerakiLog.Fatalf("could not add MetaRouterController: %e", err)
+	}); err != nil {
+		return nil, err
 	}
-	err = aerakischeme.AddToScheme(mgr.GetScheme())
-	if err != nil {
-		aerakiLog.Fatalf("could not add schema: %e", err)
+	if err := aerakischeme.AddToScheme(mgr.GetScheme()); err != nil {
+		return nil, err
 	}
 	return mgr, nil
 }
@@ -230,7 +223,8 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 	return mgr, nil
 }
 
-// Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop channel.
+// Start starts all components of the Aeraki service. Serving can be canceled at any time by closing the provided stop
+// channel.
 // This method won't block
 func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")

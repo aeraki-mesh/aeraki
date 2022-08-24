@@ -18,7 +18,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
 	"istio.io/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -27,6 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
 )
 
 var dubboLog = log.RegisterScope("dubbo-controller", "dubbo-controller debugging", 0)
@@ -57,7 +58,8 @@ func AddDubboAuthorizationPolicyController(mgr manager.Manager, triggerPush func
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.DubboAuthorizationPolicy{}}, &handler.EnqueueRequestForObject{}, dubboPredicates)
+	err = c.Watch(&source.Kind{Type: &v1alpha1.DubboAuthorizationPolicy{}},
+		&handler.EnqueueRequestForObject{}, dubboPredicates)
 	if err != nil {
 		return err
 	}
@@ -65,6 +67,7 @@ func AddDubboAuthorizationPolicyController(mgr manager.Manager, triggerPush func
 	return nil
 }
 
+//nolint: dupl
 var (
 	dubboPredicates = predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {

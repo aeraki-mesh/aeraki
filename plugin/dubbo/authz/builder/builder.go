@@ -20,17 +20,19 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	dubborulepb "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
 	dubboapi "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
 	dubboclient "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	authzmodel "github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/model"
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 	dubbopb "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	rbacdubbopb "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/rbac/v3"
 	"istio.io/istio/pilot/pkg/security/trustdomain"
 	"istio.io/pkg/log"
+
+	authzmodel "github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/model"
 )
 
 var (
@@ -56,7 +58,8 @@ func New(trustDomainBundle trustdomain.Bundle, namespace string,
 	if err != nil {
 		authzLog.Errorf("failed to list DubboAuthorizationPolicy: %v", err)
 	} else {
-		for _, config := range dubboAuthorizationPolicyList.Items {
+		for i := range dubboAuthorizationPolicyList.Items {
+			config := dubboAuthorizationPolicyList.Items[i]
 			switch config.Spec.GetAction() {
 			case dubborulepb.DubboAuthorizationPolicy_ALLOW:
 				allowPolicies = append(allowPolicies, config)
@@ -101,9 +104,9 @@ func build(policies []dubboapi.DubboAuthorizationPolicy, tdBundle trustdomain.Bu
 		Policies: map[string]*rbacpb.Policy{},
 	}
 
-	for _, policy := range policies {
-		for i, rule := range policy.Spec.Rules {
-			name := fmt.Sprintf("ns[%s]-policy[%s]-rule[%d]", policy.Namespace, policy.Name, i)
+	for i := range policies {
+		for i, rule := range policies[i].Spec.Rules {
+			name := fmt.Sprintf("ns[%s]-policy[%s]-rule[%d]", policies[i].Namespace, policies[i].Name, i)
 			if rule == nil {
 				authzLog.Errorf("skipped nil rule %s", name)
 				continue

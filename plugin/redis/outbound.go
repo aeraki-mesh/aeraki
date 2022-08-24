@@ -19,17 +19,19 @@ import (
 	"strings"
 	"time"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
 	"github.com/gogo/protobuf/types"
 	"istio.io/istio/pkg/util/gogo"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
-	"github.com/aeraki-mesh/aeraki/pkg/model"
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pkg/config/schema/collections"
+
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 )
@@ -45,7 +47,8 @@ var (
 	defaultInboundOpTimeout = gogo.DurationToProtoDuration(types.DurationProto(time.Hour))
 )
 
-func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32, listenPortName string) *redis.RedisProxy {
+func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32,
+	listenPortName string) *redis.RedisProxy {
 	proxy, err := g.buildOutboundProxy(ctx, c, listenPort, listenPortName)
 	if err != nil {
 		generatorLog.Errorf("build outbound %s/%s :%e", c.ServiceEntry.Namespace, c.ServiceEntry.Name, err)
@@ -67,7 +70,8 @@ func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model
 	return proxy
 }
 
-func (g *Generator) buildOutboundProxy(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32, listenPortName string) (*redis.RedisProxy, error) {
+func (g *Generator) buildOutboundProxy(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32,
+	listenPortName string) (*redis.RedisProxy, error) {
 	targetHost, rs, err := g.findTargetHostAndRedisService(ctx, c.ServiceEntry.Namespace, c.ServiceEntry.Spec.Hosts)
 	if err != nil {
 		return nil, err
@@ -170,7 +174,8 @@ func (g *Generator) buildAuth(proxy *redis.RedisProxy, rs *v1alpha1.RedisService
 	return nil
 }
 
-func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string, hosts []string) (targetHost string, rs *v1alpha1.RedisService, err error) {
+func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string, hosts []string) (targetHost string,
+	rs *v1alpha1.RedisService, err error) {
 	generatorLog.Debugf("try find target host and RedisService %s %v", ns, hosts)
 	redisServices, err := g.redis.RedisServices(ns).List(ctx, v1.ListOptions{
 		LabelSelector: labels.Everything().String(),
@@ -179,8 +184,8 @@ func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string
 		return "", nil, err
 	}
 	svcs := map[string]*v1alpha1.RedisService{}
-	for _, service := range redisServices.Items {
-		service := service
+	for i := range redisServices.Items {
+		service := redisServices.Items[i]
 		for _, svcHost := range service.Spec.Host {
 			generatorLog.Debugf("related host: %s => %s", svcHost, service.Name)
 			svcs[svcHost] = &service
@@ -199,8 +204,8 @@ func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string
 func (g *Generator) hostServices(ns string) (hostServices map[string]*networking.ServiceEntry) {
 	hostServices = map[string]*networking.ServiceEntry{}
 	entries, _ := g.store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), ns)
-	for _, cfg := range entries {
-		se := cfg.Spec.(*networking.ServiceEntry)
+	for i := range entries {
+		se := entries[i].Spec.(*networking.ServiceEntry)
 		for _, host := range se.Hosts {
 			hostServices[host] = se
 		}
@@ -224,7 +229,8 @@ func (g *Generator) convertPolicy(policy spec.RedisService_ReadPolicy) redis.Red
 	return redis.RedisProxy_ConnPoolSettings_MASTER
 }
 
-func (g *Generator) buildPrefixRoute(r *spec.RedisService_Route, hostServices map[string]*networking.ServiceEntry, listenPort uint32, listenPortName string) (route *redis.RedisProxy_PrefixRoutes_Route, all bool) {
+func (g *Generator) buildPrefixRoute(r *spec.RedisService_Route, hostServices map[string]*networking.ServiceEntry,
+	listenPort uint32, listenPortName string) (route *redis.RedisProxy_PrefixRoutes_Route, all bool) {
 	port := r.Route.Port
 	if port == 0 {
 		port = findServicePort(hostServices[r.Route.Host], listenPort, listenPortName)

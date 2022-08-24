@@ -15,8 +15,9 @@
 package zookeeper
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	zookeeper "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/zookeeper_proxy/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext) *zookeeper.ZooKeeperProxy {

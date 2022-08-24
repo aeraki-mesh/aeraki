@@ -15,12 +15,13 @@
 package dubbo
 
 import (
-	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
-	"github.com/aeraki-mesh/aeraki/pkg/model"
-	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/builder"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	"istio.io/istio/pilot/pkg/security/trustdomain"
 	"istio.io/istio/pkg/spiffe"
+
+	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/builder"
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
@@ -48,14 +49,11 @@ func buildOutboundProxy(context *model.EnvoyFilterContext) *dubbo.DubboProxy {
 	}
 }
 
-func buildInboundProxy(context *model.EnvoyFilterContext, client dubbov1alpha1.DubboV1alpha1Interface) *dubbo.DubboProxy {
-	route, err := buildInboundRouteConfig(context)
-	if err != nil {
-		generatorLog.Errorf("Failed to generate Dubbo EnvoyFilter: %v, %v", context.ServiceEntry, err)
-		return nil
-	}
+func buildInboundProxy(context *model.EnvoyFilterContext,
+	client dubbov1alpha1.DubboV1alpha1Interface) *dubbo.DubboProxy {
+	route := buildInboundRouteConfig(context)
 
-	//Todo support Domain alias
+	// Todo support Domain alias
 	tdBundle := trustdomain.NewBundle(spiffe.GetTrustDomain(), []string{})
 	builder := builder.New(tdBundle, context.ServiceEntry.Namespace, client)
 	dubboFilters := builder.BuildDubboFilter()

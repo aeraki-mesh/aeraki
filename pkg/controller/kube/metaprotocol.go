@@ -18,10 +18,10 @@ import (
 	"context"
 	"reflect"
 
-	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
+
 	"istio.io/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -30,10 +30,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 )
 
 var metaProtocolLog = log.RegisterScope("meta-protocol-controller", "meta-protocol-controller debugging", 0)
 
+//nolint: dupl
 var (
 	metaProtocolPredicates = predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {
@@ -71,21 +74,14 @@ type MetaProtocolController struct {
 // Reconcile will try to trigger once mcp push.
 func (r *MetaProtocolController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	metaProtocolLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
-	if r.triggerPush != nil {
-		err := r.triggerPush()
-		if err != nil {
-			return reconcile.Result{Requeue: true}, err
-		}
-	}
-	protocols := &v1alpha1.ApplicationProtocolList{}
-	err := r.List(ctx, protocols)
+	protocol := &v1alpha1.ApplicationProtocol{}
+	err := r.Get(ctx, request.NamespacedName, protocol)
 	if err != nil {
-		return reconcile.Result{}, err
+		return reconcile.Result{Requeue: true}, err
 	}
-	for _, p := range protocols.Items {
-		metaProtocolLog.Debugf("register application protocol : %s, codec: %s", p.Spec.Protocol, p.Spec.Codec)
-		metaprotocolmodel.SetApplicationProtocolCodec(p.Spec.Protocol, p.Spec.Codec)
-	}
+	metaProtocolLog.Debugf("register application protocol : %s, codec: %s", protocol.Spec.Protocol, protocol.Spec.Codec)
+	metaprotocolmodel.SetApplicationProtocolCodec(protocol.Spec.Protocol, protocol.Spec.Codec)
+
 	if r.triggerPush != nil {
 		err := r.triggerPush()
 		if err != nil {
@@ -104,7 +100,8 @@ func AddApplicationProtocolController(mgr manager.Manager, triggerPush func() er
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.ApplicationProtocol{}}, &handler.EnqueueRequestForObject{}, metaProtocolPredicates)
+	err = c.Watch(&source.Kind{Type: &v1alpha1.ApplicationProtocol{}}, &handler.EnqueueRequestForObject{},
+		metaProtocolPredicates)
 	if err != nil {
 		return err
 	}

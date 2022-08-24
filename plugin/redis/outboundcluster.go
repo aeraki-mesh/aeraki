@@ -20,7 +20,6 @@ import (
 	"strconv"
 	"strings"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes/any"
@@ -33,16 +32,23 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
-func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32, listenPortName string) *cluster.Cluster {
+//nolint: funlen,gocyclo
+func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilterContext,
+	listenPort uint32) *cluster.Cluster {
+	const defaultConnectTimeout = 10
+
 	cl := &cluster.Cluster{
 		Name:           outboundClusterName(c.ServiceEntry.Spec.Hosts[0], listenPort),
-		ConnectTimeout: &duration.Duration{Seconds: 10},
+		ConnectTimeout: &duration.Duration{Seconds: defaultConnectTimeout},
 		ClusterDiscoveryType: &cluster.Cluster_Type{
 			Type: cluster.Cluster_EDS,
 		},
@@ -69,8 +75,8 @@ func (g *Generator) buildOutboundCluster(ctx context.Context, c *model.EnvoyFilt
 	}
 	var targetDestination *spec.RedisDestination
 L:
-	for _, destination := range destinations.Items {
-		destination := destination
+	for i := range destinations.Items {
+		destination := destinations.Items[i]
 		for _, host := range c.ServiceEntry.Spec.Hosts {
 			if destination.Spec.Host == host {
 				targetDestination = &destination.Spec
@@ -176,7 +182,7 @@ L:
 	return cl
 }
 
-func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host string, name string, namespace string) {
+func (g *Generator) addIstioFilter(cl *cluster.Cluster, port uint32, host, name, namespace string) {
 	name = strings.TrimPrefix(name, "synthetic-")
 	metadata := getOrCreateIstioMetadata(cl)
 	// Add original_port field into istio metadata

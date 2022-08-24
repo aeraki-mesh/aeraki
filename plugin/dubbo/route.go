@@ -17,19 +17,20 @@ package dubbo
 import (
 	"fmt"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
-	envoy "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	routepb "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 var (
 	// TODO: In the current version of Envoy, MaxProgramSize has been deprecated. However even if we do not send
 	// MaxProgramSize, Envoy is enforcing max size of 100 via runtime.
-	// See https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/regex.proto.html#type-matcher-v3-regexmatcher-googlere2.
+	// See https://www.envoyproxy.io/docs/envoy/latest/api-v3/type/matcher/v3/regex.proto.html
+	// #type-matcher-v3-regexmatcher-googlere2.
 	regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 )
 
@@ -43,7 +44,8 @@ func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteCo
 	}
 
 	var route []*dubbo.Route
-	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "", context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "",
+		context.ServiceEntry.Spec.Hosts[0], int(context.ServiceEntry.Spec.Ports[0].Number))
 
 	if context.VirtualService == nil {
 		route = []*dubbo.Route{defaultRoute(clusterName)}
@@ -52,20 +54,22 @@ func buildOutboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteCo
 	}
 
 	return &dubbo.RouteConfiguration{
-		Name:      clusterName,
-		Interface: serviceInterface, // To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
+		Name: clusterName,
+		// To make this work, Dubbo Interface should have been registered to the Istio service registry as a service
+		Interface: serviceInterface,
 		Routes:    route,
 	}, nil
 }
 
-func buildInboundRouteConfig(context *model.EnvoyFilterContext) (*dubbo.RouteConfiguration, error) {
-	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
+func buildInboundRouteConfig(context *model.EnvoyFilterContext) *dubbo.RouteConfiguration {
+	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", "",
+		int(context.ServiceEntry.Spec.Ports[0].Number))
 	route := []*dubbo.Route{defaultRoute(clusterName)}
 	return &dubbo.RouteConfiguration{
 		Name:      clusterName,
 		Interface: "*", // Use wildcard to catch all the dubbo interfaces at this inbound port
 		Routes:    route,
-	}, nil
+	}
 }
 
 func defaultRoute(clusterName string) *dubbo.Route {
@@ -198,7 +202,8 @@ func buildHeaderMatch(route *networking.HTTPRoute) []*routepb.HeaderMatcher {
 }
 
 func buildSingleCluster(http *networking.HTTPRoute, service *networking.ServiceEntry) *dubbo.RouteAction {
-	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, http.Route[0].Destination.Subset, service.Hosts[0], int(service.Ports[0].Number))
+	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, http.Route[0].Destination.Subset,
+		service.Hosts[0], int(service.Ports[0].Number))
 	return &dubbo.RouteAction{
 		ClusterSpecifier: &dubbo.RouteAction_Cluster{
 			Cluster: clusterName,
@@ -207,12 +212,13 @@ func buildSingleCluster(http *networking.HTTPRoute, service *networking.ServiceE
 }
 
 func buildWeightedCluster(http *networking.HTTPRoute, service *networking.ServiceEntry) *dubbo.RouteAction {
-	var clusterWeights []*envoy.WeightedCluster_ClusterWeight
+	var clusterWeights []*routepb.WeightedCluster_ClusterWeight
 	var totalWeight uint32
 
 	for _, route := range http.Route {
-		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, route.Destination.Subset, service.Hosts[0], int(service.Ports[0].Number))
-		clusterWeight := &envoy.WeightedCluster_ClusterWeight{
+		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, route.Destination.Subset,
+			service.Hosts[0], int(service.Ports[0].Number))
+		clusterWeight := &routepb.WeightedCluster_ClusterWeight{
 			Name:   clusterName,
 			Weight: &wrappers.UInt32Value{Value: uint32(route.Weight)},
 		}
@@ -222,7 +228,7 @@ func buildWeightedCluster(http *networking.HTTPRoute, service *networking.Servic
 
 	return &dubbo.RouteAction{
 		ClusterSpecifier: &dubbo.RouteAction_WeightedClusters{
-			WeightedClusters: &envoy.WeightedCluster{
+			WeightedClusters: &routepb.WeightedCluster{
 				Clusters:    clusterWeights,
 				TotalWeight: &wrappers.UInt32Value{Value: totalWeight},
 			},

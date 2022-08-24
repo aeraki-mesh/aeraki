@@ -14,6 +14,7 @@
 
 BASEDIR=$(dirname "$0")
 
+kubectl delete -f $BASEDIR/brpc-protocol.yaml -n meta-brpc
 kubectl delete -f $BASEDIR/brpc-sample.yaml -n meta-brpc
 kubectl delete -f $BASEDIR/service.yaml -n meta-brpc
 kubectl delete ns meta-brpc

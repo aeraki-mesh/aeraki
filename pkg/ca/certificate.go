@@ -50,31 +50,26 @@ func GenerateKeyCertBundle() (*KeyCertBundle, error) {
 		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		BasicConstraintsValid: true,
 	}
-
 	// CA private key
 	caPrivKey, err := rsa.GenerateKey(cryptorand.Reader, 4096)
 	if err != nil {
 		return nil, err
 	}
-
 	// Self signed CA certificate
 	caBytes, err := x509.CreateCertificate(cryptorand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
 	if err != nil {
 		return nil, err
 	}
-
 	// PEM encode CA cert
 	caPEM = new(bytes.Buffer)
 	_ = pem.Encode(caPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: caBytes,
 	})
-
 	dnsNames := []string{"aeraki",
 		"aeraki." + constants.DefaultRootNamespace,
 		"aeraki." + constants.DefaultRootNamespace + ".svc"}
 	commonName := "aeraki.default.svc"
-
 	// server cert config
 	cert := &x509.Certificate{
 		DNSNames:     dnsNames,

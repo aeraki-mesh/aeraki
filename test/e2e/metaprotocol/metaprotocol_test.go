@@ -20,8 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 )
 
 func TestMain(m *testing.M) {
@@ -38,6 +39,7 @@ func setup() {
 	util.KubeApply("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/serviceentry.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/destinationrule.yaml", "")
+	util.KubeApply("metaprotocol", "testdata/rate-limit-server/", "")
 }
 
 func shutdown() {
@@ -45,6 +47,11 @@ func shutdown() {
 	util.KubeDelete("metaprotocol", "testdata/serviceentry.yaml", "")
 	util.KubeDelete("metaprotocol", "testdata/destinationrule.yaml", "")
 	util.DeleteNamespace("metaprotocol", "")
+}
+
+func redeployApplication() {
+	util.KubeDelete("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
+	util.KubeApply("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
 }
 
 func TestSidecarOutboundConfig(t *testing.T) {
@@ -80,6 +87,7 @@ func TestVersionRouting(t *testing.T) {
 }
 
 func testVersion(version string, t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	util.KubeApply("metaprotocol", "testdata/metarouter-"+version+".yaml", "")
 	defer util.KubeDelete("metaprotocol", "testdata/metarouter-"+version+".yaml", "")
 
@@ -131,6 +139,7 @@ func TestAttributeRouting(t *testing.T) {
 }
 
 func testAttributeMatch(matchPattern string, t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
 	util.KubeApply("metaprotocol", "testdata/metarouter-attribute-"+matchPattern+".yaml", "")
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
@@ -143,5 +152,153 @@ func testAttributeMatch(matchPattern string, t *testing.T) {
 		if !strings.Contains(dubboResponse, want) {
 			t.Errorf("attribute routing failed, want: %s, got %s", want, dubboResponse)
 		}
+	}
+}
+
+func TestConsistentHashLb(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/consistent-hash-lb/destinationrule.yaml", "")
+	util.KubeApply("metaprotocol", "testdata/consistent-hash-lb/metarouter-sample.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	var v1, v2 int
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, "response from dubbo-sample-provider-v1") {
+			v1++
+		}
+		if strings.Contains(dubboResponse, "response from dubbo-sample-provider-v2") {
+			v2++
+		}
+	}
+	if !(v1 == 10 || v2 == 10) {
+		t.Errorf("consistent hash lb failed, v1:v2 want: 0:10 or 10:0, got %d:%d", v1, v2)
+	}
+}
+
+func TestLocalRateLimit(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-local-ratelimit.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-local-ratelimit.yaml", "")
+
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	success := 0
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		response := "response from dubbo-sample-provider"
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, response) {
+			success++
+		}
+	}
+	if success != 2 {
+		t.Errorf("local rate limit failed, want: %v got:%v ", 2, success)
+	} else {
+		t.Logf("%v requests have been sent to server", success)
+	}
+}
+
+func TestGlobalRateLimit(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-global-ratelimit.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-global-ratelimit.yaml", "")
+
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	success := 0
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		response := "response from dubbo-sample-provider"
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, response) {
+			success++
+		}
+	}
+
+	if success != 2 {
+		t.Errorf("global rate limit failed, want: %v got:%v ", 2, success)
+	} else {
+		t.Logf("%v requests have been sent to server", success)
+	}
+}
+
+func TestExportToNS(t *testing.T) {
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-v1.yaml", "")
+	defer util.KubeDelete("metaprotocol", "testdata/metarouter-v1.yaml", "")
+
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	output, err := util.KubeCommand("get envoyfilter ", "metaprotocol", "", "")
+	if err != nil {
+		t.Errorf("failed to get envoyfilters %v", err)
+	}
+	checkNS("default", 1, t)
+	checkNS("metaprotocol", 1, t)
+	checkNS("istio-system", 0, t)
+	t.Logf(output)
+}
+
+func checkNS(ns string, num int, t *testing.T) {
+	output, err := util.KubeCommand("get envoyfilter ", ns, "", "")
+	if err != nil {
+		t.Errorf("failed to get envoyfilters %v", err)
+	}
+	if count := strings.Count(output, "aeraki-inbound-org.apache.dubbo.samples.basic.api.demoservice"); count != num {
+		t.Errorf("test exportTo failed, want %v inbound envoyfilter in ns %s, got %v", num, ns, count)
+	}
+	if count := strings.Count(output, "aeraki-outbound-org.apache.dubbo.samples.basic.api.demoservice"); count != num {
+		t.Errorf("test exportTo failed, want %v outbound envoyfiltre in ns %s, got %v", num, ns, count)
+	}
+}
+
+func TestTrafficMirror(t *testing.T) {
+	redeployApplication()
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/traffic-mirroring.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	for i := 0; i < 10; i++ {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		log.Info(dubboResponse)
+	}
+	v1log := util.GetPodLogsForLabel("metaprotocol", "version=v1", "dubbo-sample-provider", true, false, "")
+	want := 10
+	actual := strings.Count(v1log, "Hello Aeraki, request from consumer")
+	if actual != want {
+		t.Errorf("fail to send request to host, want: %v got:%v ", want, actual)
+	}
+	v1log = util.GetPodLogsForLabel("metaprotocol", "version=v2", "dubbo-sample-provider", true, false, "")
+	want = 5
+	actual = strings.Count(v1log, "Hello Aeraki, request from consumer")
+	if actual < 4 && actual > 6 {
+		t.Errorf("fail to send request to mirror host, want: %v got:%v ", want, actual)
+	}
+}
+
+func TestHeaderMutation(t *testing.T) {
+	redeployApplication()
+	util.WaitForDeploymentsReady("metaprotocol", 10*time.Minute, "")
+	util.KubeApply("metaprotocol", "testdata/metarouter-header-mutation.yaml", "")
+	log.Info("Waiting for rules to propagate ...")
+	time.Sleep(1 * time.Minute)
+	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+	dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+		"curl -s 127.0.0.1:9009/hello", false, "")
+	log.Info(dubboResponse)
+	v1log := util.GetPodLogsForLabel("metaprotocol", "version=v1", "dubbo-sample-provider", true, false, "")
+	headerAdded := strings.Contains(v1log, "key: foo1 value: bar1")
+	if !headerAdded {
+		t.Errorf("fail to change header!")
 	}
 }

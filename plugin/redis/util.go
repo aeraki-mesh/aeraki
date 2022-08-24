@@ -17,8 +17,6 @@ package redis
 import (
 	"math"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
@@ -27,6 +25,9 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/networking/util"
+
+	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func getOrCreateIstioMetadata(cluster *cluster.Cluster) *structpb.Struct {
@@ -117,20 +118,35 @@ type HostPort struct {
 
 func toLbEndpoints(addrs ...HostPort) (endpoints []*endpoint.LbEndpoint) {
 	for _, addr := range addrs {
-		ep := &endpoint.LbEndpoint{HostIdentifier: &endpoint.LbEndpoint_Endpoint{Endpoint: &endpoint.Endpoint{Address: &envoycore.Address{Address: &envoycore.Address_SocketAddress{SocketAddress: &envoycore.SocketAddress{Address: addr.Host, PortSpecifier: &envoycore.SocketAddress_PortValue{PortValue: addr.Port}}}}}}}
+		ep := &endpoint.LbEndpoint{
+			HostIdentifier: &endpoint.LbEndpoint_Endpoint{
+				Endpoint: &endpoint.Endpoint{
+					Address: &envoycore.Address{
+						Address: &envoycore.Address_SocketAddress{
+							SocketAddress: &envoycore.SocketAddress{
+								Address:       addr.Host,
+								PortSpecifier: &envoycore.SocketAddress_PortValue{PortValue: addr.Port},
+							},
+						},
+					},
+				},
+			},
+		}
 		endpoints = append(endpoints, ep)
 	}
 	return endpoints
 }
 
-// getDefaultCircuitBreakerThresholds returns a copy of the default circuit breaker thresholds for the given traffic direction.
+// getDefaultCircuitBreakerThresholds returns a copy of the default circuit breaker thresholds for the given traffic
+// direction.
 func getDefaultCircuitBreakerThresholds() *cluster.CircuitBreakers_Thresholds {
 	return &cluster.CircuitBreakers_Thresholds{
 		// DefaultMaxRetries specifies the default for the Envoy circuit breaker parameter max_retries. This
-		// defines the maximum number of parallel retries a given Envoy will allow to the upstream cluster. Envoy defaults
-		// this value to 3, however that has shown to be insufficient during periods of pod churn (e.g. rolling updates),
-		// where multiple endpoints in a cluster are terminated. In these scenarios the circuit breaker can kick
-		// in before Pilot is able to deliver an updated endpoint list to Envoy, leading to client-facing 503s.
+		// defines the maximum number of parallel retries a given Envoy will allow to the upstream cluster. Envoy
+		// defaults this value to 3, however that has shown to be insufficient during periods of pod churn (e.g.
+		// rolling updates), where multiple endpoints in a cluster are terminated. In these scenarios the circuit
+		// breaker can kick in before Pilot is able to deliver an updated endpoint list to Envoy,
+		// leading to client-facing 503s.
 		MaxRetries:         &wrappers.UInt32Value{Value: math.MaxUint32},
 		MaxRequests:        &wrappers.UInt32Value{Value: math.MaxUint32},
 		MaxConnections:     &wrappers.UInt32Value{Value: math.MaxUint32},
@@ -138,17 +154,20 @@ func getDefaultCircuitBreakerThresholds() *cluster.CircuitBreakers_Thresholds {
 	}
 }
 
-func setKeepAliveSettings(cluster *cluster.Cluster, keepalive *networking.ConnectionPoolSettings_TCPSettings_TcpKeepalive) {
+func setKeepAliveSettings(cluster *cluster.Cluster,
+	keepalive *networking.ConnectionPoolSettings_TCPSettings_TcpKeepalive) {
 	if keepalive.Probes > 0 {
 		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveProbes = &wrappers.UInt32Value{Value: keepalive.Probes}
 	}
 
 	if keepalive.Time != nil {
-		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveTime = &wrappers.UInt32Value{Value: uint32(keepalive.Time.Seconds)}
+		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveTime =
+			&wrappers.UInt32Value{Value: uint32(keepalive.Time.Seconds)}
 	}
 
 	if keepalive.Interval != nil {
-		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveInterval = &wrappers.UInt32Value{Value: uint32(keepalive.Interval.Seconds)}
+		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveInterval =
+			&wrappers.UInt32Value{Value: uint32(keepalive.Interval.Seconds)}
 	}
 }
 

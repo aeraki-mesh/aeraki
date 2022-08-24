@@ -59,7 +59,8 @@ func (cb *callbacks) OnStreamResponse(_ context.Context, _ int64, request *disco
 	response *discovery.DiscoveryResponse) {
 	xdsLog.Debugf("send rds response to: %s :%v", request.Node.Id, response.Resources)
 }
-func (cb *callbacks) OnStreamDeltaResponse(id int64, req *discovery.DeltaDiscoveryRequest, res *discovery.DeltaDiscoveryResponse) {
+func (cb *callbacks) OnStreamDeltaResponse(id int64, req *discovery.DeltaDiscoveryRequest,
+	res *discovery.DeltaDiscoveryResponse) {
 }
 func (cb *callbacks) OnStreamDeltaRequest(id int64, req *discovery.DeltaDiscoveryRequest) error {
 	return nil

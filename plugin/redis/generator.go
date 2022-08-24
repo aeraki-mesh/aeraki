@@ -21,15 +21,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
-	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	"github.com/gogo/protobuf/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/model"
+	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
+	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
+
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -37,6 +36,9 @@ import (
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/pkg/log"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 var generatorLog = log.RegisterScope("redis-generator", "redis generator", 0)
@@ -69,10 +71,8 @@ type Generator struct {
 	store         istiomodel.ConfigStore
 }
 
-var (
-	// Timeout is the default timeout for listing object from apiserver
-	Timeout = time.Second * 10
-)
+// Timeout is the default timeout for listing object from apiserver
+const Timeout = time.Second * 10
 
 // Generate redis envoy filter
 func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters []*model.EnvoyFilterWrapper, err error) {
@@ -90,10 +90,12 @@ func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters [
 	return filters, nil
 }
 
-func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext, targetPort *networking.Port) []*model.EnvoyFilterWrapper {
+func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext,
+	targetPort *networking.Port) []*model.EnvoyFilterWrapper {
 	port := targetPort.Number
 	portName := targetPort.Name
-	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace, filterContext.ServiceEntry.Name, portName)
+	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace,
+		filterContext.ServiceEntry.Name, portName)
 	// copy and replace ports
 	spec := *filterContext.ServiceEntry.Spec
 	spec.Ports = []*networking.Port{targetPort}
@@ -101,15 +103,16 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 		filterContext.ServiceEntry,
 		filterContext.ServiceEntry.Spec.Ports[0],
 		g.buildOutboundProxyWithFallback(ctx, filterContext, port, portName),
-		g.buildInboundProxy(filterContext, port, portName),
+		g.buildInboundProxy(filterContext),
 		"envoy.filters.network.redis_proxy",
 		"type.googleapis.com/envoy.extensions.filters.network.redis_proxy.v3.RedisProxy")
 
-	cluster := g.buildOutboundCluster(ctx, filterContext, port, portName)
+	cluster := g.buildOutboundCluster(ctx, filterContext, port)
 	if cluster != nil {
 		for _, filter := range filters {
 			if filter.Envoyfilter.WorkloadSelector == nil {
-				filter.Envoyfilter.ConfigPatches = append(filter.Envoyfilter.ConfigPatches, ReplaceClusterPatches(cluster)...)
+				filter.Envoyfilter.ConfigPatches = append(filter.Envoyfilter.ConfigPatches,
+					ReplaceClusterPatches(cluster)...)
 			}
 		}
 	}
@@ -160,7 +163,7 @@ func valueOf(message proto.Message) (out *types.Struct, err error) {
 	}
 
 	out = &types.Struct{}
-	if err = (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
+	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
 		return nil, err
 	}
 	return out, nil

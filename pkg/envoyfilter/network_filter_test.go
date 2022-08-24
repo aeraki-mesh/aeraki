@@ -20,8 +20,9 @@ import (
 
 	istioconfig "istio.io/istio/pkg/config"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	networking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
 func Test_inboudEnvoyFilterWorkloadSelector(t *testing.T) {
@@ -60,6 +61,22 @@ func Test_inboudEnvoyFilterWorkloadSelector(t *testing.T) {
 			want: &networking.WorkloadSelector{
 				Labels: map[string]string{
 					"app": "dubbo-sample-provider",
+				},
+			},
+		},
+		{
+			name: "test3",
+			service: &model.ServiceEntryWrapper{
+				Meta: istioconfig.Meta{
+					Annotations: map[string]string{
+						"workloadSelector": "app.io: dubbo-sample-provider",
+					},
+				},
+				Spec: &networking.ServiceEntry{},
+			},
+			want: &networking.WorkloadSelector{
+				Labels: map[string]string{
+					"app.io": "dubbo-sample-provider",
 				},
 			},
 		},

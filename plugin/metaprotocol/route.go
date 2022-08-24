@@ -15,20 +15,23 @@
 package metaprotocol
 
 import (
-	"github.com/aeraki-mesh/aeraki/pkg/model"
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	istionetworking "istio.io/api/networking/v1alpha3"
+
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 
-func buildInboundRouteConfig(context *model.EnvoyFilterContext, port *istionetworking.Port) (*metaroute.RouteConfiguration, error) {
-	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "", context.ServiceEntry.Spec.Hosts[0], int(port.Number))
+func buildInboundRouteConfig(context *model.EnvoyFilterContext,
+	port *istionetworking.Port) *metaroute.RouteConfiguration {
+	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "",
+		context.ServiceEntry.Spec.Hosts[0], int(port.Number))
 
 	return &metaroute.RouteConfiguration{
 		Name: clusterName,
 		Routes: []*metaroute.Route{
 			defaultRoute(clusterName),
 		},
-	}, nil
+	}
 }
 
 func defaultRoute(clusterName string) *metaroute.Route {

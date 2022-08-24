@@ -54,6 +54,7 @@ var (
 	}
 )
 
+//nolint: gochecknoinits
 func init() {
 	_ = kubeApiApps.AddToScheme(runtimeScheme)
 	_ = kubeApiAdmissionv1.AddToScheme(runtimeScheme)
@@ -68,7 +69,7 @@ type Options struct {
 
 	// DomainSuffix is the DNS domain suffix for Aeraki CRD resources,
 	// e.g. cluster.local.
-	//DefaultKubernetesDomain = "cluster.local"
+	// DefaultKubernetesDomain = "cluster.local"
 	DomainSuffix string
 
 	// Port where the webhook is served. the number should be greater than 1024 for non-root
@@ -207,9 +208,9 @@ func (wh *Webhook) validate(request *kube.AdmissionRequest) *kube.AdmissionRespo
 
 	// TODO(jasonwzm) remove this when multi-version is supported. v1beta1 shares the same
 	// schema as v1lalpha3. Fake conversion and validate against v1alpha3.
-	//if gvk.Group == "networking.istio.io" && gvk.Version == "v1beta1" {
+	// if gvk.Group == "networking.istio.io" && gvk.Version == "v1beta1" {
 	//	gvk.Version = "v1alpha3"
-	//}
+	// }
 	s, exists := wh.schemas.FindByGroupVersionKind(resource.FromKubernetesGVK(&gvk))
 	if !exists {
 		scope.Infof("unrecognized type %v", obj.Kind)
@@ -255,7 +256,7 @@ func toKubeWarnings(warn validation.Warning) []string {
 	return []string{warn.Error()}
 }
 
-func checkFields(raw []byte, kind string, namespace string, name string) (string, error) {
+func checkFields(raw []byte, kind, namespace, name string) (string, error) {
 	trial := make(map[string]json.RawMessage)
 	if err := json.Unmarshal(raw, &trial); err != nil {
 		scope.Infof("cannot decode configuration fields: %v", err)
@@ -276,7 +277,7 @@ func checkFields(raw []byte, kind string, namespace string, name string) (string
 
 // validatePort checks that the network port is in range
 func validatePort(port int) error {
-	if 1 <= port && port <= 65535 {
+	if port >= 1 && port <= 65535 {
 		return nil
 	}
 	return fmt.Errorf("port number %d must be in the range 1..65535", port)

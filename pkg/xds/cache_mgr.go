@@ -20,19 +20,20 @@ import (
 	"strings"
 	"time"
 
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+
 	"github.com/golang/protobuf/ptypes/wrappers"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 
-	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
-	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/model"
-	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -86,15 +87,24 @@ func (c *CacheMgr) Run(stop <-chan struct{}) {
 }
 
 func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
+	const maxRetries = 3
+	retries := 0
+
 	callback := func() {
 		err := c.updateRouteCache()
 		if err != nil {
-			xdsLog.Errorf("%v", err)
-			// Retry if failed to push envoyFilters to AP IServer
+			xdsLog.Errorf("failed to update route cache: %v", err)
+			// Retry if failed to update route cache
+			if retries >= maxRetries {
+				retries = 0
+				return
+			}
+			retries++
 			c.pushChannel <- istiomodel.EventUpdate
-		} else {
-			xdsLog.Infof("route cache updated")
+			return
 		}
+		retries = 0
+		xdsLog.Infof("route cache updated")
 	}
 	debouncer := debounce.New(debounceAfter, debounceMax, callback, stop)
 	for {
@@ -105,7 +115,6 @@ func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
 		case <-stop:
 			break
 		}
-
 	}
 }
 
@@ -121,12 +130,32 @@ func (c *CacheMgr) updateRouteCache() error {
 		return fmt.Errorf("failed to list service entries from the config store: %v", err)
 	}
 
+	routes := c.generateMetaRoutes(serviceEntries)
+	snapshot, err := generateSnapshot(routes)
+	if err != nil {
+		xdsLog.Errorf("failed to generate route cache: %v", err)
+		// We don't retry in this scenario
+		return nil
+	}
+
+	for _, node := range c.routeCache.GetStatusKeys() {
+		xdsLog.Debugf("set route cahe for: %s", node)
+		if err := c.routeCache.SetSnapshot(context.TODO(), node, snapshot); err != nil {
+			xdsLog.Errorf("failed to set route cache: %v", err)
+			// We don't retry in this scenario
+		}
+	}
+	return nil
+}
+
+func (c *CacheMgr) generateMetaRoutes(serviceEntries []istioconfig.Config) []*metaroute.RouteConfiguration {
 	var routes []*metaroute.RouteConfiguration
 
-	for _, config := range serviceEntries {
+	for i := range serviceEntries {
+		config := serviceEntries[i]
 		service, ok := config.Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			xdsLog.Errorf("failed in getting a service entry: %s: %v", config.Labels, err)
+			xdsLog.Errorf("failed in getting a service entry: %s", config.Name)
 			continue
 		}
 
@@ -173,20 +202,7 @@ func (c *CacheMgr) updateRouteCache() error {
 			}
 		}
 	}
-
-	new, err := generateSnapshot(routes)
-	if err != nil {
-		xdsLog.Errorf("failed to generate route cache: %v", err)
-	} else {
-		for _, node := range c.routeCache.GetStatusKeys() {
-			xdsLog.Debugf("set route cahe for: %s", node)
-			if err := c.routeCache.SetSnapshot(context.TODO(), node, new); err != nil {
-				xdsLog.Errorf("failed to set route cache: %v", err)
-				// We can't retry in this scenario
-			}
-		}
-	}
-	return nil
+	return routes
 }
 
 func isMetaProtocolService(service *networking.ServiceEntry) bool {
@@ -275,27 +291,29 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 			}
 		}
 
-		if c.hasMirrorPolicy(route) {
+		if route.Mirror != nil {
+			dstPort := port.Number
+			if route.Mirror.Port != nil && route.Mirror.Port.Number != 0 {
+				dstPort = route.Mirror.Port.Number
+			}
 			routeAction.RequestMirrorPolicies = []*metaroute.RouteAction_RequestMirrorPolicy{
 				{
 					Cluster: model.BuildClusterName(model.TrafficDirectionOutbound, route.Mirror.Subset,
-						route.Mirror.Host, int(route.Mirror.Port.Number)),
-					RuntimeFraction: &corev3.RuntimeFractionalPercent{
-						DefaultValue: translatePercentToFractionalPercent(route.MirrorPercentage.Value),
-					},
+						route.Mirror.Host, int(dstPort)),
 				},
+			}
+			var mirrorPercent float64
+			mirrorPercent = 100
+			if route.MirrorPercentage != nil && route.MirrorPercentage.Value != 0 {
+				mirrorPercent = route.MirrorPercentage.Value
+			}
+			routeAction.RequestMirrorPolicies[0].RuntimeFraction = &corev3.RuntimeFractionalPercent{
+				DefaultValue: translatePercentToFractionalPercent(mirrorPercent),
 			}
 		}
 	}
 
 	return routeAction
-}
-
-func (c *CacheMgr) hasMirrorPolicy(route *metaprotocolapi.MetaRoute) bool {
-	if route.MirrorPercentage != nil && route.Mirror != nil {
-		return true
-	}
-	return false
 }
 
 func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,
@@ -306,7 +324,7 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 			{
 				Name: "default",
 				Match: &metaroute.RouteMatch{
-					Metadata: []*httproute.HeaderMatcher{},
+					Metadata: []*routev3.HeaderMatcher{},
 				},
 				Route: &metaroute.RouteAction{
 					ClusterSpecifier: &metaroute.RouteAction_Cluster{
@@ -327,20 +345,20 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 }
 
 func (c *CacheMgr) findRelatedServiceEntry(dr *model.DestinationRuleWrapper) (*model.ServiceEntryWrapper, error) {
-	ses, err := c.configStore.List(
+	serviceEntries, err := c.configStore.List(
 		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list configs: %v", err)
 	}
 
-	for _, vsConfig := range ses {
-		se, ok := vsConfig.Spec.(*networking.ServiceEntry)
+	for i := range serviceEntries {
+		se, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a service entry: %s: %v", vsConfig.Name, err)
+			return nil, fmt.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
 		}
-		if model.IsFQDNEquals(dr.Spec.Host, dr.Namespace, se.Hosts[0], vsConfig.Namespace) {
+		if model.IsFQDNEquals(dr.Spec.Host, dr.Namespace, se.Hosts[0], serviceEntries[i].Namespace) {
 			return &model.ServiceEntryWrapper{
-				Meta: vsConfig.Meta,
+				Meta: serviceEntries[i].Meta,
 				Spec: se,
 			}, nil
 		}
@@ -355,13 +373,13 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 		return nil, err
 	}
 
-	for _, metaRouter := range metaRouterList.Items {
-		for _, host := range metaRouter.Spec.Hosts {
+	for i := range metaRouterList.Items {
+		for _, host := range metaRouterList.Items[i].Spec.Hosts {
 			if host == service.Hosts[0] {
-				if len(metaRouter.Spec.Routes) > 0 {
-					return &metaRouter, nil
+				if len(metaRouterList.Items[i].Spec.Routes) > 0 {
+					return &metaRouterList.Items[i], nil
 				}
-				xdsLog.Warnf("no route in metaRouter: %v", metaRouter)
+				xdsLog.Warnf("no route in metaRouter: %v", metaRouterList.Items[i])
 				return nil, nil
 			}
 		}
@@ -369,21 +387,22 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 	return nil, nil
 }
 
-func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper) (*model.DestinationRuleWrapper, error) {
+func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper) (*model.DestinationRuleWrapper,
+	error) {
 	drs, err := c.configStore.List(
 		collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind(), "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list configs: %v", err)
 	}
 
-	for _, config := range drs {
-		dr, ok := config.Spec.(*networking.DestinationRule)
+	for i := range drs {
+		dr, ok := drs[i].Spec.(*networking.DestinationRule)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", config.Name, err)
+			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", drs[i].Name, err)
 		}
-		if model.IsFQDNEquals(dr.Host, config.Namespace, service.Spec.Hosts[0], service.Namespace) {
+		if model.IsFQDNEquals(dr.Host, drs[i].Namespace, service.Spec.Hosts[0], service.Namespace) {
 			return &model.DestinationRuleWrapper{
-				Meta: config.Meta,
+				Meta: drs[i].Meta,
 				Spec: dr,
 			}, nil
 		}
@@ -392,7 +411,7 @@ func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper
 }
 
 // ConfigUpdated sends a config change event to the pushChannel when Istio config changed
-func (c *CacheMgr) ConfigUpdated(prev istioconfig.Config, curr istioconfig.Config, event istiomodel.Event) {
+func (c *CacheMgr) ConfigUpdated(prev, curr *istioconfig.Config, event istiomodel.Event) {
 	if c.shouldUpdateCache(curr) {
 		c.pushChannel <- event
 	} else if c.shouldUpdateCache(prev) {
@@ -400,7 +419,7 @@ func (c *CacheMgr) ConfigUpdated(prev istioconfig.Config, curr istioconfig.Confi
 	}
 }
 
-func (c *CacheMgr) shouldUpdateCache(config istioconfig.Config) bool {
+func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	var serviceEntry *networking.ServiceEntry
 	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
 		service, ok := config.Spec.(*networking.ServiceEntry)
@@ -411,7 +430,7 @@ func (c *CacheMgr) shouldUpdateCache(config istioconfig.Config) bool {
 		serviceEntry = service
 	}
 
-	//Cache needs to be updated if dr changed, the hash policy in the dr is used to generate routes
+	// Cache needs to be updated if dr changed, the hash policy in the dr is used to generate routes
 	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
 		dr, ok := config.Spec.(*networking.DestinationRule)
 		if !ok {
@@ -447,7 +466,7 @@ func (c *CacheMgr) UpdateRoute() {
 	c.pushChannel <- istiomodel.EventUpdate
 }
 
-func (c *CacheMgr) initNode(node string) {
+func (c *CacheMgr) initNode(_ string) {
 	// send a update event to pushChannel to trigger initialization of cache for a node.
 	// we use update event here because update events are debounced, so the initialization of a large number of nodes
 	// won't cause high cpu consumption.
@@ -455,7 +474,7 @@ func (c *CacheMgr) initNode(node string) {
 }
 
 func (c *CacheMgr) hasNode(node string) bool {
-	if _, error := c.routeCache.GetSnapshot(node); error != nil {
+	if _, err := c.routeCache.GetSnapshot(node); err != nil {
 		return false
 	}
 	return true

@@ -18,12 +18,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"k8s.io/apimachinery/pkg/api/errors"
+
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 
 	"istio.io/pkg/log"
 	v1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	controllerclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -49,7 +49,7 @@ var (
 
 // namespaceController creates bootstrap configMap for sidecar proxies
 type namespaceController struct {
-	client.Client
+	controllerclient.Client
 }
 
 // Reconcile watch namespace change and create bootstrap configmap for sidecar proxies
@@ -103,7 +103,9 @@ func (c *namespaceController) createBootstrapConfigMap(ns string) {
 	if err := c.Client.Create(context.TODO(), cm, &controllerclient.CreateOptions{
 		FieldManager: constants.AerakiFieldManager,
 	}); err != nil {
-		namespaceLog.Errorf("failed to create configMap: %v", err)
+		if !errors.IsAlreadyExists(err) {
+			namespaceLog.Errorf("failed to create configMap: %v", err)
+		}
 	}
 }
 func (c *namespaceController) shouldHandle(ns *v1.Namespace) bool {

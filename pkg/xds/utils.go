@@ -23,8 +23,9 @@ import (
 
 	httpcore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 
-	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+
+	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
@@ -34,7 +35,7 @@ import (
 
 var regexEngine = &matcher.RegexMatcher_GoogleRe2{GoogleRe2: &matcher.RegexMatcher_GoogleRE2{}}
 
-//We use Envoy RDS(HTTP RouteConfiguration) to transmit Meta Protocol Configuration from the RDS server to the Proxy
+// We use Envoy RDS(HTTP RouteConfiguration) to transmit Meta Protocol Configuration from the RDS server to the Proxy
 func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httproute.RouteConfiguration {
 	httpRoute := &httproute.RouteConfiguration{
 		Name: metaRoute.Name,
@@ -47,70 +48,10 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 	}
 
 	for _, route := range metaRoute.Routes {
-		routeMatch := &httproute.RouteMatch{
-			PathSpecifier: &httproute.RouteMatch_Prefix{
-				Prefix: "/",
-			},
-		}
-		for _, metadata := range route.Match.Metadata {
-			routeMatch.Headers = append(routeMatch.Headers, &httproute.HeaderMatcher{
-				Name:                 metadata.Name,
-				HeaderMatchSpecifier: metadata.HeaderMatchSpecifier,
-			})
-		}
-
-		var routeAction = &httproute.RouteAction{}
-		if route.Route.GetWeightedClusters() != nil {
-			routeAction.ClusterSpecifier = &httproute.RouteAction_WeightedClusters{
-				WeightedClusters: route.Route.GetWeightedClusters(),
-			}
-		} else {
-			routeAction.ClusterSpecifier = &httproute.RouteAction_Cluster{
-				Cluster: route.Route.GetCluster(),
-			}
-		}
-
-		routeAction.RequestMirrorPolicies = make([]*httproute.
-			RouteAction_RequestMirrorPolicy, len(route.Route.RequestMirrorPolicies))
-		for i, mirrorPolicy := range route.Route.RequestMirrorPolicies {
-			routeAction.RequestMirrorPolicies[i] = &httproute.RouteAction_RequestMirrorPolicy{
-				Cluster:         mirrorPolicy.Cluster,
-				RuntimeFraction: mirrorPolicy.RuntimeFraction,
-			}
-		}
-
-		if route.Route.HashPolicy != nil && len(route.Route.HashPolicy) > 0 {
-			for _, hashPolicy := range route.Route.HashPolicy {
-				routeAction.HashPolicy = append(routeAction.HashPolicy, &httproute.RouteAction_HashPolicy{
-					PolicySpecifier: &httproute.RouteAction_HashPolicy_Header_{
-						Header: &httproute.RouteAction_HashPolicy_Header{
-							HeaderName: hashPolicy,
-						},
-					},
-				})
-			}
-		}
-
-		var requestHeaders []*httpcore.HeaderValueOption
-		for _, mutation := range route.RequestMutation {
-			requestHeaders = append(requestHeaders, &httpcore.HeaderValueOption{
-				Header: &httpcore.HeaderValue{
-					Key:   mutation.Key,
-					Value: mutation.Value,
-				},
-			})
-		}
-
-		var responseHeaders []*httpcore.HeaderValueOption
-		for _, mutation := range route.ResponseMutation {
-			responseHeaders = append(responseHeaders, &httpcore.HeaderValueOption{
-				Header: &httpcore.HeaderValue{
-					Key:   mutation.Key,
-					Value: mutation.Value,
-				},
-			})
-		}
-
+		routeMatch := httpRouteMatch(route)
+		routeAction := httpRouteAction(route)
+		requestHeaders := httpRequestHeaders(route)
+		responseHeaders := httpResponseHeaders(route)
 		httpRoute.VirtualHosts[0].Routes = append(httpRoute.VirtualHosts[0].Routes, &httproute.Route{
 			Name:  route.Name,
 			Match: routeMatch,
@@ -121,8 +62,81 @@ func metaProtocolRoute2HttpRoute(metaRoute *metaroute.RouteConfiguration) *httpr
 			ResponseHeadersToAdd: responseHeaders,
 		})
 	}
-
 	return httpRoute
+}
+
+func httpResponseHeaders(route *metaroute.Route) []*httpcore.HeaderValueOption {
+	var responseHeaders []*httpcore.HeaderValueOption
+	for _, mutation := range route.ResponseMutation {
+		responseHeaders = append(responseHeaders, &httpcore.HeaderValueOption{
+			Header: &httpcore.HeaderValue{
+				Key:   mutation.Key,
+				Value: mutation.Value,
+			},
+		})
+	}
+	return responseHeaders
+}
+
+func httpRequestHeaders(route *metaroute.Route) []*httpcore.HeaderValueOption {
+	var requestHeaders []*httpcore.HeaderValueOption
+	for _, mutation := range route.RequestMutation {
+		requestHeaders = append(requestHeaders, &httpcore.HeaderValueOption{
+			Header: &httpcore.HeaderValue{
+				Key:   mutation.Key,
+				Value: mutation.Value,
+			},
+		})
+	}
+	return requestHeaders
+}
+
+func httpRouteAction(route *metaroute.Route) *httproute.RouteAction {
+	var routeAction = &httproute.RouteAction{}
+	if route.Route.GetWeightedClusters() != nil {
+		routeAction.ClusterSpecifier = &httproute.RouteAction_WeightedClusters{
+			WeightedClusters: route.Route.GetWeightedClusters(),
+		}
+	} else {
+		routeAction.ClusterSpecifier = &httproute.RouteAction_Cluster{
+			Cluster: route.Route.GetCluster(),
+		}
+	}
+	routeAction.RequestMirrorPolicies = make([]*httproute.
+		RouteAction_RequestMirrorPolicy, len(route.Route.RequestMirrorPolicies))
+	for i, mirrorPolicy := range route.Route.RequestMirrorPolicies {
+		routeAction.RequestMirrorPolicies[i] = &httproute.RouteAction_RequestMirrorPolicy{
+			Cluster:         mirrorPolicy.Cluster,
+			RuntimeFraction: mirrorPolicy.RuntimeFraction,
+		}
+	}
+	if route.Route.HashPolicy != nil && len(route.Route.HashPolicy) > 0 {
+		for _, hashPolicy := range route.Route.HashPolicy {
+			routeAction.HashPolicy = append(routeAction.HashPolicy, &httproute.RouteAction_HashPolicy{
+				PolicySpecifier: &httproute.RouteAction_HashPolicy_Header_{
+					Header: &httproute.RouteAction_HashPolicy_Header{
+						HeaderName: hashPolicy,
+					},
+				},
+			})
+		}
+	}
+	return routeAction
+}
+
+func httpRouteMatch(route *metaroute.Route) *httproute.RouteMatch {
+	routeMatch := &httproute.RouteMatch{
+		PathSpecifier: &httproute.RouteMatch_Prefix{
+			Prefix: "/",
+		},
+	}
+	for _, metadata := range route.Match.Metadata {
+		routeMatch.Headers = append(routeMatch.Headers, &httproute.HeaderMatcher{
+			Name:                 metadata.Name,
+			HeaderMatchSpecifier: metadata.HeaderMatchSpecifier,
+		})
+	}
+	return routeMatch
 }
 
 func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) (cache.Snapshot, error) {

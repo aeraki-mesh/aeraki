@@ -1,0 +1,15 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: dubbo-sample-provider
+spec:
+  host: org.apache.dubbo.samples.basic.api.demoservice
+  subsets:
+  - name: sample
+    labels:
+      app: dubbo-sample-provider
+    trafficPolicy:
+      loadBalancer:
+        consistentHash:
+          httpHeaderName: method

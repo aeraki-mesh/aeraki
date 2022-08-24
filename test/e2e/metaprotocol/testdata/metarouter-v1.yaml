@@ -4,6 +4,9 @@ kind: MetaRouter
 metadata:
   name: test-metaprotocol-route
 spec:
+  exportTo:
+  - metaprotocol
+  - default
   hosts:
     - org.apache.dubbo.samples.basic.api.demoservice
   routes:
