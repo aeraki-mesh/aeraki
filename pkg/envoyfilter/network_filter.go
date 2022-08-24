@@ -167,7 +167,7 @@ func hasInboundWorkloadSelector(selector *networking.WorkloadSelector) bool {
 
 func inboundEnvoyFilterWorkloadSelector(service *model.ServiceEntryWrapper) *networking.WorkloadSelector {
 	selector := service.Spec.WorkloadSelector
-	if selector == nil {
+	if selector == nil || selector.Labels == nil {
 		selector = &networking.WorkloadSelector{
 			Labels: make(map[string]string),
 		}
