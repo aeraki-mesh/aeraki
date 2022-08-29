@@ -50,7 +50,7 @@ spec:
   selector:
     matchLabels:
       app: dubbo-sample-provider
-  replicas: 0
+  replicas: 1
   template:
     metadata:
       annotations:
