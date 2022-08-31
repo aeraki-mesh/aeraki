@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:test
+        sidecar.istio.io/proxyImage: aeraki/aeraki/meta-protocol-proxy-debug
       labels:
         app: dubbo-sample-provider
         version: v1
@@ -55,7 +55,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:test
+        sidecar.istio.io/proxyImage: aeraki/aeraki/meta-protocol-proxy-debug
       labels:
         app: dubbo-sample-provider
         version: v2
@@ -64,6 +64,33 @@ spec:
       containers:
         - name: dubbo-sample-provider
           image: aeraki/dubbo-sample-provider
+          ports:
+            - containerPort: 20880
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-second-provider
+  labels:
+    app: dubbo-sample-second-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-second-provider
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/aeraki/meta-protocol-proxy-debug
+      labels:
+        app: dubbo-sample-second-provider
+        version: v2
+        service_group: batchjob
+    spec:
+      containers:
+        - name: dubbo-sample-second-provider
+          image: aeraki/dubbo-sample-second-provider
           ports:
             - containerPort: 20880
 ---
@@ -82,7 +109,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:test
+        sidecar.istio.io/proxyImage: aeraki/aeraki/meta-protocol-proxy-debug
       labels:
         app: dubbo-sample-consumer
     spec:
