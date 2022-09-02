@@ -17,6 +17,7 @@ package metaprotocol
 import (
 	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	envoytype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	istionetworking "istio.io/api/networking/v1alpha3"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
@@ -65,6 +66,17 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: buildOutboundFilters(),
+		Tracing: &metaprotocol.Tracing{
+			ClientSampling: &envoytype.Percent{
+				Value: 100,
+			},
+			RandomSampling: &envoytype.Percent{
+				Value: 100,
+			},
+			OverallSampling: &envoytype.Percent{
+				Value: 100,
+			},
+		},
 	}, nil
 }
 
@@ -97,5 +109,16 @@ func buildInboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: filters,
+		Tracing: &metaprotocol.Tracing{
+			ClientSampling: &envoytype.Percent{
+				Value: 100,
+			},
+			RandomSampling: &envoytype.Percent{
+				Value: 100,
+			},
+			OverallSampling: &envoytype.Percent{
+				Value: 100,
+			},
+		},
 	}, nil
 }
