@@ -24,16 +24,15 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
+	"istio.io/istio/pkg/config/mesh"
 
-	aerakischeme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
-	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
-	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
+	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
 
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	kubelib "istio.io/istio/pkg/kube"
 	"istio.io/pkg/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -41,6 +40,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	aerakischeme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
+	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
+	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
 
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
@@ -56,7 +59,7 @@ var (
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
 	args                  *AerakiArgs
-	kubeClient            kubernetes.Interface
+	kubeClient            kubelib.Client
 	configController      *istio.Controller
 	envoyFilterController *envoyfilter.Controller
 	xdsCacheMgr           *xds.CacheMgr
@@ -71,6 +74,13 @@ type Server struct {
 	istiodCert      *tls.Certificate
 	CABundle        *bytes.Buffer
 	stopControllers func()
+
+	// internalStop is closed when the server is shutdown. This should be avoided as much as possible, in
+	// favor of AddStartFunc. This is only required if we *must* start something outside of this process.
+	// For example, everything depends on mesh config, so we use it there rather than trying to sequence everything
+	// in AddStartFunc
+	internalStop     chan struct{}
+	configMapWatcher mesh.Watcher
 }
 
 // NewServer creates a new Server instance based on the provided arguments.
@@ -136,8 +146,8 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		singletonCtrlMgr:      singletonCtrlMgr,
 		xdsCacheMgr:           routeCacheMgr,
 		xdsServer:             xdsServer,
+		internalStop:          make(chan struct{}),
 	}
-
 	if err := server.initKubeClient(); err != nil {
 		return nil, fmt.Errorf("error initializing kube client: %v", err)
 	}
@@ -150,6 +160,10 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	if err := server.initConfigValidation(args); err != nil {
 		return nil, fmt.Errorf("error initializing config validator: %v", err)
 	}
+	server.initConfigMapWatcher(args, func() {
+		envoyFilterController.ConfigUpdated(model.EventUpdate)
+	})
+	envoyFilterController.InitMeshConfig(server.configMapWatcher)
 	return server, err
 }
 
@@ -305,6 +319,7 @@ func isUnexpectedListenerError(err error) bool {
 func (s *Server) waitForShutdown(stop <-chan struct{}) {
 	go func() {
 		<-stop
+		close(s.internalStop)
 		s.stopControllers()
 	}()
 }
@@ -314,7 +329,7 @@ func (s *Server) initKubeClient() error {
 	if err != nil {
 		return err
 	}
-	s.kubeClient, err = kubernetes.NewForConfig(kubeConfig)
+	s.kubeClient, err = kubelib.NewClient(kubelib.NewClientConfigForRestConfig(kubeConfig))
 	return err
 }
 

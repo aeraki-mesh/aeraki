@@ -15,10 +15,13 @@
 package metaprotocol
 
 import (
-	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
+	"fmt"
+
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoytype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	istionetworking "istio.io/api/networking/v1alpha3"
+
+	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
@@ -34,7 +37,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 	if err != nil {
 		return nil, err
 	}
-	return &metaprotocol.MetaProtocolProxy{
+	metaProtocolProy := &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionOutbound, "",
 			context.ServiceEntry.Spec.Hosts[0], int(port.Number)),
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_Rds{
@@ -66,18 +69,9 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: buildOutboundFilters(),
-		Tracing: &metaprotocol.Tracing{
-			ClientSampling: &envoytype.Percent{
-				Value: 100,
-			},
-			RandomSampling: &envoytype.Percent{
-				Value: 100,
-			},
-			OverallSampling: &envoytype.Percent{
-				Value: 100,
-			},
-		},
-	}, nil
+	}
+	configTracing(context, metaProtocolProy)
+	return metaProtocolProy, nil
 }
 
 func buildInboundProxy(context *model.EnvoyFilterContext,
@@ -98,7 +92,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext,
 		return nil, err
 	}
 
-	return &metaprotocol.MetaProtocolProxy{
+	metaProtocolProy := &metaprotocol.MetaProtocolProxy{
 		StatPrefix: model.BuildClusterName(model.TrafficDirectionInbound, "",
 			context.ServiceEntry.Spec.Hosts[0], int(port.Number)),
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_RouteConfig{
@@ -109,16 +103,28 @@ func buildInboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: filters,
-		Tracing: &metaprotocol.Tracing{
+	}
+	configTracing(context, metaProtocolProy)
+	return metaProtocolProy, nil
+}
+
+func configTracing(context *model.EnvoyFilterContext, metaProtocolProy *metaprotocol.MetaProtocolProxy) {
+	if context.MeshConfig.Mesh().EnableTracing {
+		randomSampling := 1.0
+		fmt.Printf("%v", context.MeshConfig.Mesh().DefaultConfig.Tracing)
+		if context.MeshConfig.Mesh().DefaultConfig.Tracing != nil {
+			randomSampling = context.MeshConfig.Mesh().DefaultConfig.Tracing.Sampling
+		}
+		metaProtocolProy.Tracing = &metaprotocol.Tracing{
 			ClientSampling: &envoytype.Percent{
 				Value: 100,
 			},
 			RandomSampling: &envoytype.Percent{
-				Value: 100,
+				Value: randomSampling,
 			},
 			OverallSampling: &envoytype.Percent{
 				Value: 100,
 			},
-		},
-	}, nil
+		}
+	}
 }

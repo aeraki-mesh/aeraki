@@ -17,9 +17,10 @@
 package v1alpha1
 
 import (
+	rest "k8s.io/client-go/rest"
+
 	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
 	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
-	rest "k8s.io/client-go/rest"
 )
 
 type RedisV1alpha1Interface interface {

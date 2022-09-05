@@ -17,6 +17,7 @@ package model
 import (
 	networking "istio.io/api/networking/v1alpha3"
 	istioconfig "istio.io/istio/pkg/config"
+	"istio.io/istio/pkg/config/mesh"
 
 	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 )
@@ -51,6 +52,9 @@ type EnvoyFilterWrapper struct {
 
 // EnvoyFilterContext provides an aggregate API for EnvoyFilter generator
 type EnvoyFilterContext struct {
+
+	// Global Mesh config
+	MeshConfig mesh.Holder
 
 	// ServiceEntry describes the service for which we need to generate the EnvoyFilter.
 	ServiceEntry *ServiceEntryWrapper

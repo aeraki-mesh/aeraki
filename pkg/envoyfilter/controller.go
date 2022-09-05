@@ -19,21 +19,22 @@ import (
 	"fmt"
 	"time"
 
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
+
 	"istio.io/istio/pkg/config"
 
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 
 	"github.com/gogo/protobuf/proto"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/zhaohuabing/debounce"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	istiomodel "istio.io/istio/pilot/pkg/model"
+	"istio.io/istio/pkg/config/mesh"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
@@ -64,6 +65,7 @@ type Controller struct {
 	namespaceScoped            bool
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
+	meshConfig  mesh.Holder
 }
 
 // NewController creates a new controller instance based on the provided arguments.
@@ -77,6 +79,11 @@ func NewController(istioClientset *istioclient.Clientset, store istiomodel.Confi
 		pushChannel:     make(chan istiomodel.Event, 100),
 	}
 	return controller
+}
+
+// InitMeshConfig global mesh configuration
+func (c *Controller) InitMeshConfig(meshConfig mesh.Holder) {
+	c.meshConfig = meshConfig
 }
 
 // Run until a signal is received, this function won't block
@@ -280,6 +287,7 @@ func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
 		return nil, fmt.Errorf("failed in finding the related meta router : %s: %v", service.Hosts[0], err)
 	}
 	return &model.EnvoyFilterContext{
+		MeshConfig: c.meshConfig,
 		ServiceEntry: &model.ServiceEntryWrapper{
 			Meta: serviceEntry.Meta,
 			Spec: service,
