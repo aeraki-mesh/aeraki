@@ -20,14 +20,15 @@ import (
 	"context"
 	time "time"
 
-	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
-	versioned "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
-	internalinterfaces "github.com/aeraki-mesh/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/listers/redis/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
+
+	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	versioned "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
+	internalinterfaces "github.com/aeraki-mesh/aeraki/client-go/pkg/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/listers/redis/v1alpha1"
 )
 
 // RedisDestinationInformer provides access to a shared informer and lister for
