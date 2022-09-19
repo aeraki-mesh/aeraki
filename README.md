@@ -113,11 +113,11 @@ Aeraki can manage the below protocols in a service mesh：
 
 ## Demo
 
-https://www.aeraki.net/docs/v1.0/quickstart/
+https://www.aeraki.net/docs/v1.x/quickstart/
 
 ## Install
 
-https://www.aeraki.net/docs/v1.0/install/
+https://www.aeraki.net/docs/v1.x/install/
 
 ## Build
 
