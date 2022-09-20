@@ -108,11 +108,11 @@ Aeraki 已经支持下述协议：
 
 ## 样例
 
-https://www.aeraki.net/docs/v1.0/quickstart/
+https://www.aeraki.net/docs/v1.x/quickstart/
 
 ## 安装
 
-https://www.aeraki.net/docs/v1.0/install/
+https://www.aeraki.net/docs/v1.x/install/
 
 ## 构建
 
