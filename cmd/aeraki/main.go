@@ -33,6 +33,7 @@ import (
 	"github.com/aeraki-mesh/aeraki/plugin/thrift"
 	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
 
+	"istio.io/pkg/env"
 	"istio.io/pkg/log"
 )
 
@@ -71,6 +72,8 @@ func main() {
 	flag.VisitAll(func(flag *flag.Flag) {
 		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
 	})
+
+	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
 
 	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.

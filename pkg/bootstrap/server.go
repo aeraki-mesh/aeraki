@@ -96,6 +96,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 
 	// configController watches Istiod through MCP over xDS to get service entry and virtual service updates
 	configController := istio.NewController(&istio.Options{
+		PodName:    args.PodName,
 		ClusterID:  args.ClusterID,
 		IstiodAddr: args.IstiodAddr,
 		NameSpace:  args.RootNamespace,

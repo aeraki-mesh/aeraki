@@ -24,6 +24,7 @@ type AerakiArgs struct {
 	Master     bool
 	IstiodAddr string
 	XdsAddr    string
+	PodName    string
 	// The listening address for HTTPS (webhooks).
 	HTTPSAddr                string
 	RootNamespace            string
