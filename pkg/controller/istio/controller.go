@@ -75,7 +75,7 @@ type Controller struct {
 
 // NewController creates a new Controller instance based on the provided arguments.
 func NewController(options *Options) *Controller {
-	store := memory.Make(configCollection)
+	store := memory.MakeSkipValidation(configCollection)
 	return &Controller{
 		options:     options,
 		Store:       store,
