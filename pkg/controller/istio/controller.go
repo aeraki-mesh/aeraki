@@ -60,9 +60,10 @@ var (
 
 // Options for config controller
 type Options struct {
-	ClusterID  string
-	NameSpace  string
-	IstiodAddr string
+	PodName      string
+	ClusterID    string
+	NameSpace    string
+	IstiodAddr   string
 }
 
 // Controller watches Istio config xDS server and notifies the listeners when config changes.
@@ -119,6 +120,7 @@ func (c *Controller) connectIstio() {
 			// https://github.com/istio/istio/pull/36820
 			ClusterID: "",
 		}.ToStruct(),
+		Workload: c.options.PodName,
 		InitialDiscoveryRequests: c.configInitialRequests(),
 		BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
 	}

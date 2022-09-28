@@ -56,6 +56,10 @@ spec:
               value: "${AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE}"
             - name: AERAKI_LOG_LEVEL
               value: "all:debug"
+            - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
             - name: AERAKI_NAMESPACE
               valueFrom:
                 fieldRef:

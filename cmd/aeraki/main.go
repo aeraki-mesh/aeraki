@@ -16,6 +16,7 @@ package main
 
 import (
 	"flag"
+	"istio.io/pkg/env"
 	"os"
 	"os/signal"
 	"strings"
@@ -71,6 +72,8 @@ func main() {
 	flag.VisitAll(func(flag *flag.Flag) {
 		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
 	})
+
+	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
 
 	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.
