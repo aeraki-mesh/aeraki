@@ -93,7 +93,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create istio client: %v", err)
 	}
-
+	
 	// configController watches Istiod through MCP over xDS to get service entry and virtual service updates
 	configController := istio.NewController(&istio.Options{
 		PodName:    args.PodName,
@@ -101,21 +101,18 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		IstiodAddr: args.IstiodAddr,
 		NameSpace:  args.RootNamespace,
 	})
-
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
 		args.EnableEnvoyFilterNSScope)
 	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
-
 	// routeCacheMgr watches service entry and generate the routes for meta protocol services
 	routeCacheMgr := xds.NewCacheMgr(configController.Store)
 	configController.RegisterEventHandler(func(prev *istioconfig.Config, curr *istioconfig.Config,
 		event model.Event) {
 		routeCacheMgr.ConfigUpdated(prev, curr, event)
 	})
-
 	// xdsServer is the RDS server for metaProtocol proxy
 	xdsServer := xds.NewServer(args.XdsAddr, routeCacheMgr)
 
