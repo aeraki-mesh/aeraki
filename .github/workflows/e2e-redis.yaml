@@ -24,7 +24,6 @@ jobs:
           go-version: 1.19
       - name: Install dependencies
         run: |
-          go version
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
