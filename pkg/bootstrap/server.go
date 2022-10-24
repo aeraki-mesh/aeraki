@@ -26,8 +26,6 @@ import (
 
 	"istio.io/istio/pkg/config/mesh"
 
-	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
-
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
@@ -44,8 +42,8 @@ import (
 	aerakischeme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
 	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
 	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
-
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
 	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
