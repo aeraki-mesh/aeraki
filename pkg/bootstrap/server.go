@@ -91,7 +91,6 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create istio client: %v", err)
 	}
-	
 	// configController watches Istiod through MCP over xDS to get service entry and virtual service updates
 	configController := istio.NewController(&istio.Options{
 		PodName:    args.PodName,
