@@ -28,7 +28,7 @@ spec:
       tokensPerFill: 10
     conditions:
     - tokenBucket:
-        fillInterval: 20s
+        fillInterval: 10s
         maxTokens: 2
         tokensPerFill: 2
       match:
