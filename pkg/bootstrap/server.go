@@ -24,6 +24,8 @@ import (
 	"net/http"
 	"sync"
 
+	_ "net/http/pprof" // pprof
+
 	"istio.io/istio/pkg/config/mesh"
 
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -237,6 +239,9 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 // This method won't block
 func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")
+
+	// pprof server
+	go http.ListenAndServe("localhost:6060", nil)
 
 	// Only create EnvoyFilters and assign VIP when running as in master mode
 	if s.args.Master {
