@@ -36,6 +36,13 @@ spec:
       containers:
         - name: aeraki
           image: aeraki/aeraki:${AERAKI_TAG}
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "250m"
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
           # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
           imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
           env:
