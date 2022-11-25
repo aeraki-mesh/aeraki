@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"sync"
 
+	//nolint: gosec
 	_ "net/http/pprof" // pprof
 
 	"istio.io/istio/pkg/config/mesh"
@@ -241,7 +242,11 @@ func (s *Server) Start(stop <-chan struct{}) {
 	aerakiLog.Info("staring Aeraki Server")
 
 	// pprof server
-	go http.ListenAndServe("localhost:6060", nil)
+	go func() {
+		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+			aerakiLog.Errorf("failed to start pprof server")
+		}
+	}()
 
 	// Only create EnvoyFilters and assign VIP when running as in master mode
 	if s.args.Master {
