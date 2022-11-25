@@ -54,7 +54,9 @@ func BuildMetaProtocolRouteName(host string, port int) string {
 // it will be overridden if subset named as subsetName in param is not nil
 func GetHashPolicy(dr *DestinationRuleWrapper, subsetName string) string {
 	if subsetName == "" {
-		return getConsistentHashHeaderName(dr.Spec.TrafficPolicy)
+		if dr != nil && dr.Spec != nil && dr.Spec.TrafficPolicy != nil {
+			return getConsistentHashHeaderName(dr.Spec.TrafficPolicy)
+		}
 	} else if dr != nil && dr.Spec != nil && dr.Spec.Subsets != nil {
 		for _, subset := range dr.Spec.Subsets {
 			if subsetName == subset.GetName() {
