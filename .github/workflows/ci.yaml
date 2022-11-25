@@ -59,7 +59,7 @@ jobs:
       - name: Install dependencies
         run: |
           go version
-          go get golang.org/x/tools/cmd/goimports
+          go install golang.org/x/tools/cmd/goimports@latest
       - name: gofmt and goimports
         run: make style-check
   checkgomod:

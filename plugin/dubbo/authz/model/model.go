@@ -168,7 +168,7 @@ func generatePrincipal(rl ruleList, action rbacpb.RBAC_Action) (*rbacpb.Principa
 	return principalAnd(and), nil
 }
 
-//nolint: dupl
+// nolint: dupl
 func (r *rule) permission(action rbacpb.RBAC_Action) ([]*rbacpb.Permission, error) {
 	var permissions []*rbacpb.Permission
 	var or []*rbacpb.Permission
@@ -201,7 +201,7 @@ func (r *rule) permission(action rbacpb.RBAC_Action) ([]*rbacpb.Permission, erro
 	return permissions, nil
 }
 
-//nolint: dupl
+// nolint: dupl
 func (r *rule) principal(action rbacpb.RBAC_Action) ([]*rbacpb.Principal, error) {
 	var principals []*rbacpb.Principal
 	var or []*rbacpb.Principal
