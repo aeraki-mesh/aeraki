@@ -59,6 +59,7 @@ mkdir -p ~/.aeraki
 envsubst < $BASEDIR/../../../k8s/aeraki.yaml > ~/.aeraki/aeraki.yaml
 if [ "$1" == "mode=tcm" ]; then
   kubectl apply -f $BASEDIR/../../../k8s/tcm-apiservice.yaml
+  kubectl apply -f $BASEDIR/../../../k8s/tcm-istio-cm.yaml
 else
   # ApplicationProtocol is changed from namespace scope to cluster scope
   kubectl delete crd applicationprotocols.metaprotocol.aeraki.io || true
