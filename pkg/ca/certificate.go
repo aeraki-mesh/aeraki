@@ -41,7 +41,7 @@ func GenerateKeyCertBundle() (*KeyCertBundle, error) {
 	ca := &x509.Certificate{
 		SerialNumber: big.NewInt(2020),
 		Subject: pkix.Name{
-			Organization: []string{"aeraki.com"},
+			Organization: []string{"aeraki.net"},
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
@@ -76,7 +76,7 @@ func GenerateKeyCertBundle() (*KeyCertBundle, error) {
 		SerialNumber: big.NewInt(1658),
 		Subject: pkix.Name{
 			CommonName:   commonName,
-			Organization: []string{"aeraki.com"},
+			Organization: []string{"aeraki.net"},
 		},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),

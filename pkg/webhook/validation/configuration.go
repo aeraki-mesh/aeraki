@@ -73,21 +73,13 @@ func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 		}},
 	}
 
-	old, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Get(
-		context.TODO(), webhookCfgName, metav1.GetOptions{})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Create(
-				context.TODO(), config, metav1.CreateOptions{}); err != nil {
-				return err
-			}
-			return nil
-		}
+	err = kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Delete(
+		context.TODO(), webhookCfgName, metav1.DeleteOptions{})
+	if err != nil && errors.IsNotFound(err) {
 		return err
 	}
-	config.ResourceVersion = old.ResourceVersion
-	if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Update(
-		context.TODO(), config, metav1.UpdateOptions{}); err != nil {
+	if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Create(
+		context.TODO(), config, metav1.CreateOptions{}); err != nil {
 		return err
 	}
 	return nil
