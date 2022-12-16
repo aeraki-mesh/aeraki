@@ -40,9 +40,6 @@ var (
 	localCertDir = env.RegisterStringVar("ROOT_CA_DIR", "./etc/cacerts",
 		"Location of a local or mounted CA root")
 
-	useRemoteCerts = env.RegisterBoolVar("USE_REMOTE_CERTS", false,
-		"Whether to try to load CA certs from a remote Kubernetes cluster. Used for external Istiod.")
-
 	workloadCertTTL = env.RegisterDurationVar("DEFAULT_WORKLOAD_CERT_TTL",
 		cmd.DefaultWorkloadCertTTL,
 		"The default TTL of issued workload certificates. Applied when the client sets a "+
@@ -73,16 +70,6 @@ var (
 			"Jitter selects a backoff time in seconds to start root cert rotator, "+
 			"and the back off time is below root cert check interval.")
 
-	k8sInCluster = env.RegisterStringVar("KUBERNETES_SERVICE_HOST", "",
-		"Kubernetes service host, set automatically when running in-cluster")
-
-	// This value can also be extracted from the mounted token
-	trustedIssuer = env.RegisterStringVar("TOKEN_ISSUER", "",
-		"OIDC token issuer. If set, will be used to check the tokens.")
-
-	audience = env.RegisterStringVar("AUDIENCE", "",
-		"Expected audience in the tokens. ")
-
 	caRSAKeySize = env.RegisterIntVar("CITADEL_SELF_SIGNED_CA_RSA_KEY_SIZE", 2048,
 		"Specify the RSA key size to use for self-signed Istio CA certificates.")
 
@@ -90,10 +77,6 @@ var (
 	externalCaType = env.RegisterStringVar("EXTERNAL_CA", "",
 		"External CA Integration Type. Permitted Values are ISTIOD_RA_KUBERNETES_API or "+
 			"ISTIOD_RA_ISTIO_API").Get()
-
-	// TODO: Likely to be removed and added to mesh config
-	k8sSigner = env.RegisterStringVar("K8S_SIGNER", "",
-		"Kubernates CA Signer type. Valid from Kubernates 1.18").Get()
 )
 
 type caOptions struct {

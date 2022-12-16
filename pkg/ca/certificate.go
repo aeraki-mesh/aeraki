@@ -24,8 +24,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	kubelib "istio.io/istio/pkg/kube"
+
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 )
 
 // KeyCertBundle stores the cert, private key and root cert for aeraki.
