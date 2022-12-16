@@ -17,6 +17,7 @@ package validation
 import (
 	"bytes"
 	"context"
+	"reflect"
 
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 
@@ -85,10 +86,13 @@ func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 		}
 		return err
 	}
-	config.ResourceVersion = old.ResourceVersion
-	if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Update(
-		context.TODO(), config, metav1.UpdateOptions{}); err != nil {
-		return err
+
+	if !reflect.DeepEqual(old.Webhooks, config.Webhooks) {
+		config.ResourceVersion = old.ResourceVersion
+		if _, err := kubeClient.AdmissionregistrationV1().ValidatingWebhookConfigurations().Update(
+			context.TODO(), config, metav1.UpdateOptions{}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
