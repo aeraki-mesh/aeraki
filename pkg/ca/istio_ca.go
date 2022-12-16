@@ -150,7 +150,6 @@ func getIstioCA(client corev1.CoreV1Interface) (*util.KeyCertBundle, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to create an istiod CA: %v", err)
 		}
-
 	}
 
 	return caOpts.KeyCertBundle, nil
