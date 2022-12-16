@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
+	kubelib "istio.io/istio/pkg/kube"
 )
 
 // KeyCertBundle stores the cert, private key and root cert for aeraki.
@@ -35,54 +36,33 @@ type KeyCertBundle struct {
 }
 
 // GenerateKeyCertBundle generates root ca and server certificate
-func GenerateKeyCertBundle() (*KeyCertBundle, error) {
-	var caPEM, serverCertPEM, serverPrivKeyPEM *bytes.Buffer
-	// CA config
-	ca := &x509.Certificate{
-		SerialNumber: big.NewInt(2020),
-		Subject: pkix.Name{
-			Organization: []string{"aeraki.com"},
-		},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().AddDate(10, 0, 0),
-		IsCA:                  true,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		BasicConstraintsValid: true,
-	}
-	// CA private key
-	caPrivKey, err := rsa.GenerateKey(cryptorand.Reader, 4096)
+func GenerateKeyCertBundle(client kubelib.Client) (*KeyCertBundle, error) {
+	caKeyCertBundle, err := getIstioCA(client.CoreV1())
 	if err != nil {
 		return nil, err
 	}
-	// Self signed CA certificate
-	caBytes, err := x509.CreateCertificate(cryptorand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
-	if err != nil {
-		return nil, err
-	}
-	// PEM encode CA cert
-	caPEM = new(bytes.Buffer)
-	_ = pem.Encode(caPEM, &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: caBytes,
-	})
+
+	caCert, caPrivKey, _, _ := caKeyCertBundle.GetAll()
+
 	dnsNames := []string{"aeraki",
 		"aeraki." + constants.DefaultRootNamespace,
 		"aeraki." + constants.DefaultRootNamespace + ".svc"}
 	commonName := "aeraki.default.svc"
 	// server cert config
 	cert := &x509.Certificate{
-		DNSNames:     dnsNames,
-		SerialNumber: big.NewInt(1658),
+		SignatureAlgorithm: x509.SHA256WithRSA,
+		DNSNames:           dnsNames,
+		SerialNumber:       big.NewInt(1658),
 		Subject: pkix.Name{
 			CommonName:   commonName,
-			Organization: []string{"aeraki.com"},
+			Organization: []string{"aeraki.net"},
 		},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(10, 0, 0),
 		SubjectKeyId: []byte{1, 2, 3, 4, 6},
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
+		Version:      3,
 	}
 
 	// server private key
@@ -92,23 +72,28 @@ func GenerateKeyCertBundle() (*KeyCertBundle, error) {
 	}
 
 	// sign the server cert
-	serverCertBytes, err := x509.CreateCertificate(cryptorand.Reader, cert, ca, &serverPrivKey.PublicKey, caPrivKey)
+	serverCertBytes, err := x509.CreateCertificate(cryptorand.Reader, cert, caCert, &serverPrivKey.PublicKey,
+		*caPrivKey)
 	if err != nil {
 		return nil, err
 	}
 
 	// PEM encode the  server cert and key
-	serverCertPEM = new(bytes.Buffer)
+	serverCertPEM := new(bytes.Buffer)
 	_ = pem.Encode(serverCertPEM, &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: serverCertBytes,
 	})
 
-	serverPrivKeyPEM = new(bytes.Buffer)
+	serverPrivKeyPEM := new(bytes.Buffer)
 	_ = pem.Encode(serverPrivKeyPEM, &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(serverPrivKey),
 	})
+	// PEM encode CA cert
+	caPEM := new(bytes.Buffer)
+	caPEM.Write(caKeyCertBundle.GetRootCertPem())
+
 	return &KeyCertBundle{
 		CertPem:  serverCertPEM,
 		KeyPem:   serverPrivKeyPEM,
