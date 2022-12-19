@@ -17,11 +17,11 @@ package metaprotocol
 import (
 	"fmt"
 
+	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
+	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoytype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	istionetworking "istio.io/api/networking/v1alpha3"
-
-	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
@@ -69,6 +69,9 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: buildOutboundFilters(),
+		AccessLog: []*accesslog.AccessLog{
+			buildFileAccessLogHelper(context.MeshConfig.Mesh().AccessLogFile, context.MeshConfig.Mesh()),
+		},
 	}
 	configTracing(context, metaProtocolProy)
 	return metaProtocolProy, nil
@@ -103,6 +106,9 @@ func buildInboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: filters,
+		AccessLog: []*accesslog.AccessLog{
+			buildFileAccessLogHelper(context.MeshConfig.Mesh().AccessLogFile, context.MeshConfig.Mesh()),
+		},
 	}
 	configTracing(context, metaProtocolProy)
 	return metaProtocolProy, nil
