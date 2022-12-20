@@ -17,10 +17,10 @@ replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 
 //replace github.com/envoyproxy/go-control-plane => /Users/huabingzhao/workspace/go-control-plane
 
-//replace github.com/aeraki-mesh/meta-protocol-control-plane-api => github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20220325074604-63adf119a7bc
+//replace github.com/aeraki-mesh/meta-protocol-control-plane-api =>/Users/huabingzhao/workspace/meta-protocol-control-plane
 
 require (
-	github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20221213110004-4eab1878885f
+	github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20221220065300-b3acf5666978
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/envoyproxy/go-control-plane v0.10.2-0.20211130161932-f62def555c97
 	github.com/gogo/protobuf v1.3.2

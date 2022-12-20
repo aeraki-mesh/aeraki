@@ -17,7 +17,7 @@ package metaprotocol
 import (
 	istionetworking "istio.io/api/networking/v1alpha3"
 
-	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/config/route/v1alpha"
+	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/config/route/v1alpha"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
