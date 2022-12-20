@@ -17,7 +17,7 @@ package metaprotocol
 import (
 	"fmt"
 
-	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/meta_protocol_proxy/v1alpha"
+	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoytype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
