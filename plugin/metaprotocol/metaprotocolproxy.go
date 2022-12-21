@@ -69,10 +69,8 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: buildOutboundFilters(),
-		AccessLog: []*accesslog.AccessLog{
-			buildFileAccessLogHelper(context.MeshConfig.Mesh().AccessLogFile, context.MeshConfig.Mesh()),
-		},
 	}
+	configAccessLog(context, metaProtocolProy)
 	configTracing(context, metaProtocolProy)
 	return metaProtocolProy, nil
 }
@@ -106,12 +104,18 @@ func buildInboundProxy(context *model.EnvoyFilterContext,
 			Name: codec,
 		},
 		MetaProtocolFilters: filters,
-		AccessLog: []*accesslog.AccessLog{
-			buildFileAccessLogHelper(context.MeshConfig.Mesh().AccessLogFile, context.MeshConfig.Mesh()),
-		},
 	}
+	configAccessLog(context, metaProtocolProy)
 	configTracing(context, metaProtocolProy)
 	return metaProtocolProy, nil
+}
+
+func configAccessLog(context *model.EnvoyFilterContext, metaProtocolProy *metaprotocol.MetaProtocolProxy) {
+	if context.MeshConfig.Mesh().AccessLogFile != "" {
+		metaProtocolProy.AccessLog = []*accesslog.AccessLog{
+			buildFileAccessLogHelper(context.MeshConfig.Mesh().AccessLogFile, context.MeshConfig.Mesh()),
+		}
+	}
 }
 
 func configTracing(context *model.EnvoyFilterContext, metaProtocolProy *metaprotocol.MetaProtocolProxy) {
