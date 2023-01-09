@@ -21,7 +21,7 @@ import (
 const (
 	// defaultMeshConfigMapName is the default name of the ConfigMap with the mesh config
 	// The actual name can be different - use getMeshConfigMapName
-	//defaultMeshConfigMapName = "istio"
+	// defaultMeshConfigMapName = "istio"
 	// configMapKey should match the expected MeshConfig file name
 	configMapKey = "mesh"
 )
