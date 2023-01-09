@@ -21,7 +21,7 @@ import (
 const (
 	// defaultMeshConfigMapName is the default name of the ConfigMap with the mesh config
 	// The actual name can be different - use getMeshConfigMapName
-	defaultMeshConfigMapName = "istio"
+	// defaultMeshConfigMapName = "istio"
 	// configMapKey should match the expected MeshConfig file name
 	configMapKey = "mesh"
 )
@@ -31,6 +31,6 @@ func (s *Server) initConfigMapWatcher(args *AerakiArgs, handler func()) {
 	// Watch the istio ConfigMap for mesh config changes.
 	// This may be necessary for external Istiod.
 	s.configMapWatcher = kubemesh.NewConfigMapWatcher(
-		s.kubeClient, args.RootNamespace, defaultMeshConfigMapName, configMapKey, false, s.internalStop)
+		s.kubeClient, args.RootNamespace, args.IstioConfigMapName, configMapKey, false, s.internalStop)
 	s.configMapWatcher.AddMeshHandler(handler)
 }
