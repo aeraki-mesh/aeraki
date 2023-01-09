@@ -32,6 +32,7 @@ AERAKI_ENV:
   AERAKI_ISTIO_CONFIG_STORE_SECRET:
   AERAKI_XDS_LISTEN_ADDR: ":15010"
   AERAKI_LOG_LEVEL: "all:debug"
+  AERAKI_ISTIOD_CONFIGMAP_NAME: "istio"
 
 imagePullSecrets: []
 nameOverride: ""

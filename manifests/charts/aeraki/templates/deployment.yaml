@@ -46,6 +46,8 @@ spec:
               value: {{ .Values.AERAKI_ENV.AERAKI_IS_MASTER }}
             - name: AERAKI_ISTIOD_ADDR
               value: {{ .Values.AERAKI_ENV.AERAKI_ISTIOD_ADDR }}
+            - name: AERAKI_ISTIOD_CONFIGMAP_NAME
+              value: {{ .Values.AERAKI_ENV.AERAKI_ISTIOD_CONFIGMAP_NAME }}
             - name: AERAKI_CLUSTER_ID
               value: {{ .Values.AERAKI_ENV.AERAKI_CLUSTER_ID }}
             # In case of TCM, Istio config store can be a different k8s API server from the one Aeraki is running with
