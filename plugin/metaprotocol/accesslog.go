@@ -28,6 +28,7 @@ import (
 )
 
 const (
+	envoyLogFilePath   = "/dev/stdout"
 	envoyTextLogFormat = "[%START_TIME%] %REQ(X-META-PROTOCOL-APPLICATION-PROTOCOL)% " +
 		"%RESPONSE_CODE% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% " +
 		"\"%UPSTREAM_TRANSPORT_FAILURE_REASON%\" %BYTES_RECEIVED% %BYTES_SENT% " +
@@ -61,6 +62,9 @@ var (
 
 func buildFileAccessLogHelper(path string, mesh *meshconfig.MeshConfig) *accesslog.AccessLog {
 	// We need to build access log. This is needed either on first access or when mesh config changes.
+	if path == "" {
+		path = envoyLogFilePath
+	}
 	fl := &fileaccesslog.FileAccessLog{
 		Path: path,
 	}
