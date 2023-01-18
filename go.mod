@@ -47,6 +47,8 @@ require (
 	sigs.k8s.io/controller-runtime v0.10.2
 )
 
+require github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1
+
 require (
 	cloud.google.com/go v0.97.0 // indirect
 	cloud.google.com/go/logging v1.4.2 // indirect
@@ -73,7 +75,6 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/chai2010/gettext-go v0.0.0-20160711120539-c6fed771bfd5 // indirect
-	github.com/cncf/xds/go v0.0.0-20211011173535-cb28da3451f1 // indirect
 	github.com/containerd/continuity v0.1.0 // indirect
 	github.com/coreos/go-oidc/v3 v3.1.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect

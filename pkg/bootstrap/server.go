@@ -24,6 +24,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/aeraki-mesh/aeraki/pkg/lazyxds"
+	"istio.io/istio/pkg/config/schema/collections"
+
 	//nolint: gosec
 	_ "net/http/pprof" // pprof
 
@@ -135,6 +138,16 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	singletonCtrlMgr, err := createSingletonControllers(args, kubeConfig)
 	if err != nil {
 		return nil, err
+	}
+
+	if args.EnableLazyXDS {
+		controller := lazyxds.NewController(client)
+		configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
+			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
+				GroupVersionKind() {
+				controller.ServiceChange(curr)
+			}
+		})
 	}
 	server := &Server{
 		args:                  args,

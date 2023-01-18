@@ -65,6 +65,7 @@ func main() {
 		"Generate Envoy Filters in the service namespace")
 	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
 	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
+	flag.BoolVar(&args.EnableLazyXDS, "enable-lazy-xds", true, "Enable lazy XDS")
 
 	flag.Parse()
 	if args.ServerID == "" {

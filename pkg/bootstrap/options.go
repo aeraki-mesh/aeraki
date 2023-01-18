@@ -37,6 +37,7 @@ type AerakiArgs struct {
 	KubeDomainSuffix         string
 	EnableEnvoyFilterNSScope bool
 	Protocols                map[protocol.Instance]envoyfilter.Generator
+	EnableLazyXDS            bool
 }
 
 // NewAerakiArgs constructs AerakiArgs with default value.
