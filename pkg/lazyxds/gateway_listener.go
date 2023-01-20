@@ -15,72 +15,110 @@
 package lazyxds
 
 import (
-	"bytes"
 	"context"
 	"reflect"
 	"strconv"
-
-	"github.com/golang/protobuf/ptypes/wrappers"
-
-	istioconfig "istio.io/istio/pkg/config"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 
 	route "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/config/route/v1alpha"
 	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
+	v3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	"istio.io/istio/pilot/pkg/networking/util"
+	istioconfig "istio.io/istio/pkg/config"
 
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
 	udpa "github.com/cncf/xds/go/udpa/type/v1"
 	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	listener "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/conversion"
-	gogojsonpb "github.com/gogo/protobuf/jsonpb"
-	"github.com/gogo/protobuf/types"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
 	istio "istio.io/client-go/pkg/apis/networking/v1alpha3"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// generate a listener on 0.0.0.0 for each service port to catch all outbound traffic and redirect it to the
+func (c *Controller) sycGatewayService(ports map[uint32]map[string]*istioconfig.Config) {
+	servicePorts := make([]corev1.ServicePort, 0)
+	for port, _ := range ports {
+		servicePorts = append(servicePorts, corev1.ServicePort{
+			Name: strconv.Itoa(int(port)),
+			Port: int32(port),
+		})
+	}
+
+	gatewaySvc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "lazyxds-gateway",
+			Namespace: "istio-system",
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: servicePorts,
+			Selector: map[string]string{
+				"app": "lazyxds-gateway",
+			},
+		},
+	}
+
+	old, err := c.kubeClient.CoreV1().Services("istio-system").Get(context.TODO(), "lazyxds-gateway",
+		metav1.GetOptions{})
+	if err != nil && errors.IsNotFound(err) {
+		controllerLog.Infof("create service for lazyxds gateway ")
+		c.kubeClient.CoreV1().Services("istio-system").Create(context.TODO(), gatewaySvc, metav1.CreateOptions{
+			FieldManager: LazyXdsManager,
+		})
+	} else if err != nil {
+		controllerLog.Errorf("failed to get lazyxds gateway service %v", err)
+	} else if !reflect.DeepEqual(gatewaySvc.Spec, old.Spec) {
+		controllerLog.Infof("update azyxds gateway service")
+		gatewaySvc.ResourceVersion = old.ResourceVersion
+		_, err = c.kubeClient.CoreV1().Services("istio-system").Update(context.TODO(), gatewaySvc,
+			metav1.UpdateOptions{
+				FieldManager: LazyXdsManager,
+			})
+		if err != nil {
+			controllerLog.Errorf("failed to update azyxds gateway service %v", err)
+		}
+	}
+}
+
+// generate a listener on 0.0.0.0 for each service port and forward the request to the real destination service
 // lazyxds gateway
-func (c *Controller) syncCatchAllListener(port uint32, services map[string]*istioconfig.Config) {
-	err, envoyfilter := generateEnvoyfilterForCatchAllListener(port, services)
+func (c *Controller) syncGatewayListener(port uint32, services map[string]*istioconfig.Config) {
+	err, envoyfilter := generateEnvoyfilterForGatewayListener(port, services)
 	if err != nil {
-		controllerLog.Fatalf("failed to generate the catch-all listener for port: %v %v", port, err)
+		controllerLog.Fatalf("failed to generate the gateway listener for port: %v %v", port, err)
 	}
 	old, err := c.istioClient.NetworkingV1alpha3().EnvoyFilters("istio-system").
 		Get(context.TODO(), envoyfilter.Name, metav1.GetOptions{})
 	if err != nil && errors.IsNotFound(err) {
-		controllerLog.Infof("create envoyfilter for catch-all listener for port: : %v, %v", port, envoyfilter)
+		controllerLog.Infof("create envoyfilter for gateway listener for port: : %v, %v", port, envoyfilter)
 		_, err = c.istioClient.NetworkingV1alpha3().EnvoyFilters("istio-system").Create(context.TODO(), envoyfilter,
 			metav1.CreateOptions{
 				FieldManager: LazyXdsManager,
 			})
 		if err != nil {
-			controllerLog.Errorf("failed to create envoyfilter for catch-all listener for port: %v, %v", port, err)
+			controllerLog.Errorf("failed to create envoyfilter for gateway listener for port: %v, %v", port, err)
 		}
 	} else if err != nil {
-		controllerLog.Errorf("failed to get envoyfilter for catch-all listener for port: %v, %v", port, err)
+		controllerLog.Errorf("failed to get envoyfilter for gateway listener for port: %v, %v", port, err)
 	} else if !reflect.DeepEqual(envoyfilter.Spec, old.Spec) {
-		controllerLog.Infof("update envoyfilter for catch-all listener for port: : %v, %v", port, envoyfilter)
+		controllerLog.Infof("update envoyfilter for gateway listener for port: : %v, %v", port, envoyfilter)
 		envoyfilter.ResourceVersion = old.ResourceVersion
 		_, err = c.istioClient.NetworkingV1alpha3().EnvoyFilters("istio-system").Update(context.TODO(), envoyfilter,
 			metav1.UpdateOptions{
 				FieldManager: LazyXdsManager,
 			})
 		if err != nil {
-			controllerLog.Errorf("failed to update envoyfilter for catch-all listener for port: %v, %v", port, err)
+			controllerLog.Errorf("failed to update envoyfilter for gateway listener for port: %v, %v", port, err)
 		}
 	}
 }
 
-func generateEnvoyfilterForCatchAllListener(port uint32, services map[string]*istioconfig.Config) (error, *istio.EnvoyFilter) {
-	listener := generateCatchAllListenerForPort(port, services)
+func generateEnvoyfilterForGatewayListener(port uint32, services map[string]*istioconfig.Config) (error, *istio.EnvoyFilter) {
+	listener := generateGatewayForPort(port, services)
 	value, err := message2struct(listener)
 	if err != nil {
 		return err, nil
@@ -88,7 +126,7 @@ func generateEnvoyfilterForCatchAllListener(port uint32, services map[string]*is
 	listenerPatch := &networking.EnvoyFilter_EnvoyConfigObjectPatch{
 		ApplyTo: networking.EnvoyFilter_LISTENER,
 		Match: &networking.EnvoyFilter_EnvoyConfigObjectMatch{
-			Context: networking.EnvoyFilter_SIDECAR_OUTBOUND,
+			Context: networking.EnvoyFilter_GATEWAY,
 		},
 		Patch: &networking.EnvoyFilter_Patch{
 			Operation: networking.EnvoyFilter_Patch_INSERT_FIRST,
@@ -97,21 +135,26 @@ func generateEnvoyfilterForCatchAllListener(port uint32, services map[string]*is
 	}
 	envoyfilter := &istio.EnvoyFilter{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      "lazyxds-catch-all-listener-" + strconv.Itoa(int(port)),
+			Name:      "lazyxds-gateway-listener-" + strconv.Itoa(int(port)),
 			Namespace: "istio-system",
 			Labels: map[string]string{
 				ManagedByLabel: LazyXdsManager,
 			},
 		},
 		Spec: networking.EnvoyFilter{
+			WorkloadSelector: &networking.WorkloadSelector{
+				Labels: map[string]string{
+					"app": "lazyxds-gateway",
+				},
+			},
 			ConfigPatches: []*networking.EnvoyFilter_EnvoyConfigObjectPatch{listenerPatch},
 		},
 	}
 	return nil, envoyfilter
 }
 
-func generateCatchAllListenerForPort(port uint32, services map[string]*istioconfig.Config) *listener.Listener {
-	metaProtocolProxy := generateMetaProtocolProxy(port, services)
+func generateGatewayForPort(port uint32, services map[string]*istioconfig.Config) *listener.Listener {
+	metaProtocolProxy := generateMetaProtocolProxyForGateway(port, services)
 	proxy, _ := conversion.MessageToStruct(metaProtocolProxy)
 	typedStruct := udpa.TypedStruct{
 		TypeUrl: "type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy",
@@ -143,39 +186,34 @@ func generateCatchAllListenerForPort(port uint32, services map[string]*istioconf
 				},
 			},
 		},
-		BindToPort: &wrappers.BoolValue{
-			Value: false,
-		},
 	}
 	return listener
 }
 
-func generateMetaProtocolProxy(port uint32, services map[string]*istioconfig.Config) *metaprotocol.MetaProtocolProxy {
-	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "",
-		"lazyxds-gateway.istio-system.svc.cluster.local", int(port))
-
+func generateMetaProtocolProxyForGateway(port uint32, services map[string]*istioconfig.Config) *metaprotocol.
+	MetaProtocolProxy {
+	applicationProtocol := "dubbo"
+	codec, _ := metaprotocolmodel.GetApplicationProtocolCodec(applicationProtocol)
 	routes := make([]*route.Route, 0)
-	for _, config := range services {
-		service, ok := config.Spec.(*networking.ServiceEntry)
-		if !ok { // should never happen
-			controllerLog.Errorf("failed to convert config to service entry: %s", config.Name)
-			continue
-		}
+	for host, _ := range services {
+		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "",
+			host, int(port))
 		routes = append(routes, &route.Route{
+			Match: &route.RouteMatch{
+				Metadata: []*v3.HeaderMatcher{
+					{
+						Name: "host",
+						HeaderMatchSpecifier: &v3.HeaderMatcher_ExactMatch{
+							ExactMatch: host,
+						},
+					},
+				},
+			},
 			Route: &route.RouteAction{
 				ClusterSpecifier: &route.RouteAction_Cluster{Cluster: clusterName},
 			},
-			RequestMutation: []*route.KeyValue{
-				{
-					Key:   "host",
-					Value: service.Hosts[0],
-				},
-			},
 		})
 	}
-
-	applicationProtocol := "dubbo"
-	codec, _ := metaprotocolmodel.GetApplicationProtocolCodec(applicationProtocol)
 	metaProtocolProxy := &metaprotocol.MetaProtocolProxy{
 		StatPrefix: "lazyxds_catch_all",
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_RouteConfig{
@@ -195,17 +233,4 @@ func generateMetaProtocolProxy(port uint32, services map[string]*istioconfig.Con
 		},
 	}
 	return metaProtocolProxy
-}
-
-func message2struct(listener proto.Message) (*types.Struct, error) {
-	var buf []byte
-	var err error
-	if buf, err = protojson.Marshal(listener); err != nil {
-		return nil, err
-	}
-	var value = &types.Struct{}
-	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), value); err != nil {
-		return nil, err
-	}
-	return value, nil
 }

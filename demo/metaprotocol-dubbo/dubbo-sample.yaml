@@ -99,11 +99,11 @@ kind: Deployment
 metadata:
   name: dubbo-sample-consumer
   labels:
-    app: dubbo-sample-consumer
+    app: dubbo-sample-consumerx
 spec:
   selector:
     matchLabels:
-      app: dubbo-sample-consumer
+      app: dubbo-sample-consumerx
   replicas: 1
   template:
     metadata:
@@ -111,7 +111,7 @@ spec:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
         sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.2
       labels:
-        app: dubbo-sample-consumer
+        app: dubbo-sample-consumerx
     spec:
       containers:
         - name: dubbo-sample-consumer

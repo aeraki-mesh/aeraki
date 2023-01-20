@@ -24,9 +24,10 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/aeraki-mesh/aeraki/pkg/lazyxds"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pkg/config/schema/collections"
 
+	"github.com/aeraki-mesh/aeraki/pkg/lazyxds"
 	//nolint: gosec
 	_ "net/http/pprof" // pprof
 
@@ -66,6 +67,7 @@ type Server struct {
 	kubeClient            kubelib.Client
 	configController      *istio.Controller
 	envoyFilterController *envoyfilter.Controller
+	lazyxdsController     *lazyxds.Controller
 	xdsCacheMgr           *xds.CacheMgr
 	xdsServer             *xds.Server
 	httpsServer           *http.Server // webhooks HTTPS Server.
@@ -135,20 +137,11 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
 
 	// singletonCtrlMgr
-	singletonCtrlMgr, err := createSingletonControllers(args, kubeConfig)
+	singletonCtrlMgr, err := createSingletonControllers(args, kubeConfig, client)
 	if err != nil {
 		return nil, err
 	}
 
-	if args.EnableLazyXDS {
-		controller := lazyxds.NewController(client)
-		configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
-			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
-				GroupVersionKind() {
-				controller.ServiceChange(curr)
-			}
-		})
-	}
 	server := &Server{
 		args:                  args,
 		configController:      configController,
@@ -175,6 +168,16 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		envoyFilterController.ConfigUpdated(model.EventUpdate)
 	})
 	envoyFilterController.InitMeshConfig(server.configMapWatcher)
+
+	if args.EnableLazyXDS {
+		server.lazyxdsController = lazyxds.NewController(server.kubeClient, client, configController.Store)
+		server.configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
+			if curr.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
+				GroupVersionKind() {
+				server.lazyxdsController.ServiceChange(curr, event)
+			}
+		})
+	}
 	return server, err
 }
 
@@ -228,7 +231,8 @@ func createScalableControllers(args *AerakiArgs, kubeConfig *rest.Config,
 // service is not consistent across sidecar border.
 // Since Aeraki is using the VIP of a serviceEntry as match condition when generating EnvoyFilter,
 // the VIP must be unique and consistent in the mesh.
-func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (manager.Manager, error) {
+func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config, client *istioclient.Clientset,
+) (manager.Manager, error) {
 	mgr, err := kube.NewManager(kubeConfig, args.RootNamespace, true, leaderelection.AllocateVIPController)
 	if err != nil {
 		return nil, err
@@ -240,6 +244,12 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 	err = kube.AddNamespaceController(mgr)
 	if err != nil {
 		aerakiLog.Fatalf("could not add NamespaceController: %e", err)
+	}
+	if args.EnableLazyXDS {
+		err = lazyxds.AddNamespaceController(mgr, client)
+		if err != nil {
+			aerakiLog.Fatalf("could not add lazyxds NamespaceController: %e", err)
+		}
 	}
 	err = istioscheme.AddToScheme(mgr.GetScheme())
 	if err != nil {
@@ -271,6 +281,10 @@ func (s *Server) Start(stop <-chan struct{}) {
 				AddRunFunction(func(leaderStop <-chan struct{}) {
 					aerakiLog.Infof("starting EnvoyFilter creation controller")
 					s.envoyFilterController.Run(stop)
+					if s.args.EnableLazyXDS {
+						aerakiLog.Infof("starting lazyxds controller")
+						s.lazyxdsController.Run(stop)
+					}
 				}).Run(stop)
 		}()
 	} else {

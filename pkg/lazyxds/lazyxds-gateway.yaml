@@ -1,0 +1,207 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    app: lazyxds-gateway
+    istio: egressgateway
+    istio.io/rev: default
+    release: istio
+  name: lazyxds-gateway
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: lazyxds-gateway
+      istio: egressgateway
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /stats/prometheus
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: lazyxds-gateway
+        chart: gateways
+        heritage: Tiller
+        install.operator.istio.io/owning-resource: unknown
+        istio: egressgateway
+        istio.io/rev: default
+        operator.istio.io/component: EgressGateways
+        release: istio
+        service.istio.io/canonical-name: lazyxds-gateway
+        service.istio.io/canonical-revision: latest
+        sidecar.istio.io/inject: "false"
+    spec:
+      affinity:
+        nodeAffinity: {}
+      containers:
+      - args:
+        - proxy
+        - router
+        - --domain
+        - $(POD_NAMESPACE).svc.cluster.local
+        - --proxyLogLevel=warning
+        - --proxyComponentLogLevel=misc:error
+        - --log_output_level=default:debug
+        env:
+        - name: JWT_POLICY
+          value: first-party-jwt
+        - name: PILOT_CERT_PROVIDER
+          value: istiod
+        - name: CA_ADDR
+          value: istiod.istio-system.svc:15012
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: INSTANCE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.serviceAccountName
+        - name: ISTIO_META_WORKLOAD_NAME
+          value: lazyxds-gateway
+        - name: ISTIO_META_OWNER
+          value: kubernetes://apis/apps/v1/namespaces/istio-system/deployments/lazyxds-gateway
+        - name: ISTIO_META_MESH_ID
+          value: cluster.local
+        - name: TRUST_DOMAIN
+          value: cluster.local
+        - name: ISTIO_META_UNPRIVILEGED_POD
+          value: "true"
+        - name: ISTIO_META_DNS_CAPTURE
+          value: "true"
+        - name: ISTIO_META_CLUSTER_ID
+          value: Kubernetes
+        image: aeraki/meta-protocol-proxy-debug:1.2.2
+        imagePullPolicy: IfNotPresent
+        name: istio-proxy
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        - containerPort: 8443
+          protocol: TCP
+        - containerPort: 15090
+          name: http-envoy-prom
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /healthz/ready
+            port: 15021
+            scheme: HTTP
+          initialDelaySeconds: 1
+          periodSeconds: 2
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/run/secrets/workload-spiffe-uds
+          name: workload-socket
+        - mountPath: /var/run/secrets/workload-spiffe-credentials
+          name: workload-certs
+        - mountPath: /etc/istio/proxy
+          name: istio-envoy
+        - mountPath: /etc/istio/config
+          name: config-volume
+        - mountPath: /var/run/secrets/istio
+          name: istiod-ca-cert
+        - mountPath: /var/lib/istio/data
+          name: istio-data
+        - mountPath: /etc/istio/pod
+          name: podinfo
+        - mountPath: /etc/istio/egressgateway-certs
+          name: egressgateway-certs
+          readOnly: true
+        - mountPath: /etc/istio/egressgateway-ca-certs
+          name: egressgateway-ca-certs
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1337
+        runAsGroup: 1337
+        runAsNonRoot: true
+        runAsUser: 1337
+      serviceAccount: istio-egressgateway-service-account
+      serviceAccountName: istio-egressgateway-service-account
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: workload-socket
+      - emptyDir: {}
+        name: workload-certs
+      - configMap:
+          defaultMode: 420
+          name: istio-ca-root-cert
+        name: istiod-ca-cert
+      - downwardAPI:
+          defaultMode: 420
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.labels
+            path: labels
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.annotations
+            path: annotations
+        name: podinfo
+      - emptyDir: {}
+        name: istio-envoy
+      - emptyDir: {}
+        name: istio-data
+      - configMap:
+          defaultMode: 420
+          name: istio
+          optional: true
+        name: config-volume
+      - name: egressgateway-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio-egressgateway-certs
+      - name: egressgateway-ca-certs
+        secret:
+          defaultMode: 420
+          optional: true
+          secretName: istio-egressgateway-ca-certs
