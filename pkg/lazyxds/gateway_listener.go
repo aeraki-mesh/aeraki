@@ -195,16 +195,16 @@ func generateMetaProtocolProxyForGateway(port uint32, services map[string]*istio
 	applicationProtocol := "dubbo"
 	codec, _ := metaprotocolmodel.GetApplicationProtocolCodec(applicationProtocol)
 	routes := make([]*route.Route, 0)
-	for host, _ := range services {
+	for host, service := range services {
 		clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "",
 			host, int(port))
 		routes = append(routes, &route.Route{
 			Match: &route.RouteMatch{
 				Metadata: []*v3.HeaderMatcher{
 					{
-						Name: "host",
+						Name: "interface",
 						HeaderMatchSpecifier: &v3.HeaderMatcher_ExactMatch{
-							ExactMatch: host,
+							ExactMatch: service.Annotations["interface"],
 						},
 					},
 				},

@@ -119,7 +119,7 @@ func generateCatchAllListenerForPort(port uint32, services map[string]*istioconf
 	}
 
 	listener := &listener.Listener{
-		Name: "lazyxds_catch_all_" + strconv.Itoa(int(port)),
+		Name: "0.0.0.0_" + strconv.Itoa(int(port)),
 		Address: &core.Address{
 			Address: &core.Address_SocketAddress{
 				SocketAddress: &core.SocketAddress{
@@ -146,6 +146,7 @@ func generateCatchAllListenerForPort(port uint32, services map[string]*istioconf
 		BindToPort: &wrappers.BoolValue{
 			Value: false,
 		},
+		TrafficDirection: core.TrafficDirection_OUTBOUND,
 	}
 	return listener
 }
@@ -154,34 +155,20 @@ func generateMetaProtocolProxy(port uint32, services map[string]*istioconfig.Con
 	clusterName := model.BuildClusterName(model.TrafficDirectionOutbound, "",
 		"lazyxds-gateway.istio-system.svc.cluster.local", int(port))
 
-	routes := make([]*route.Route, 0)
-	for _, config := range services {
-		service, ok := config.Spec.(*networking.ServiceEntry)
-		if !ok { // should never happen
-			controllerLog.Errorf("failed to convert config to service entry: %s", config.Name)
-			continue
-		}
-		routes = append(routes, &route.Route{
-			Route: &route.RouteAction{
-				ClusterSpecifier: &route.RouteAction_Cluster{Cluster: clusterName},
-			},
-			RequestMutation: []*route.KeyValue{
-				{
-					Key:   "host",
-					Value: service.Hosts[0],
-				},
-			},
-		})
-	}
-
 	applicationProtocol := "dubbo"
 	codec, _ := metaprotocolmodel.GetApplicationProtocolCodec(applicationProtocol)
 	metaProtocolProxy := &metaprotocol.MetaProtocolProxy{
 		StatPrefix: "lazyxds_catch_all",
 		RouteSpecifier: &metaprotocol.MetaProtocolProxy_RouteConfig{
 			RouteConfig: &route.RouteConfiguration{
-				Name:   "lazyxds-gateway",
-				Routes: routes,
+				Name: "lazyxds-gateway",
+				Routes: []*route.Route{
+					{
+						Route: &route.RouteAction{
+							ClusterSpecifier: &route.RouteAction_Cluster{Cluster: clusterName},
+						},
+					},
+				},
 			},
 		},
 		ApplicationProtocol: applicationProtocol,
