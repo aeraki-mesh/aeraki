@@ -98,13 +98,13 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trpc-sample-client-client-stream
+  name: trpc-sample-client-stream
   labels:
-    app: trpc-sample-client-client-stream
+    app: trpc-sample-client-stream
 spec:
   selector:
     matchLabels:
-      app: trpc-sample-client-client-stream
+      app: trpc-sample-client-stream
   replicas: 1
   template:
     metadata:
@@ -112,7 +112,7 @@ spec:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
         sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.1
       labels:
-        app: trpc-sample-client-client-stream
+        app: trpc-sample-client-stream
     spec:
       containers:
         - name: trpc-sample-client
@@ -128,13 +128,13 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trpc-sample-client-server-stream
+  name: trpc-sample-server-stream
   labels:
-    app: trpc-sample-client-server-stream
+    app: trpc-sample-server-stream
 spec:
   selector:
     matchLabels:
-      app: trpc-sample-client-server-stream
+      app: trpc-sample-server-stream
   replicas: 1
   template:
     metadata:
@@ -142,7 +142,7 @@ spec:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
         sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.1
       labels:
-        app: trpc-sample-client-server-stream
+        app: trpc-sample-server-stream
     spec:
       containers:
         - name: trpc-sample-client
