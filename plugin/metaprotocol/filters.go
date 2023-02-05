@@ -27,9 +27,10 @@ import (
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/config/route/v1alpha"
 	//nolint: lll
 	grldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/global_ratelimit/v1alpha"
+	stats "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/istio_stats/v1alpha"
+
 	//nolint: lll
 	lrldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
-	stats "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/stats/v1alpha"
 	mpdataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 
 	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
@@ -66,8 +67,8 @@ func appendCommonFilters(filters []*mpdataplane.MetaProtocolFilter, host string)
 	metadataFilter := mpdataplane.MetaProtocolFilter{
 		Name: "aeraki.meta_protocol.filters.metadata_exchange",
 	}
-	stats := &stats.Stats{
-		LocalService: host,
+	stats := &stats.IstioStats{
+		DestinationService: host,
 	}
 	config, err := anypb.New(stats)
 	if err != nil {
@@ -75,7 +76,7 @@ func appendCommonFilters(filters []*mpdataplane.MetaProtocolFilter, host string)
 	}
 
 	statsFilter := mpdataplane.MetaProtocolFilter{
-		Name:   "aeraki.meta_protocol.filters.stats",
+		Name:   "aeraki.meta_protocol.filters.istio_stats",
 		Config: config,
 	}
 
