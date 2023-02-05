@@ -68,7 +68,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 		Codec: &metaprotocol.Codec{
 			Name: codec,
 		},
-		MetaProtocolFilters: buildOutboundFilters(),
+		MetaProtocolFilters: buildOutboundFilters(context.ServiceEntry.Spec.Hosts[0]),
 	}
 	configAccessLog(context, metaProtocolProy)
 	configTracing(context, metaProtocolProy)
@@ -88,7 +88,7 @@ func buildInboundProxy(context *model.EnvoyFilterContext,
 		return nil, err
 	}
 
-	filters, err := buildInboundFilters(context.MetaRouter)
+	filters, err := buildInboundFilters(context.MetaRouter, context.ServiceEntry.Spec.Hosts[0])
 	if err != nil {
 		return nil, err
 	}

@@ -29,6 +29,7 @@ import (
 	grldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/global_ratelimit/v1alpha"
 	//nolint: lll
 	lrldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
+	stats "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/stats/v1alpha"
 	mpdataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 
 	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
@@ -36,13 +37,13 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
 )
 
-func buildOutboundFilters() []*mpdataplane.MetaProtocolFilter {
+func buildOutboundFilters(host string) []*mpdataplane.MetaProtocolFilter {
 	var filters []*mpdataplane.MetaProtocolFilter
-	filters = appendRouter(filters)
+	filters = appendCommonFilters(filters, host)
 	return filters
 }
 
-func buildInboundFilters(metaRouter *mpclient.MetaRouter) ([]*mpdataplane.MetaProtocolFilter, error) {
+func buildInboundFilters(metaRouter *mpclient.MetaRouter, host string) ([]*mpdataplane.MetaProtocolFilter, error) {
 	var filters []*mpdataplane.MetaProtocolFilter
 	var err error
 	if metaRouter != nil {
@@ -58,14 +59,30 @@ func buildInboundFilters(metaRouter *mpclient.MetaRouter) ([]*mpdataplane.MetaPr
 		}
 	}
 
-	return appendRouter(filters), nil
+	return appendCommonFilters(filters, host), nil
 }
 
-func appendRouter(filters []*mpdataplane.MetaProtocolFilter) []*mpdataplane.MetaProtocolFilter {
+func appendCommonFilters(filters []*mpdataplane.MetaProtocolFilter, host string) []*mpdataplane.MetaProtocolFilter {
+	metadataFilter := mpdataplane.MetaProtocolFilter{
+		Name: "aeraki.meta_protocol.filters.metadata_exchange",
+	}
+	stats := &stats.Stats{
+		LocalService: host,
+	}
+	config, err := anypb.New(stats)
+	if err != nil {
+		generatorLog.Errorf("stats create failed: %e", err)
+	}
+
+	statsFilter := mpdataplane.MetaProtocolFilter{
+		Name:   "aeraki.meta_protocol.filters.stats",
+		Config: config,
+	}
+
 	router := mpdataplane.MetaProtocolFilter{
 		Name: "aeraki.meta_protocol.filters.router",
 	}
-	return append(filters, &router)
+	return append(filters, &metadataFilter, &statsFilter, &router)
 }
 
 func appendLocalRateLimitFilter(metaRouter *mpclient.MetaRouter,

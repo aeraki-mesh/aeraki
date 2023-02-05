@@ -147,8 +147,8 @@ github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 h1:d+Bc7a5rLufV
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d/go.mod h1:HI8ITrYtUY+O+ZhtlqUnD8+KwNPOyugEhfP9fdUIaEQ=
 github.com/VividCortex/ewma v1.1.1/go.mod h1:2Tkkvm3sRDVXaiyucHiACn4cqf7DpdyLvmxzcbUokwA=
-github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20221220065300-b3acf5666978 h1:hQ+6mlTbhy5ysIFwWEfFfxriZ7a+VBgyws0Zjwm50Nw=
-github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20221220065300-b3acf5666978/go.mod h1:kBlB/k9X2I3yO6mZyS1tcdUfJy3cz4u+z97kmpo8qD4=
+github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20230205075616-2bfdc8e8f38d h1:0DYLM4XT9wzXdOnXDjwuS6ndBoPr8oGULoqGkdnP33s=
+github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20230205075616-2bfdc8e8f38d/go.mod h1:kBlB/k9X2I3yO6mZyS1tcdUfJy3cz4u+z97kmpo8qD4=
 github.com/agnivade/levenshtein v1.0.1/go.mod h1:CURSv5d9Uaml+FovSIICkLbAUZ9S4RqaHDIsdSBg7lM=
 github.com/ahmetb/gen-crd-api-reference-docs v0.3.0/go.mod h1:TdjdkYhlOifCQWPs1UdTma97kQQMozf5h26hTuG70u8=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
