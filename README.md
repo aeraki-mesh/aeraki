@@ -104,7 +104,8 @@ Aeraki can manage the below protocols in a service mesh：
     * [x] Traffic Mirroring
   * Observability
     * [x] Request level Metrics (Request latency, count, error, etc)
-    * [ ] Distributed Tracing
+    * [x] Distributed Tracing
+    * [x] Access log
   * Security 
     * [x] Peer Authorization on Interface/Method
     * [ ] Request Authorization
