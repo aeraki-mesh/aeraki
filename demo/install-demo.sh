@@ -21,7 +21,7 @@ DEMO=$1
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 COMMON_DIR=$BASEDIR/test/e2e/common
 export ISTIO_VERSION=1.14.5
-export AERAKI_TAG=1.2.2
+export AERAKI_TAG=1.2.3
 
 bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
 bash ${SCRIPTS_DIR}/aeraki.sh
