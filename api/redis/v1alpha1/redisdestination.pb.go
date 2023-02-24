@@ -7,14 +7,13 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
+	io "io"
 	v1alpha3 "istio.io/api/networking/v1alpha3"
 	_ "istio.io/gogo-genproto/googleapis/google/api"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

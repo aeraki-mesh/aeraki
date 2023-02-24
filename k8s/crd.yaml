@@ -207,6 +207,13 @@ spec:
                   format: string
                   type: string
                 type: array
+              gateways:
+                description: The names of gateways and sidecars that should apply
+                  these routes.
+                items:
+                  format: string
+                  type: string
+                type: array
               globalRateLimit:
                 description: Global rate limit policy.
                 properties:
