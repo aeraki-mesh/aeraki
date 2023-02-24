@@ -22,9 +22,8 @@ package v1alpha1
 
 import (
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/gogo/protobuf/proto"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
