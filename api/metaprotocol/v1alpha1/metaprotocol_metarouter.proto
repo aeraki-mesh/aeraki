@@ -38,6 +38,8 @@ import "google/protobuf/wrappers.proto";
 // spec:
 //   hosts:
 //   - org.apache.dubbo.samples.basic.api.demoservice
+//   gateways:
+//   - istio-system/ingress-gateway
 //   routes:
 //   - name: v1
 //     match:
@@ -104,15 +106,18 @@ message MetaRouter {
   // *Note*: Only one host is supported now. If multiple hosts are specified,
   // Only the first one takes effect.
   repeated string hosts = 1;
+  // The names of gateways and sidecars that should apply these routes. The usage of
+  //  this field is the same as istio.io/VirtualService
+  repeated string gateways = 2;
   // An ordered list of route rules for MetaProtocol traffic. The route rules
   // will be applied to service ports named "tcp-metaprotocol-${applicationProtocol}-*",
   // (e.g. "tcp-metaprotocol-thrift-hello-server"). Order maters in the routes,
   // The first rule matching an incoming request is used.
-  repeated MetaRoute routes = 2;
+  repeated MetaRoute routes = 3;
   // Loacal rate limit policy.
-  LocalRateLimit local_rate_limit= 3;
+  LocalRateLimit local_rate_limit= 4;
   // Global rate limit policy.
-  GlobalRateLimit global_rate_limit= 4;
+  GlobalRateLimit global_rate_limit= 5;
   // A list of namespaces to which this MetaRouter is exported. Exporting a
   // MetaRouter allows it to be used by sidecars defined in other namespaces.
   // This feature provides a mechanism for service owners and mesh administrators
