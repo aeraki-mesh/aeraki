@@ -207,6 +207,13 @@ spec:
                   format: string
                   type: string
                 type: array
+              gateways:
+                description: The names of gateways and sidecars that should apply
+                  these routes.
+                items:
+                  format: string
+                  type: string
+                type: array
               globalRateLimit:
                 description: Global rate limit policy.
                 properties:
@@ -277,12 +284,6 @@ spec:
                 type: object
               hosts:
                 description: The destination service to which traffic is being sent.
-                items:
-                  format: string
-                  type: string
-                type: array
-              gateways:
-                description: Names of gateways where the rule should be applied.
                 items:
                   format: string
                   type: string
