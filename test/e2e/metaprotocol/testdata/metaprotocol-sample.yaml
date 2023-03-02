@@ -123,6 +123,15 @@ spec:
           image: aeraki/dubbo-sample-second-provider
           ports:
             - containerPort: 20880
+          volumeMounts:
+            - name: dubbo-resolve-config
+              mountPath: /dubbo-resolve.properties
+              subPath: dubbo-resolve.properties
+              readOnly: true
+      volumes:
+        - name: dubbo-resolve-config
+          configMap:
+            name: dubbo-resolve-config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -146,9 +155,6 @@ spec:
       containers:
         - name: dubbo-sample-consumer
           image: aeraki/dubbo-sample-consumer
-          env:
-            - name: mode
-              value: demo
           ports:
             - containerPort: 9009
           volumeMounts:
