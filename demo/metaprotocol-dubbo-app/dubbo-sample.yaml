@@ -1,0 +1,188 @@
+# Copyright Aeraki Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+  name: dubbo-resolve-config
+data:
+  dubbo-resolve.properties: |-
+    org.apache.dubbo.samples.basic.api.DemoService=dubbo://dubbo-sample-provider:20880
+    org.apache.dubbo.samples.basic.api.TestServic=dubbo://dubbo-sample-provider:20880
+    org.apache.dubbo.samples.basic.api.ComplexService=dubbo://dubbo-sample-provider:20880
+    org.apache.dubbo.samples.basic.api.SecondService=dubbo://dubbo-sample-second-provider:20880
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-provider-v1
+  labels:
+    app: dubbo-sample-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-provider
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+      labels:
+        app: dubbo-sample-provider
+        version: v1
+        service_group: user
+    spec:
+      containers:
+        - name: dubbo-sample-provider
+          image: aeraki/dubbo-sample-provider
+          ports:
+            - containerPort: 20880
+          volumeMounts:
+            - name: dubbo-resolve-config
+              mountPath: /dubbo-resolve.properties
+              subPath: dubbo-resolve.properties
+              readOnly: true
+      volumes:
+        - name: dubbo-resolve-config
+          configMap:
+            name: dubbo-resolve-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-provider-v2
+  labels:
+    app: dubbo-sample-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-provider
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+      labels:
+        app: dubbo-sample-provider
+        version: v2
+        service_group: batchjob
+    spec:
+      containers:
+        - name: dubbo-sample-provider
+          image: aeraki/dubbo-sample-provider
+          ports:
+            - containerPort: 20880
+          volumeMounts:
+            - name: dubbo-resolve-config
+              mountPath: /dubbo-resolve.properties
+              subPath: dubbo-resolve.properties
+              readOnly: true
+      volumes:
+        - name: dubbo-resolve-config
+          configMap:
+            name: dubbo-resolve-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-second-provider
+  labels:
+    app: dubbo-sample-second-provider
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-second-provider
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+      labels:
+        app: dubbo-sample-second-provider
+        version: v2
+        service_group: batchjob
+    spec:
+      containers:
+        - name: dubbo-sample-second-provider
+          image: aeraki/dubbo-sample-second-provider
+          ports:
+            - containerPort: 20880
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dubbo-sample-consumer
+  labels:
+    app: dubbo-sample-consumer
+spec:
+  selector:
+    matchLabels:
+      app: dubbo-sample-consumer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
+        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+      labels:
+        app: dubbo-sample-consumer
+    spec:
+      containers:
+        - name: dubbo-sample-consumer
+          image: aeraki/dubbo-sample-consumer
+          env:
+            - name: mode
+              value: demo
+          ports:
+            - containerPort: 9009
+          volumeMounts:
+            - name: dubbo-resolve-config
+              mountPath: /dubbo-resolve.properties
+              subPath: dubbo-resolve.properties
+              readOnly: true
+      volumes:
+        - name: dubbo-resolve-config
+          configMap:
+            name: dubbo-resolve-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubbo-sample-provider
+spec:
+  selector:
+    app: dubbo-sample-provider
+  ports:
+    - name: tcp-metaprotocol-dubbo
+      protocol: TCP
+      port: 20880
+      targetPort: 20880
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dubbo-sample-second-provider
+spec:
+  selector:
+    app: dubbo-sample-second-provider
+  ports:
+    - name: tcp-metaprotocol-dubbo
+      protocol: TCP
+      port: 20880
+      targetPort: 20880
