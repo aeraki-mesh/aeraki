@@ -21,7 +21,7 @@ metadata:
 data:
   dubbo-resolve.properties: |-
     org.apache.dubbo.samples.basic.api.DemoService=dubbo://dubbo-sample-provider:20880
-    org.apache.dubbo.samples.basic.api.TestServic=dubbo://dubbo-sample-provider:20880
+    org.apache.dubbo.samples.basic.api.TestService=dubbo://dubbo-sample-provider:20880
     org.apache.dubbo.samples.basic.api.ComplexService=dubbo://dubbo-sample-provider:20880
     org.apache.dubbo.samples.basic.api.SecondService=dubbo://dubbo-sample-second-provider:20880
 ---
