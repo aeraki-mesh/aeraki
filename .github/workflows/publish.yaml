@@ -43,4 +43,4 @@ jobs:
       - name: Push Aeraki Docker image
         if: ${{ startsWith(steps.tag_type.outputs.version, 'aeraki/') }}
         run: |
-          docker push aeraki/aeraki:${{ steps.tag_env.outputs.version }}
+          docker push ghcr.io/aeraki-mesh/aeraki:${{ steps.tag_env.outputs.version }}

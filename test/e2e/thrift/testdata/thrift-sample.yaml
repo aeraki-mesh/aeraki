@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: thrift-sample-server
-          image: aeraki/thrift-sample-server
+          image: ghcr.io/aeraki-mesh/thrift-sample-server
           ports:
             - containerPort: 9090
 ---
@@ -41,7 +41,7 @@ spec:
     spec:
       containers:
         - name: thrift-sample-server
-          image: aeraki/thrift-sample-server
+          image: ghcr.io/aeraki-mesh/thrift-sample-server
           ports:
             - containerPort: 9090
 ---
@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
         - name: thrift-sample-client
-          image: aeraki/thrift-sample-client
+          image: ghcr.io/aeraki-mesh/thrift-sample-client
           env:
             - name: helloServer
               value: "thrift-sample-server"

@@ -28,14 +28,14 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: qza-sample-server
         version: v1
     spec:
       containers:
         - name: qza-sample-server
-          image: aeraki/qza-server
+          image: ghcr.io/aeraki-mesh/qza-server
           env:
             - name: VERSION
               value: v1
@@ -57,14 +57,14 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: qza-sample-server
         version: v2
     spec:
       containers:
         - name: qza-sample-server
-          image: aeraki/qza-server
+          image: ghcr.io/aeraki-mesh/qza-server
           env:
             - name: VERSION
               value: v2
@@ -86,13 +86,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: qza-sample-client
     spec:
       containers:
         - name: qza-sample-client
-          image: aeraki/qza-client
+          image: ghcr.io/aeraki-mesh/qza-client
           env:
             - name: SERVICE_ADDR
               value: "dns://qza-sample-server:8090"

@@ -20,7 +20,7 @@
 replicaCount: 1
 
 image:
-  repository: aeraki/aeraki
+  repository: ghcr.io/aeraki-mesh/aeraki
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: latest

@@ -35,7 +35,7 @@ spec:
       serviceAccountName: aeraki
       containers:
         - name: aeraki
-          image: aeraki/aeraki:${AERAKI_TAG}
+          image: ghcr.io/aeraki-mesh/aeraki:${AERAKI_TAG}
           resources:
             requests:
               memory: "1Gi"
