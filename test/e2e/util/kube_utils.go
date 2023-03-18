@@ -812,6 +812,9 @@ func CheckDeploymentsReady(ns string, kubeconfig string) (int, error) {
 		if len(flds) < 1 {
 			continue
 		}
+		if len(flds) > 2 {
+			notReady++
+		}
 		if len(flds) == 1 || flds[1] == "0" { // no replicas ready
 			notReady++
 		}

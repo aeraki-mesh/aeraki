@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: thrift-server-demo
+  namespace: meta-thrift
+spec:
+  gateways:
+  - istio-system/istio-ingressgateway
+  hosts:
+  - thrift-sample-server.meta-thrift.svc.cluster.local
+  tcp:
+  - match:
+    - port: 9090
+    route:
+    - destination:
+        host: thrift-sample-server.meta-thrift.svc.cluster.local
+      weight: 100

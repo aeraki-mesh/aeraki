@@ -30,6 +30,12 @@ type ServiceEntryWrapper struct {
 	Spec *networking.ServiceEntry
 }
 
+// GatewayWrapper wraps an Istio Gateway and its metadata, including name, annotations and labels.
+type GatewayWrapper struct {
+	istioconfig.Meta
+	Spec *networking.Gateway
+}
+
 // VirtualServiceWrapper wraps an Istio VirtualService and its metadata, including name, annotations and labels.
 type VirtualServiceWrapper struct {
 	istioconfig.Meta
@@ -55,6 +61,10 @@ type EnvoyFilterContext struct {
 
 	// Global Mesh config
 	MeshConfig mesh.Holder
+
+	// Gateway describes the gateway for which we need to generate the EnvoyFilter.
+	// ServiceEntry will be ignored when this field specified.
+	Gateway *GatewayWrapper
 
 	// ServiceEntry describes the service for which we need to generate the EnvoyFilter.
 	ServiceEntry *ServiceEntryWrapper

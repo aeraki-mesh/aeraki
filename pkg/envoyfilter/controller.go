@@ -17,6 +17,8 @@ package envoyfilter
 import (
 	"context"
 	"fmt"
+	"github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	"strings"
 	"time"
 
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
@@ -228,6 +230,9 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 				if err != nil {
 					return envoyFilters, err
 				}
+				if ctx == nil {
+					return envoyFilters, err
+				}
 				envoyFilterWrappers, err := generator.Generate(ctx)
 				if err == nil {
 					for _, wrapper := range envoyFilterWrappers {
@@ -242,6 +247,55 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 			}
 		}
 	}
+
+	// generate envoyFilters for gateway with tcp-metaprotocol server
+	gateways, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind(), "")
+	if err != nil {
+		return envoyFilters, fmt.Errorf("failed to listconfigs: %v", err)
+	}
+	for i := range gateways {
+		gw, ok := gateways[i].Spec.(*networking.Gateway)
+		if !ok { // should never happen
+			return envoyFilters, fmt.Errorf("failed in getting a gateway: %s: %v", gateways[i].Labels, err)
+		}
+		if gw.Servers == nil || len(gw.Servers) == 0 {
+			continue
+		}
+		for _, server := range gw.Servers {
+			if server.Port == nil {
+				continue
+			}
+			instance := protocol.GetLayer7ProtocolFromPortName(server.Port.Name)
+			if !instance.IsMetaProtocol() {
+				// server l7 port name must be MetaProtocol to generate EnvoyFilter.
+				continue
+			}
+			if generator, ok := c.generators[instance]; ok {
+				controllerLog.Infof("found generator for router port: %s", server.Port.Name)
+
+				ctxs, err := c.routerEnvoyFilterContexts(gw, &gateways[i], server.Port.Number)
+				if err != nil {
+					return envoyFilters, err
+				}
+				if ctxs == nil || len(ctxs) == 0 {
+					return envoyFilters, err
+				}
+				for _, ctx := range ctxs {
+					envoyFilterWrappers, err := generator.Generate(ctx)
+					if err != nil {
+						controllerLog.Errorf("failed to generate router envoy filter: router: %s, port: %s, error: %v",
+							gateways[i].Name,
+							server.Name, err)
+						continue
+					}
+					for _, wrapper := range envoyFilterWrappers {
+						envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
+					}
+				}
+			}
+		}
+	}
+
 	return envoyFilters, nil
 }
 
@@ -295,6 +349,66 @@ func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
 		VirtualService: relatedVs,
 		MetaRouter:     relatedMr,
 	}, nil
+}
+
+// envoyFilterContext wraps all the resources needed to create the EnvoyFilter
+func (c *Controller) routerEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config, portNumber uint32) ([]*model.EnvoyFilterContext, error) {
+	var ctxs []*model.EnvoyFilterContext
+	metaRouterList := metaprotocol.MetaRouterList{}
+	err := c.MetaRouterControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	gatewayName := fmt.Sprintf("%s/%s", gateway.Namespace, gateway.Name)
+	for i := range metaRouterList.Items {
+		for _, gw := range metaRouterList.Items[i].Spec.Gateways {
+			if j := strings.Index(gw, "/"); j < 0 {
+				gw = metaRouterList.Items[i].Namespace + "/" + gw
+			}
+			if gw != gatewayName {
+				continue
+			}
+			// the port in the MetaRouter destination must match with gateway server's port
+			if !isMatchPort(portNumber, metaRouterList.Items[i].Spec.Routes) {
+				continue
+			}
+			ctxs = append(ctxs, &model.EnvoyFilterContext{
+				MeshConfig: c.meshConfig,
+				Gateway: &model.GatewayWrapper{
+					Meta: gateway.Meta,
+					Spec: gatewaySpec,
+				},
+				ServiceEntry: &model.ServiceEntryWrapper{
+					Spec: &networking.ServiceEntry{
+						Hosts:     metaRouterList.Items[i].Spec.Hosts,
+						Addresses: []string{"0.0.0.0"},
+					},
+				},
+				MetaRouter: &metaRouterList.Items[i],
+			})
+			// A gateway port can only be defined by a MetaRouter
+			break
+		}
+	}
+	return ctxs, nil
+}
+
+func isMatchPort(portNumber uint32, routes []*v1alpha1.MetaRoute) bool {
+	if routes == nil {
+		return false
+	}
+	for _, route := range routes {
+		if route.Route == nil {
+			continue
+		}
+		for _, destination := range route.Route {
+			if destination.Destination != nil && destination.Destination.Port != nil &&
+				destination.Destination.Port.Number == portNumber {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {

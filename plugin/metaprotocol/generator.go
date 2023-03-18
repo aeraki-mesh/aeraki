@@ -15,11 +15,13 @@
 package metaprotocol
 
 import (
-	"istio.io/pkg/log"
-
+	"fmt"
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	istionetworking "istio.io/api/networking/v1alpha3"
+	"istio.io/pkg/log"
 )
 
 var generatorLog = log.RegisterScope("metaprotocol-generator", "metaprotocol generator", 0)
@@ -35,6 +37,49 @@ func NewGenerator() *Generator {
 
 // Generate create EnvoyFilters for MetaProtocol services
 func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
+	if context.Gateway != nil {
+		return generateGatewayEnvoyFilters(context)
+	} else {
+		return generateSidecarEnvoyFilters(context)
+	}
+}
+
+func generateGatewayEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
+	var envoyfilters []*model.EnvoyFilterWrapper
+	for _, server := range context.Gateway.Spec.Servers {
+		if server.Port == nil {
+			continue
+		}
+		if !protocol.GetLayer7ProtocolFromPortName(server.Port.Name).IsMetaProtocol() {
+			continue
+		}
+		port := trans2Port(server)
+		outboundProxy, err := buildOutboundProxy(context, port)
+		if err != nil {
+			return nil, err
+		}
+		envoyfilters = append(envoyfilters,
+			envoyfilter.GenerateReplaceNetworkFilter(
+				context.ServiceEntry,
+				port,
+				outboundProxy,
+				nil,
+				"envoy.filters.network.meta_protocol_proxy",
+				"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy")...)
+		// append workloadSelector for OutboundListener EnvoyFilter
+		for i, _ := range envoyfilters {
+			envoyfilters[i].Name = fmt.Sprintf("aeraki-router-outbound--%s-%d", context.Gateway.Name, port.Number)
+			envoyfilters[i].Namespace = constants.DefaultRootNamespace
+			if envoyfilters[i].Envoyfilter.WorkloadSelector == nil {
+				envoyfilters[i].Envoyfilter.WorkloadSelector = &istionetworking.WorkloadSelector{}
+			}
+			envoyfilters[i].Envoyfilter.WorkloadSelector.Labels = context.Gateway.Spec.Selector
+		}
+	}
+	return envoyfilters, nil
+}
+
+func generateSidecarEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	var envoyfilters []*model.EnvoyFilterWrapper
 	for _, port := range context.ServiceEntry.Spec.Ports {
 		if !protocol.GetLayer7ProtocolFromPortName(port.Name).IsMetaProtocol() {
@@ -58,4 +103,13 @@ func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFil
 				"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy")...)
 	}
 	return envoyfilters, nil
+}
+
+func trans2Port(server *istionetworking.Server) *istionetworking.Port {
+	return &istionetworking.Port{
+		Number:     server.Port.Number,
+		Protocol:   server.Port.Protocol,
+		Name:       server.Port.Name,
+		TargetPort: server.Port.TargetPort,
+	}
 }
