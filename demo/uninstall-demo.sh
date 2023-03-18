@@ -35,8 +35,4 @@ then
     bash ${BASEDIR}/demo/kafka/uninstall.sh
 fi
 
-kubectl delete kiali kiali -n istio-system
 kubectl delete ns istio-system
-
-helm uninstall kiali-operator -n kiali-operator
-kubectl delete namespace kiali-operator
