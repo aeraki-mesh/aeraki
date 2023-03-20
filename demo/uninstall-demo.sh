@@ -16,8 +16,9 @@ BASEDIR=$(dirname "$0")/..
 
 DEMO=$1
 
-kubectl delete -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/addons/prometheus.yaml -n istio-system
-kubectl delete -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/addons/grafana.yaml -n istio-system
+kubectl delete -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/addons/prometheus.yaml
+kubectl delete -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/addons/grafana.yaml
+kubectl delete -f https://raw.githubusercontent.com/istio/istio/release-1.14/samples/addons/jeager.yaml
 
 kubectl delete -f $BASEDIR/demo/gateway/demo-ingress.yaml -n istio-system
 kubectl delete -f $BASEDIR/demo/gateway/istio-ingressgateway.yaml -n istio-system
