@@ -40,7 +40,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.2.3
       labels:
         app: dubbo-sample-provider
         version: v1
@@ -48,7 +48,7 @@ spec:
     spec:
       containers:
         - name: dubbo-sample-provider
-          image: aeraki/dubbo-sample-provider
+          image: ghcr.io/aeraki-mesh/dubbo-sample-provider
           ports:
             - containerPort: 20880
           volumeMounts:
@@ -76,7 +76,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.2.3
       labels:
         app: dubbo-sample-provider
         version: v2
@@ -84,7 +84,7 @@ spec:
     spec:
       containers:
         - name: dubbo-sample-provider
-          image: aeraki/dubbo-sample-provider
+          image: ghcr.io/aeraki-mesh/dubbo-sample-provider
           ports:
             - containerPort: 20880
           volumeMounts:
@@ -112,7 +112,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.2.3
       labels:
         app: dubbo-sample-second-provider
         version: v2
@@ -120,7 +120,7 @@ spec:
     spec:
       containers:
         - name: dubbo-sample-second-provider
-          image: aeraki/dubbo-sample-second-provider
+          image: ghcr.io/aeraki-mesh/dubbo-sample-second-provider
           ports:
             - containerPort: 20880
           volumeMounts:
@@ -148,13 +148,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-debug:1.2.3
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.2.3
       labels:
         app: dubbo-sample-consumer
     spec:
       containers:
         - name: dubbo-sample-consumer
-          image: aeraki/dubbo-sample-consumer
+          image: ghcr.io/aeraki-mesh/dubbo-sample-consumer
           ports:
             - containerPort: 9009
           volumeMounts:

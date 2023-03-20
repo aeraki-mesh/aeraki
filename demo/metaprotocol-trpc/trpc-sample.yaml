@@ -28,14 +28,14 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: trpc-sample-server
         version: v1
     spec:
       containers:
         - name: trpc-sample-server
-          image: aeraki/trpc-server
+          image: ghcr.io/aeraki-mesh/trpc-server
           ports:
             - containerPort: 8000
 ---
@@ -54,14 +54,14 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: trpc-sample-server
         version: v2
     spec:
       containers:
         - name: trpc-sample-server
-          image: aeraki/trpc-server
+          image: ghcr.io/aeraki-mesh/trpc-server
           ports:
             - containerPort: 8000
 ---
@@ -80,13 +80,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: trpc-sample-client-unary
     spec:
       containers:
         - name: trpc-sample-client
-          image: aeraki/trpc-client
+          image: ghcr.io/aeraki-mesh/trpc-client
           env:
             - name: version
               value: "v1"  # The version field is the transparent transmission field of trpc, which can cooperate with metarouter-multi-route.yaml to realize the function of multi-version routing
@@ -110,13 +110,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: trpc-sample-client-stream
     spec:
       containers:
         - name: trpc-sample-client
-          image: aeraki/trpc-client
+          image: ghcr.io/aeraki-mesh/trpc-client
           env:
             - name: version
               value: "v1"  # The version field is the transparent transmission field of trpc, which can cooperate with metarouter-multi-route.yaml to realize the function of multi-version routing
@@ -140,13 +140,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: trpc-sample-server-stream
     spec:
       containers:
         - name: trpc-sample-client
-          image: aeraki/trpc-client
+          image: ghcr.io/aeraki-mesh/trpc-client
           env:
             - name: version
               value: "v1"  # The version field is the transparent transmission field of trpc, which can cooperate with metarouter-multi-route.yaml to realize the function of multi-version routing
@@ -170,13 +170,13 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
       labels:
         app: trpc-sample-client-bidirection-stream
     spec:
       containers:
         - name: trpc-sample-client
-          image: aeraki/trpc-client
+          image: ghcr.io/aeraki-mesh/trpc-client
           env:
             - name: version
               value: "v1"  # The version field is the transparent transmission field of trpc, which can cooperate with metarouter-multi-route.yaml to realize the function of multi-version routing
