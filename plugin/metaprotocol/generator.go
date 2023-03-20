@@ -39,9 +39,8 @@ func NewGenerator() *Generator {
 func (*Generator) Generate(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
 	if context.Gateway != nil {
 		return generateGatewayEnvoyFilters(context)
-	} else {
-		return generateSidecarEnvoyFilters(context)
 	}
+	return generateSidecarEnvoyFilters(context)
 }
 
 func generateGatewayEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.EnvoyFilterWrapper, error) {
@@ -67,7 +66,7 @@ func generateGatewayEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.En
 				"envoy.filters.network.meta_protocol_proxy",
 				"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy")...)
 		// append workloadSelector for OutboundListener EnvoyFilter
-		for i, _ := range envoyfilters {
+		for i := range envoyfilters {
 			envoyfilters[i].Name = fmt.Sprintf("aeraki-router-outbound--%s-%d", context.Gateway.Name, port.Number)
 			envoyfilters[i].Namespace = constants.DefaultRootNamespace
 			if envoyfilters[i].Envoyfilter.WorkloadSelector == nil {

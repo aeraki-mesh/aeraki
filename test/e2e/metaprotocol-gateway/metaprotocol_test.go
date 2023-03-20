@@ -57,12 +57,12 @@ func TestThriftRouter(t *testing.T) {
 	util.WaitForDeploymentsReady("meta-thrift", 10*time.Minute, "")
 	util.WaitForDeploymentsReady("istio-system", 10*time.Minute, "")
 
-	svcIp, err := util.GetServiceIP("istio-ingressgateway", "istio-system", "")
+	svcIP, err := util.GetServiceIP("istio-ingressgateway", "istio-system", "")
 	if err != nil {
-		t.Errorf("failed to get istio-ingressgateway svcIp")
+		t.Errorf("failed to get istio-ingressgateway svcIP")
 	}
 	var transport thrift.TTransport
-	transport, err = thrift.NewTSocket(fmt.Sprintf("%s:9090", svcIp))
+	transport, err = thrift.NewTSocket(fmt.Sprintf("%s:9090", svcIP))
 	if err != nil {
 		fmt.Println("Error opening socket:", err)
 	}
