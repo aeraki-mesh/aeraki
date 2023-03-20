@@ -45,6 +45,8 @@ install-for-tcm:
 	bash demo/install-aeraki.sh mode=tcm
 demo:
 	bash demo/install-demo.sh default
+uninstall-aeraki:
+	bash demo/uninstall-aeraki.sh 
 uninstall-demo:
 	bash demo/uninstall-demo.sh default
 demo-kafka:
