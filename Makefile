@@ -47,6 +47,8 @@ demo:
 	bash demo/install-demo.sh default
 uninstall-demo:
 	bash demo/uninstall-demo.sh default
+uninstall-aeraki:
+	bash demo/uninstall-aeraki.sh
 demo-kafka:
 	bash demo/install-demo.sh kafka
 uninstall-demo-kafka:
