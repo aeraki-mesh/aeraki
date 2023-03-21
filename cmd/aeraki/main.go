@@ -83,7 +83,8 @@ func main() {
 	args.Protocols = initGenerators()
 	server, err := bootstrap.NewServer(args)
 	if err != nil {
-		log.Fatalf("Failed to start Aeraki :%v", err)
+		log.Fatalf("Failed to init Aeraki :%v", err)
+                os.Exit(1)
 	}
 	server.Start(stopChan)
 
