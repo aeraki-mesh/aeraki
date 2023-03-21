@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package metaprotocol
+package metaprotocol_gateway
 
 import (
 	"context"
@@ -50,7 +50,7 @@ func shutdown() {
 	util.KubeDelete("istio-system", "testdata/ingress-gateway.yaml", "")
 	util.KubeDelete("meta-thrift", "testdata/thrift-sample.yaml", "")
 	util.KubeDelete("istio-system", "../../../k8s/aeraki-bootstrap-config.yaml", "")
-	util.DeleteNamespace("meta-thrift", "")
+	//util.DeleteNamespace("meta-thrift", "")
 }
 
 func TestThriftRouter(t *testing.T) {
@@ -90,7 +90,7 @@ func TestThriftRouter(t *testing.T) {
 
 	// v1 route
 	util.KubeApply("meta-thrift", "testdata/metarouter-v1.yaml", "")
-	time.Sleep(10 * time.Second)
+	time.Sleep(15 * time.Second)
 	for i := 0; i < 5; i++ {
 		resp, err := client.SayHello(context.TODO(), "AerakiClient")
 		if err != nil {
@@ -104,7 +104,7 @@ func TestThriftRouter(t *testing.T) {
 
 	// v2 route
 	util.KubeApply("meta-thrift", "testdata/metarouter-v2.yaml", "")
-	time.Sleep(10 * time.Second)
+	time.Sleep(15 * time.Second)
 	for i := 0; i < 5; i++ {
 		resp, err := client.SayHello(context.TODO(), "AerakiClient")
 		if err != nil {
@@ -116,4 +116,8 @@ func TestThriftRouter(t *testing.T) {
 		}
 	}
 
+}
+
+func TestShut(t *testing.T) {
+	shutdown()
 }
