@@ -117,7 +117,3 @@ func TestThriftRouter(t *testing.T) {
 	}
 
 }
-
-func TestShut(t *testing.T) {
-	shutdown()
-}

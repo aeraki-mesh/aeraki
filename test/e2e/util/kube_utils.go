@@ -26,6 +26,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -814,9 +815,15 @@ func CheckDeploymentsReady(ns string, kubeconfig string) (int, error) {
 		}
 		if len(flds) > 2 {
 			notReady++
+			continue
 		}
 		if len(flds) == 1 || flds[1] == "0" { // no replicas ready
 			notReady++
+			continue
+		}
+		if _, err = strconv.Atoi(flds[1]); err != nil {
+			notReady++
+			continue
 		}
 	}
 
