@@ -67,7 +67,7 @@ func generateGatewayEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.En
 				"type.googleapis.com/aeraki.meta_protocol_proxy.v1alpha.MetaProtocolProxy")...)
 		// append workloadSelector for OutboundListener EnvoyFilter
 		for i := range envoyfilters {
-			envoyfilters[i].Name = fmt.Sprintf("aeraki-router-outbound--%s-%d", context.Gateway.Name, port.Number)
+			envoyfilters[i].Name = fmt.Sprintf("aeraki-gateway-outbound-%s.%s-%d", context.Gateway.Name, context.Gateway.Namespace, port.Number)
 			envoyfilters[i].Namespace = constants.DefaultRootNamespace
 			if envoyfilters[i].Envoyfilter.WorkloadSelector == nil {
 				envoyfilters[i].Envoyfilter.WorkloadSelector = &istionetworking.WorkloadSelector{}

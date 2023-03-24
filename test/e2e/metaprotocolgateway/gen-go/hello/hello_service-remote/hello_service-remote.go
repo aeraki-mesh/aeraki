@@ -6,7 +6,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocol-gateway/gen-go/hello"
+	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
 	"github.com/apache/thrift/lib/go/thrift"
 	"math"
 	"net"

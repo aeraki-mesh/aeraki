@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package metaprotocol_gateway
+package metaprotocolgateway
 
 import (
 	"context"
 	"fmt"
-	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocol-gateway/gen-go/hello"
+	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
 	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 	"github.com/apache/thrift/lib/go/thrift"
 	"istio.io/pkg/log"
@@ -41,22 +41,25 @@ func setup() {
 	util.KubeApply("istio-system", "testdata/ingress-gateway.yaml", "") // ingress gateway
 	util.KubeApply("meta-thrift", "testdata/virtualservice.yaml", "")
 	util.KubeApply("meta-thrift", "testdata/destinationrule.yaml", "")
-
+	util.KubeApply("meta-thrift", "testdata/metarouter.yaml", "")
 }
 
 func shutdown() {
+	util.KubeDelete("meta-thrift", "testdata/metarouter.yaml", "")
 	util.KubeDelete("meta-thrift", "testdata/destinationrule.yaml", "")
 	util.KubeDelete("meta-thrift", "testdata/virtualservice.yaml", "")
 	util.KubeDelete("istio-system", "testdata/ingress-gateway.yaml", "")
 	util.KubeDelete("meta-thrift", "testdata/thrift-sample.yaml", "")
 	util.KubeDelete("istio-system", "../../../k8s/aeraki-bootstrap-config.yaml", "")
-	//util.DeleteNamespace("meta-thrift", "")
+	util.DeleteNamespace("meta-thrift", "")
 }
 
 func TestThriftRouter(t *testing.T) {
 	util.WaitForDeploymentsReady("meta-thrift", 10*time.Minute, "")
 	util.WaitForDeploymentsReady("istio-system", 10*time.Minute, "")
 
+	// waiting for gateway listener ready
+	time.Sleep(15 * time.Second)
 	svcIP, err := util.GetServiceIP("istio-ingressgateway", "istio-system", "")
 	if err != nil {
 		t.Errorf("failed to get istio-ingressgateway svcIP")
@@ -90,7 +93,7 @@ func TestThriftRouter(t *testing.T) {
 
 	// v1 route
 	util.KubeApply("meta-thrift", "testdata/metarouter-v1.yaml", "")
-	time.Sleep(15 * time.Second)
+	time.Sleep(10 * time.Second)
 	for i := 0; i < 5; i++ {
 		resp, err := client.SayHello(context.TODO(), "AerakiClient")
 		if err != nil {
@@ -104,7 +107,7 @@ func TestThriftRouter(t *testing.T) {
 
 	// v2 route
 	util.KubeApply("meta-thrift", "testdata/metarouter-v2.yaml", "")
-	time.Sleep(15 * time.Second)
+	time.Sleep(10 * time.Second)
 	for i := 0; i < 5; i++ {
 		resp, err := client.SayHello(context.TODO(), "AerakiClient")
 		if err != nil {

@@ -1,3 +1,4 @@
+---
 apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: MetaRouter
 metadata:
@@ -18,4 +19,3 @@ spec:
             host: thrift-sample-server.meta-thrift.svc.cluster.local
             port:
               number: 9090
-            subset: v1

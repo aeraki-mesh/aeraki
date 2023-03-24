@@ -1,5 +1,5 @@
 ---
-name: e2e-metaprotocol-gateway
+name: e2e-metaprotocolgateway
 
 on: [push, pull_request]
 
@@ -37,4 +37,4 @@ jobs:
       - name: Install aeraki
         run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: test
-        run: go test -v github.com/aeraki-mesh/aeraki/test/e2e/metaprotocol-gateway/ -run TestThriftRouter
+        run: go test -v github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/ -run TestThriftRouter
