@@ -20,8 +20,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pkg/config"
 
@@ -36,7 +34,9 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )

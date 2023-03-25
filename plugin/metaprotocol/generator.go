@@ -17,12 +17,13 @@ package metaprotocol
 import (
 	"fmt"
 
+	istionetworking "istio.io/api/networking/v1alpha3"
+	"istio.io/pkg/log"
+
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-	istionetworking "istio.io/api/networking/v1alpha3"
-	"istio.io/pkg/log"
 )
 
 var generatorLog = log.RegisterScope("metaprotocol-generator", "metaprotocol generator", 0)
