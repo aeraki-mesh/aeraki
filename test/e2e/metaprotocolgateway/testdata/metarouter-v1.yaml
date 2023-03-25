@@ -1,0 +1,22 @@
+---
+apiVersion: metaprotocol.aeraki.io/v1alpha1
+kind: MetaRouter
+metadata:
+  name: test-metaprotocol-thrift-route
+  namespace: meta-thrift
+spec:
+  gateways:
+    - istio-system/istio-ingressgateway
+  hosts:
+    - thrift-sample-server.meta-thrift.svc.cluster.local
+  routes:
+    - match:
+        attributes:
+          method:
+            exact: ""
+      route:
+        - destination:
+            host: thrift-sample-server.meta-thrift.svc.cluster.local
+            port:
+              number: 9090
+            subset: v1

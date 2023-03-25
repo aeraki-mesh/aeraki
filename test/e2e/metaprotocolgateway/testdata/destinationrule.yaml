@@ -1,0 +1,15 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: thrift-sample-server
+  namespace: meta-thrift
+spec:
+  host: thrift-sample-server.meta-thrift.svc.cluster.local
+  subsets:
+    - labels:
+        version: v1
+      name: v1
+    - labels:
+        version: v2
+      name: v2

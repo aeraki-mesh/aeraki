@@ -55,7 +55,8 @@ var (
 	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
 				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).
 				MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).
-				MustAdd(collections.IstioNetworkingV1Alpha3Envoyfilters).Build()
+				MustAdd(collections.IstioNetworkingV1Alpha3Envoyfilters).
+				MustAdd(collections.IstioNetworkingV1Alpha3Gateways).Build()
 )
 
 // Options for config controller
@@ -189,6 +190,11 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 			if c.shouldHandleDestinationRuleChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
+		case collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind():
+			controllerLog.Infof("Gateway changed: %s %s", event.String(), curr.Name)
+			if c.shouldHandleGatewayChange(&prev, &curr) {
+				handler(&prev, &curr, event)
+			}
 		}
 	}
 
@@ -196,6 +202,10 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 	for _, schema := range schemas {
 		c.configCache.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
 	}
+}
+
+func (c *Controller) shouldHandleGatewayChange(prev, curr *istioconfig.Config) bool {
+	return c.shouldHandleGateway(curr) || (!c.isNilConfig(prev) && c.shouldHandleGateway(prev))
 }
 
 func (c *Controller) shouldHandleDestinationRuleChange(prev, curr *istioconfig.Config) bool {
@@ -296,6 +306,25 @@ func (c *Controller) shouldHandleDestinationRule(drConfig *istioconfig.Config) b
 					}
 				}
 			}
+		}
+	}
+	return false
+}
+
+func (c *Controller) shouldHandleGateway(gwConfig *istioconfig.Config) bool {
+	gw, ok := gwConfig.Spec.(*networking.Gateway)
+	if !ok {
+		// This should never happen
+		controllerLog.Errorf("failed in getting a gateway: %v", gwConfig.Name)
+		return false
+	}
+	servers := gw.Servers
+	if len(servers) == 0 {
+		return false
+	}
+	for _, s := range servers {
+		if s.Port != nil && protocol.GetLayer7ProtocolFromPortName(s.Port.Name).IsMetaProtocol() {
+			return true
 		}
 	}
 	return false

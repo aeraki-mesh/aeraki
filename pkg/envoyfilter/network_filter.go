@@ -16,6 +16,7 @@ package envoyfilter
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -187,11 +188,11 @@ func inboundEnvoyFilterWorkloadSelector(service *model.ServiceEntryWrapper) *net
 }
 
 func outboundEnvoyFilterName(host, vip string, port int) string {
-	return "aeraki" + "-outbound-" + host + "-" + vip + "-" + strconv.Itoa(port)
+	return fmt.Sprintf("aeraki-outbound-%s-%s-%d", host, vip, port)
 }
 
 func inboundEnvoyFilterName(host string, port int) string {
-	return "aeraki" + "-inbound-" + host + "-" + strconv.Itoa(port)
+	return fmt.Sprintf("aeraki-inbound-%s-%d", host, port)
 }
 
 func generateValue(proxy proto.Message, filterName, filterType string) (*types.Struct, error) {
