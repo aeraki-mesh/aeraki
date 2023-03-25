@@ -319,7 +319,7 @@ func (c *Controller) shouldHandleGateway(gwConfig *istioconfig.Config) bool {
 		return false
 	}
 	servers := gw.Servers
-	if servers == nil || len(servers) == 0 {
+	if len(servers) == 0 {
 		return false
 	}
 	for _, s := range servers {

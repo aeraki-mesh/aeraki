@@ -17,14 +17,15 @@ package metaprotocolgateway
 import (
 	"context"
 	"fmt"
-	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
-	"github.com/aeraki-mesh/aeraki/test/e2e/util"
-	"github.com/apache/thrift/lib/go/thrift"
-	"istio.io/pkg/log"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
+	"github.com/aeraki-mesh/aeraki/test/e2e/util"
+	"github.com/apache/thrift/lib/go/thrift"
+	"istio.io/pkg/log"
 )
 
 func TestMain(m *testing.M) {
@@ -59,7 +60,7 @@ func TestThriftRouter(t *testing.T) {
 	util.WaitForDeploymentsReady("istio-system", 10*time.Minute, "")
 
 	// waiting for gateway listener ready
-	time.Sleep(15 * time.Second)
+	time.Sleep(1 * time.Minute)
 	svcIP, err := util.GetServiceIP("istio-ingressgateway", "istio-system", "")
 	if err != nil {
 		t.Errorf("failed to get istio-ingressgateway svcIP")
@@ -97,6 +98,7 @@ func TestThriftRouter(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		resp, err := client.SayHello(context.TODO(), "AerakiClient")
 		if err != nil {
+			log.Errorf("err is %v", err)
 			t.Errorf("failed to call thrift server")
 		}
 		log.Info(resp)
@@ -111,6 +113,7 @@ func TestThriftRouter(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		resp, err := client.SayHello(context.TODO(), "AerakiClient")
 		if err != nil {
+			log.Errorf("err is %v", err)
 			t.Errorf("failed to call thrift server")
 		}
 		log.Info(resp)

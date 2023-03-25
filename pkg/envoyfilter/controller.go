@@ -17,15 +17,13 @@ package envoyfilter
 import (
 	"context"
 	"fmt"
-	"github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	"strings"
 	"time"
 
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
-
-	"istio.io/istio/pkg/config"
-
+	"github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
+	"istio.io/istio/pkg/config"
 
 	"github.com/gogo/protobuf/proto"
 	"github.com/zhaohuabing/debounce"
@@ -249,14 +247,20 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 	}
 
 	// generate envoyFilters for gateway with tcp-metaprotocol server
+	c.generateGatewayEnvoyFilters(envoyFilters)
+
+	return envoyFilters, nil
+}
+
+func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.EnvoyFilterWrapper) {
 	gateways, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind(), "")
 	if err != nil {
-		return envoyFilters, fmt.Errorf("failed to listconfigs: %v", err)
+		log.Errorf("failed to listconfigs: %v", err)
 	}
 	for i := range gateways {
 		gw, ok := gateways[i].Spec.(*networking.Gateway)
 		if !ok { // should never happen
-			return envoyFilters, fmt.Errorf("failed in getting a gateway: %s: %v", gateways[i].Labels, err)
+			log.Errorf("failed in getting a gateway: %s: %v", gateways[i].Labels, err)
 		}
 		if gw.Servers == nil || len(gw.Servers) == 0 {
 			continue
@@ -275,10 +279,13 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 
 				ctxs, err := c.routerEnvoyFilterContexts(gw, &gateways[i], server.Port.Number)
 				if err != nil {
-					return envoyFilters, err
+					log.Errorf("failed to build EnvoyFilter Context router: %s, port: %s, error: %v",
+						gateways[i].Name,
+						server.Name, err)
+					return
 				}
-				if ctxs == nil || len(ctxs) == 0 {
-					return envoyFilters, err
+				if len(ctxs) == 0 {
+					continue
 				}
 				for _, ctx := range ctxs {
 					envoyFilterWrappers, err := generator.Generate(ctx)
@@ -295,8 +302,6 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 			}
 		}
 	}
-
-	return envoyFilters, nil
 }
 
 func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext, wrapper *model.EnvoyFilterWrapper,
@@ -352,7 +357,8 @@ func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
 }
 
 // envoyFilterContext wraps all the resources needed to create the EnvoyFilter
-func (c *Controller) routerEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config, portNumber uint32) ([]*model.EnvoyFilterContext, error) {
+func (c *Controller) routerEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config,
+	portNumber uint32) ([]*model.EnvoyFilterContext, error) {
 	var ctxs []*model.EnvoyFilterContext
 	metaRouterList := metaprotocol.MetaRouterList{}
 	err := c.MetaRouterControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})

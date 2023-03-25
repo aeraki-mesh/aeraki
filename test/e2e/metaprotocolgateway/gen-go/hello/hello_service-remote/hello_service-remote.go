@@ -6,14 +6,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
-	"github.com/apache/thrift/lib/go/thrift"
 	"math"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
+	"github.com/apache/thrift/lib/go/thrift"
 )
 
 var _ = hello.GoUnusedProtection__
