@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
   labels:
     app: aeraki
 spec:
@@ -91,7 +91,7 @@ metadata:
   labels:
     app: aeraki
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 spec:
   ports:
     - name: grpc-xds
@@ -109,7 +109,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -117,7 +117,7 @@ metadata:
   labels:
     app: aeraki
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 rules:
   - apiGroups:
       - ""
@@ -139,7 +139,7 @@ metadata:
   labels:
     app: aeraki
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -206,7 +206,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: aeraki
-    namespace: istio-system
+    namespace: ${AERAKI_NAMESPACE}
 ---
 apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol

@@ -39,7 +39,7 @@ func (s *Server) initSecureWebhookServer(args *AerakiArgs) error {
 	}
 
 	// Generate Webhook configuration
-	if err := validation.GenerateWebhookConfig(s.CABundle); err != nil {
+	if err := validation.GenerateWebhookConfig(s.CABundle, args.RootNamespace); err != nil {
 		return fmt.Errorf("failed to generate webhook cofigruation %v", err)
 	}
 	return nil

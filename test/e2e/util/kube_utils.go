@@ -241,7 +241,7 @@ func KubeDeleteContents(namespace, yamlContents string, kubeconfig string) error
 }
 
 func removeFile(path string) {
-	err := os.Remove(path)
+	err := os.RemoveAll(path)
 	if err != nil {
 		log.Errorf("Unable to remove %s: %v", path, err)
 	}

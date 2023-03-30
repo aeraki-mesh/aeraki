@@ -15,7 +15,6 @@
 BASEDIR=$(dirname "$0")
 source $BASEDIR/../common_func.sh
 
-
 kubectl create ns thrift
 LabelIstioInjectLabel thrift
 kubectl apply -f $BASEDIR/thrift-sample.yaml -n thrift

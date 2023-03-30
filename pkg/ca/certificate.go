@@ -25,8 +25,6 @@ import (
 	"time"
 
 	kubelib "istio.io/istio/pkg/kube"
-
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 )
 
 // KeyCertBundle stores the cert, private key and root cert for aeraki.
@@ -37,8 +35,8 @@ type KeyCertBundle struct {
 }
 
 // GenerateKeyCertBundle generates root ca and server certificate
-func GenerateKeyCertBundle(client kubelib.Client) (*KeyCertBundle, error) {
-	caKeyCertBundle, err := getIstioCA(client.CoreV1())
+func GenerateKeyCertBundle(client kubelib.Client, namespace string) (*KeyCertBundle, error) {
+	caKeyCertBundle, err := getIstioCA(client.CoreV1(), namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -46,8 +44,8 @@ func GenerateKeyCertBundle(client kubelib.Client) (*KeyCertBundle, error) {
 	caCert, caPrivKey, _, _ := caKeyCertBundle.GetAll()
 
 	dnsNames := []string{"aeraki",
-		"aeraki." + constants.DefaultRootNamespace,
-		"aeraki." + constants.DefaultRootNamespace + ".svc"}
+		"aeraki." + namespace,
+		"aeraki." + namespace + ".svc"}
 	commonName := "aeraki.default.svc"
 	// server cert config
 	cert := &x509.Certificate{

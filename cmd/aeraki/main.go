@@ -21,8 +21,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
-
 	"github.com/google/uuid"
 
 	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
@@ -39,7 +37,7 @@ import (
 
 const (
 	defaultIstiodAddr        = "istiod.istio-system:15010"
-	defaultRootNamespace     = constants.DefaultRootNamespace
+	defaultRootNamespace     = "istio-system"
 	defaultXdsAddr           = ":15010"
 	defaultElectionID        = "aeraki-controller"
 	defaultLogLevel          = "all:info"
@@ -70,12 +68,14 @@ func main() {
 	if args.ServerID == "" {
 		args.ServerID = "Aeraki-" + uuid.New().String()
 	}
+	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
+	args.RootNamespace = env.RegisterStringVar("AERAKI_NAMESPACE", args.RootNamespace, "").Get()
+	args.EnableEnvoyFilterNSScope = env.RegisterBoolVar("AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE",
+		args.EnableEnvoyFilterNSScope, "").Get()
 
 	flag.VisitAll(func(flag *flag.Flag) {
 		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
 	})
-
-	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
 
 	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.

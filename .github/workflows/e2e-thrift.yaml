@@ -5,6 +5,7 @@ on: [push, pull_request]
 
 env:
   ISTIO_VERSION: 1.14.5
+  ISTIO_NAMESPACE: istio-system
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
   AERAKI_IMG_PULL_POLICY: Never
@@ -33,7 +34,7 @@ jobs:
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
       - name: Install Istio
-        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+        run: bash ${SCRIPTS_DIR}/istio.sh
       - name: Install aeraki
         run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: test
@@ -62,7 +63,7 @@ jobs:
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
       - name: Install Istio
-        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+        run: bash ${SCRIPTS_DIR}/istio.sh
       - name: Install aeraki
         run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: test
@@ -91,7 +92,7 @@ jobs:
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
       - name: Install Istio
-        run: bash ${SCRIPTS_DIR}/istio.sh -y -f ${COMMON_DIR}/istio-config.yaml
+        run: bash ${SCRIPTS_DIR}/istio.sh
       - name: Install aeraki
         run: bash ${SCRIPTS_DIR}/aeraki.sh
       - name: test

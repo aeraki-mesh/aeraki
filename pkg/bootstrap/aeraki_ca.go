@@ -25,7 +25,7 @@ func (s *Server) initRootCA() error {
 	defer s.certMu.Unlock()
 
 	if s.istiodCert == nil {
-		bundle, err := ca.GenerateKeyCertBundle(s.kubeClient)
+		bundle, err := ca.GenerateKeyCertBundle(s.kubeClient, s.args.RootNamespace)
 		if err != nil {
 			return err
 		}

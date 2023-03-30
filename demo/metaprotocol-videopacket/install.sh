@@ -15,7 +15,6 @@
 BASEDIR=$(dirname "$0")
 source $BASEDIR/../common_func.sh
 
-
 kubectl create ns meta-videopacket
 LabelIstioInjectLabel meta-videopacket
 kubectl apply -f $BASEDIR/videopacket-protocol.yaml -n istio-system
