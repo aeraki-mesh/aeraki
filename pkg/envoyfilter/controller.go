@@ -63,6 +63,7 @@ type Controller struct {
 	configStore                istiomodel.ConfigStore
 	generators                 map[protocol.Instance]Generator
 	namespaceScoped            bool
+	namespace                  string
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 	meshConfig  mesh.Holder
@@ -70,12 +71,13 @@ type Controller struct {
 
 // NewController creates a new controller instance based on the provided arguments.
 func NewController(istioClientset *istioclient.Clientset, store istiomodel.ConfigStore,
-	generators map[protocol.Instance]Generator, namespaceScoped bool) *Controller {
+	generators map[protocol.Instance]Generator, namespaceScoped bool, namespace string) *Controller {
 	controller := &Controller{
 		istioClientset:  istioClientset,
 		configStore:     store,
 		generators:      generators,
 		namespaceScoped: namespaceScoped,
+		namespace:       namespace,
 		pushChannel:     make(chan istiomodel.Event, 100),
 	}
 	return controller
@@ -321,7 +323,7 @@ func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext
 			if exportNS == "." {
 				exportNS = ctx.MetaRouter.Namespace
 			} else if exportNS == "*" {
-				exportNS = constants.DefaultRootNamespace
+				exportNS = c.namespace
 			}
 			wrapperClone := &model.EnvoyFilterWrapper{
 				Name:        wrapper.Name,
@@ -421,7 +423,7 @@ func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {
 	if c.namespaceScoped {
 		return serviceNS
 	}
-	return constants.DefaultRootNamespace
+	return c.namespace
 }
 
 func envoyFilterMapKey(name, ns string) string {

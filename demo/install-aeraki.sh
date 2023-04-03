@@ -20,15 +20,11 @@ SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 COMMON_DIR=$BASEDIR/test/e2e/common
 
 if [ -z "$AERAKI_TAG" ]; then
-  export AERAKI_TAG=1.2.1
-else
-  export AERAKI_TAG=$AERAKI_TAG
+  export AERAKI_TAG=1.2.3
 fi
 
 if [ -z "$AERAKI_IMG_PULL_POLICY" ]; then
   export AERAKI_IMG_PULL_POLICY=Always
-else
-  export AERAKI_IMG_PULL_POLICY=$AERAKI_IMG_PULL_POLICY
 fi
 
 bash ${SCRIPTS_DIR}/aeraki.sh $1

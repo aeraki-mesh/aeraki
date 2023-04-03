@@ -20,7 +20,6 @@ import (
 	istionetworking "istio.io/api/networking/v1alpha3"
 	"istio.io/pkg/log"
 
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
@@ -71,7 +70,7 @@ func generateGatewayEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.En
 		for i := range envoyfilters {
 			envoyfilters[i].Name = fmt.Sprintf("aeraki-gateway-outbound-%s.%s-%d", context.Gateway.Name,
 				context.Gateway.Namespace, port.Number)
-			envoyfilters[i].Namespace = constants.DefaultRootNamespace
+			envoyfilters[i].Namespace = context.Gateway.Namespace
 			if envoyfilters[i].Envoyfilter.WorkloadSelector == nil {
 				envoyfilters[i].Envoyfilter.WorkloadSelector = &istionetworking.WorkloadSelector{}
 			}

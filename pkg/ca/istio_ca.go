@@ -90,10 +90,10 @@ type caOptions struct {
 	CertSignerDomain string
 }
 
-func getIstioCA(client corev1.CoreV1Interface) (*util.KeyCertBundle, error) {
+func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertBundle, error) {
 	opts := &caOptions{
 		TrustDomain:      "aeraki.net",
-		Namespace:        "istio-system",
+		Namespace:        namespace,
 		ExternalCAType:   ra.CaExternalType(externalCaType),
 		CertSignerDomain: "aeraki.net",
 	}

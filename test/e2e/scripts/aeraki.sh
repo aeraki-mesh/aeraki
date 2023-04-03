@@ -39,12 +39,16 @@ if [ -z "$AERAKI_TAG" ]; then
   export AERAKI_TAG=`git log --format="%H" -n 1`
 fi
 
-if [ -z "$AERAKI_ISTIOD_ADDR" ]; then
-  export AERAKI_ISTIOD_ADDR="istiod.istio-system:15010"
+if [ -z "$ISTIO_NAMESPACE" ]; then
+  export ISTIO_NAMESPACE="istio-system"
 fi
 
 if [ -z "$AERAKI_NAMESPACE" ]; then
-  export AERAKI_NAMESPACE="istio-system"
+  export AERAKI_NAMESPACE=${ISTIO_NAMESPACE}
+fi
+
+if [ -z "$AERAKI_ISTIOD_ADDR" ]; then
+  export AERAKI_ISTIOD_ADDR="istiod.${ISTIO_NAMESPACE}:15010"
 fi
 
 if [ -z "$AERAKI_IS_MASTER" ]; then

@@ -15,9 +15,6 @@
 package constants
 
 const (
-	// DefaultRootNamespace is the root config namespace
-	DefaultRootNamespace = "istio-system"
-
 	// AerakiFieldManager is the FileldManager for Aeraki CRDs
 	AerakiFieldManager = "Aeraki"
 )

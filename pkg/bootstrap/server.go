@@ -103,7 +103,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	})
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
-		args.EnableEnvoyFilterNSScope)
+		args.EnableEnvoyFilterNSScope, args.RootNamespace)
 	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
