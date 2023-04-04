@@ -53,8 +53,10 @@ spec:
             # In case of TCM, Istio config store can be a different k8s API server from the one Aeraki is running with
             - name: AERAKI_ISTIO_CONFIG_STORE_SECRET
               value: {{ .Values.AERAKI_ENV.AERAKI_ISTIO_CONFIG_STORE_SECRET }}
-            - name: AERAKI_XDS_LISTEN_ADDR
-              value: {{ .Values.AERAKI_ENV.AERAKI_XDS_LISTEN_ADDR }}
+            - name: AERAKI_XDS_ADDR
+              value: {{ .Values.AERAKI_ENV.AERAKI_XDS_ADDR }}
+            - name: AERAKI_XDS_PORT
+              value: { { .Values.AERAKI_ENV.AERAKI_XDS_PORT } }
             - name: AERAKI_LOG_LEVEL
               value: {{ .Values.AERAKI_ENV.AERAKI_LOG_LEVEL }}
             - name: AERAKI_NAMESPACE
@@ -71,18 +73,18 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-#          ports:
-#            - name: http
-#              containerPort: 80
-#              protocol: TCP
-#          livenessProbe:
-#            httpGet:
-#              path: /
-#              port: http
-#          readinessProbe:
-#            httpGet:
-#              path: /
-#              port: http
+      #          ports:
+      #            - name: http
+      #              containerPort: 80
+      #              protocol: TCP
+      #          livenessProbe:
+      #            httpGet:
+      #              path: /
+      #              port: http
+      #          readinessProbe:
+      #            httpGet:
+      #              path: /
+      #              port: http
       volumes:
         - name: istiod-ca-cert
           configMap:

@@ -16,23 +16,26 @@
 
 set -e
 
-BASEDIR=$(dirname "$0")
+BASEDIR=$(dirname "$0")/../../..
 
 if [ -z "$ISTIO_NAMESPACE" ]; then
   export ISTIO_NAMESPACE="istio-system"
 fi
 
+rm -rf ~/.aeraki/istio/addons
 mkdir -p ~/.aeraki/istio/addons
-envsubst < $BASEDIR/../../../demo/addons/grafana.yaml > ~/.aeraki/istio/addons/grafana.yaml
-envsubst < $BASEDIR/../../../demo/addons/jaeger.yaml > ~/.aeraki/istio/addons/jaeger.yaml
-envsubst < $BASEDIR/../../../demo/addons/prometheus.yaml > ~/.aeraki/istio/addons/prometheus.yaml
+envsubst < $BASEDIR/demo/addons/grafana.yaml > ~/.aeraki/istio/addons/grafana.yaml
+envsubst < $BASEDIR/demo/addons/jaeger.yaml > ~/.aeraki/istio/addons/jaeger.yaml
+envsubst < $BASEDIR/demo/addons/prometheus.yaml > ~/.aeraki/istio/addons/prometheus.yaml
+
 kubectl apply -f ~/.aeraki/istio/addons/grafana.yaml
 kubectl apply -f ~/.aeraki/istio/addons/jaeger.yaml
 kubectl apply -f ~/.aeraki/istio/addons/prometheus.yaml
 
+rm -rf ~/.aeraki/istio/gateway
 mkdir -p ~/.aeraki/istio/gateway
-envsubst < $BASEDIR/../../../demo/gateway/demo-ingress.yaml > ~/.aeraki/istio/gateway/demo-ingress.yaml
-envsubst < $BASEDIR/../../../demo/gateway/istio-ingressgateway.yaml > ~/.aeraki/istio/gateway/istio-ingressgateway.yaml
+envsubst < $BASEDIR/demo/gateway/demo-ingress.yaml > ~/.aeraki/istio/gateway/demo-ingress.yaml
+envsubst < $BASEDIR/demo/gateway/istio-ingressgateway.yaml > ~/.aeraki/istio/gateway/istio-ingressgateway.yaml
 kubectl apply -f ~/.aeraki/istio/gateway/demo-ingress.yaml
 kubectl apply -f ~/.aeraki/istio/gateway/istio-ingressgateway.yaml
 

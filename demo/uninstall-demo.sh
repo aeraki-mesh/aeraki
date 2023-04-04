@@ -18,7 +18,7 @@ SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 
 bash ${SCRIPTS_DIR}/uninstall-addons.sh
 bash ${SCRIPTS_DIR}/uninstall-istio.sh
-bash uninstall-aeraki.sh
+bash demo/uninstall-aeraki.sh
 
 DEMO=$1
 if [ "${DEMO}" == "default" ]

@@ -31,8 +31,11 @@ endif
 
 OUT?=./out
 DOCKER_TMP?=$(OUT)/docker_temp/
-DOCKER_TAG_E2E?=ghcr.io/aeraki-mesh/aeraki:`git log --format="%H" -n 1`
-DOCKER_TAG?=ghcr.io/aeraki-mesh/aeraki:$(IMAGE_TAG)
+DOCKER_REPO?=ghcr.io/aeraki-mesh
+DOCKER_IMAGE_NAME?=aeraki
+DOCKER_IMAGE?=$(DOCKER_REPO)/$(DOCKER_IMAGE_NAME)
+DOCKER_TAG_E2E?=$(DOCKER_IMAGE):`git log --format="%H" -n 1`
+DOCKER_TAG?=$(DOCKER_IMAGE):$(IMAGE_TAG)
 BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
 MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go

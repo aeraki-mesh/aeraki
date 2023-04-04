@@ -22,9 +22,9 @@
 
 set -ex
 
-BASEDIR=$(dirname "$0")
+BASEDIR=$(dirname "$0")/../../..
 
-COMMON_DIR=$BASEDIR/../../../test/e2e/common
+COMMON_DIR=$BASEDIR/test/e2e/common
 
 if [ -z "$ISTIO_NAMESPACE" ]; then
   export ISTIO_NAMESPACE="istio-system"
@@ -34,14 +34,17 @@ if [ -z "$ISTIO_VERSION" ]; then
   export ISTIO_VERSION=1.14.5
 fi
 
-if [ -z "$AERAKI_TAG" ]; then
-  export AERAKI_TAG=1.2.3
-fi
+kubectl create ns ${ISTIO_NAMESPACE} || true
 
+rm -rf ~/.aeraki/istio/istio-config.yaml
 mkdir -p ~/.aeraki/istio
 envsubst < ${COMMON_DIR}/istio-config.yaml > ~/.aeraki/istio/istio-config.yaml
 
 [ -n "$(istioctl version --remote=false |grep $ISTIO_VERSION)" ] || (curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION  sh - && sudo mv $PWD/istio-$ISTIO_VERSION/bin/istioctl /usr/local/bin/)
-kubectl create ns ${ISTIO_NAMESPACE} || true
 
 /usr/local/bin/istioctl install -f ~/.aeraki/istio/istio-config.yaml -y
+
+# By default, istioctl will generates validatingwebhookconfigurations and mutatingwebhookconfigurations for istio-system.
+# This is a known bug, so manually delete it here.
+kubectl delete validatingwebhookconfigurations istiod-default-validator || true
+kubectl delete mutatingwebhookconfigurations istio-revision-tag-default-${ISTIO_NAMESPACE} || true
