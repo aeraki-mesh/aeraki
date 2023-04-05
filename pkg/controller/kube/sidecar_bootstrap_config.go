@@ -14,6 +14,14 @@
 
 package kube
 
+import (
+	"bytes"
+	"os"
+	"text/template"
+
+	"istio.io/pkg/log"
+)
+
 var bootstrapConfig = `
     {
        "static_resources":{
@@ -55,8 +63,8 @@ var bootstrapConfig = `
                                "endpoint":{
                                   "address":{
                                      "socket_address":{
-                                        "address":"aeraki.istio-system",
-                                        "port_value":15010
+                                        "address":"{{.Address}}",
+                                        "port_value"{{.PortValue}}
                                      }
                                   }
                                }
@@ -70,3 +78,25 @@ var bootstrapConfig = `
        }
     }
 `
+
+// BootstrapConfig stores RDS config for Aeraki
+type BootstrapConfig struct {
+	Address   string
+	PortValue string
+}
+
+// GetBootstrapConfig gets the ConfigMap to be generated under the namespace
+func GetBootstrapConfig(address, portValue string) string {
+	bc := BootstrapConfig{
+		Address:   address,
+		PortValue: portValue,
+	}
+	var tmplBytes bytes.Buffer
+	t := template.Must(template.New("bootstrapConfig").Parse(bootstrapConfig))
+	err := t.Execute(&tmplBytes, bc)
+	if err != nil {
+		log.Errorf("executing template: %v", err)
+		os.Exit(1)
+	}
+	return tmplBytes.String()
+}

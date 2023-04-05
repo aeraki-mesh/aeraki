@@ -16,6 +16,14 @@ BASEDIR=$(dirname "$0")/..
 
 MODE=$1
 
+if [ -z "$ISTIO_NAMESPACE" ]; then
+  export ISTIO_NAMESPACE="istio-system"
+fi
+
+if [ -z "$AERAKI_NAMESPACE" ]; then
+  export AERAKI_NAMESPACE=${ISTIO_NAMESPACE}
+fi
+
 if [ "${MODE}" == "tcm" ]; then
   kubectl delete -f $BASEDIR/k8s/tcm-apiservice.yaml
   kubectl delete -f $BASEDIR/k8s/tcm-istio-cm.yaml
@@ -24,3 +32,4 @@ else
   kubectl delete -f $BASEDIR/k8s/crd.yaml
 fi
 
+kubectl delete validatingwebhookconfigurations aeraki-${AERAKI_NAMESPACE} || true

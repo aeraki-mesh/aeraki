@@ -51,7 +51,6 @@ func shutdown() {
 	util.KubeDelete("meta-thrift", "testdata/virtualservice.yaml", "")
 	util.KubeDelete("istio-system", "testdata/ingress-gateway.yaml", "")
 	util.KubeDelete("meta-thrift", "testdata/thrift-sample.yaml", "")
-	util.KubeDelete("istio-system", "../../../k8s/aeraki-bootstrap-config.yaml", "")
 	util.DeleteNamespace("meta-thrift", "")
 }
 

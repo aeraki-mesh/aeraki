@@ -24,6 +24,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
+	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	"github.com/aeraki-mesh/aeraki/plugin/kafka"
@@ -38,7 +39,6 @@ import (
 const (
 	defaultIstiodAddr        = "istiod.istio-system:15010"
 	defaultRootNamespace     = "istio-system"
-	defaultXdsAddr           = ":15010"
 	defaultElectionID        = "aeraki-controller"
 	defaultLogLevel          = "all:info"
 	defaultConfigStoreSecret = ""
@@ -49,11 +49,12 @@ const (
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.BoolVar(&args.Master, "master", true, "Istiod xds server address")
+	flag.StringVar(&args.AerakiXdsAddr, "aeraki-xds-address", constants.DefaultAerakiXdsAddr, "Aeraki xds server address")
+	flag.StringVar(&args.AerakiXdsPort, "aeraki-xds-port", constants.DefaultAerakiXdsPort, "Aeraki xds server port")
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
 	flag.StringVar(&args.IstioConfigMapName, "istiod-configMap-name", defaultMeshConfigMapName, "Istiod configMap name")
 	flag.StringVar(&args.RootNamespace, "root-namespace", defaultRootNamespace, "The Root Namespace of Aeraki")
 	flag.StringVar(&args.ClusterID, "cluster-id", "", "The cluster where Aeraki is deployed")
-	flag.StringVar(&args.XdsAddr, "xds-listen-address", defaultXdsAddr, "Istiod xds server port")
 	flag.StringVar(&args.ConfigStoreSecret, "config-store-secret", defaultConfigStoreSecret,
 		"The secret to store the Istio kube config store, use the in cluster API server if it's not specified")
 	flag.StringVar(&args.ElectionID, "election-id", defaultElectionID, "ElectionID to elect master controller")
@@ -68,10 +69,14 @@ func main() {
 	if args.ServerID == "" {
 		args.ServerID = "Aeraki-" + uuid.New().String()
 	}
+
 	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
 	args.RootNamespace = env.RegisterStringVar("AERAKI_NAMESPACE", args.RootNamespace, "").Get()
 	args.EnableEnvoyFilterNSScope = env.RegisterBoolVar("AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE",
 		args.EnableEnvoyFilterNSScope, "").Get()
+	args.IstiodAddr = env.RegisterStringVar("AERAKI_ISTIOD_ADDR", args.IstiodAddr, "").Get()
+	args.AerakiXdsAddr = env.RegisterStringVar("AERAKI_XDS_ADDR", constants.DefaultAerakiXdsAddr, "").Get()
+	args.AerakiXdsPort = env.RegisterStringVar("AERAKI_XDS_PORT", constants.DefaultAerakiXdsPort, "").Get()
 
 	flag.VisitAll(func(flag *flag.Flag) {
 		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
