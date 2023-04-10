@@ -17,6 +17,5 @@
 BASEDIR=$(dirname "$0")/..
 
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
-COMMON_DIR=$BASEDIR/test/e2e/common
 
 bash ${SCRIPTS_DIR}/aeraki.sh $1

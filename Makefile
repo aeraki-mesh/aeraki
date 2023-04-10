@@ -22,23 +22,17 @@ GOGET?=$(GOCMD) get
 GOBIN?=$(GOPATH)/bin
 GOMOD?=$(GOCMD) mod
 
-# Build parameters
-IMAGE_TAG := $(tag)
-
-ifeq ($(IMAGE_TAG),)
-IMAGE_TAG := latest
-endif
-
 OUT?=./out
-DOCKER_TMP?=$(OUT)/docker_temp/
-DOCKER_REPO?=ghcr.io/aeraki-mesh
-DOCKER_IMAGE_NAME?=aeraki
-DOCKER_IMAGE?=$(DOCKER_REPO)/$(DOCKER_IMAGE_NAME)
-DOCKER_TAG_E2E?=$(DOCKER_IMAGE):`git log --format="%H" -n 1`
-DOCKER_TAG?=$(DOCKER_IMAGE):$(IMAGE_TAG)
+IMAGE_TMP?=$(OUT)/image_temp/
+IMAGE_REPO?=ghcr.io/aeraki-mesh
+IMAGE_NAME?=aeraki
+IMAGE_TAG?=latest
+IMAGE?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_TAG)
+IMAGE_E2E_TAG?=`git log --format="%H" -n 1`
+IMAGE_E2E?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_E2E_TAG)
 BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
-MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
+MAIN_PATH_AERAKI=./cmd/aeraki/main.go
 
 .DEFAULT_GOAL := build
 
@@ -64,25 +58,25 @@ test: style-check
 	$(GOMOD) tidy
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
 build: test
-	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_CONSUL_MCP)
+	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_AERAKI)
 build-mac: test
-	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_CONSUL_MCP)
+	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_AERAKI)
 docker-build: build
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
-	cp $(BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(DOCKER_TAG) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
+	rm -rf $(IMAGE_TMP)
+	mkdir $(IMAGE_TMP)
+	cp ./docker/Dockerfile $(IMAGE_TMP)
+	cp $(BINARY_NAME) $(IMAGE_TMP)
+	docker build -t $(IMAGE) $(IMAGE_TMP)
+	rm -rf $(IMAGE_TMP)
 docker-push: docker-build
-	docker push $(DOCKER_TAG)
+	docker push $(IMAGE)
 docker-build-e2e: build
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
-	cp $(BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(DOCKER_TAG_E2E) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
+	rm -rf $(IMAGE_TMP)
+	mkdir $(IMAGE_TMP)
+	cp ./docker/Dockerfile $(IMAGE_TMP)
+	cp $(BINARY_NAME) $(IMAGE_TMP)
+	docker build -t $(IMAGE_E2E) $(IMAGE_TMP)
+	rm -rf $(IMAGE_TMP)
 clean:
 	rm -rf $(OUT)
 style-check:
