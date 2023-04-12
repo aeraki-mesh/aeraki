@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# FROM ubuntu:bionic
-# FROM praqma/network-multitool
-FROM alpine:3.13.5
+FROM alpine:3.17
 
-COPY aeraki /usr/local/bin/
+ARG AERAKI_ROOT_BIN_DIR
+ARG ARCH
+ARG OS
+
+COPY ${AERAKI_ROOT_BIN_DIR}/${ARCH}/${OS}/aeraki /usr/local/bin/
 ENTRYPOINT /usr/local/bin/aeraki

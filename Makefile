@@ -33,6 +33,8 @@ IMAGE_E2E?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_E2E_TAG)
 BINARY_NAME?=$(OUT)/aeraki
 BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
 MAIN_PATH_AERAKI=./cmd/aeraki/main.go
+GOOS?=linux
+GOARCH?=amd64
 
 .DEFAULT_GOAL := build
 
@@ -58,15 +60,16 @@ test: style-check
 	$(GOMOD) tidy
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
 build: test
-	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_AERAKI)
+	CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_AERAKI)
 build-mac: test
-	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_AERAKI)
+	CGO_ENABLED=0 GOOS=darwin GOARCH=${GOARCH} $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_AERAKI)
 docker-build: build
 	rm -rf $(IMAGE_TMP)
 	mkdir $(IMAGE_TMP)
 	cp ./docker/Dockerfile $(IMAGE_TMP)
 	cp $(BINARY_NAME) $(IMAGE_TMP)
 	docker build -t $(IMAGE) $(IMAGE_TMP)
+	docker build --platform=${GOOS}/${GOARCH} -t $(IMAGE) $(IMAGE_TMP)
 	rm -rf $(IMAGE_TMP)
 docker-push: docker-build
 	docker push $(IMAGE)
@@ -75,8 +78,12 @@ docker-build-e2e: build
 	mkdir $(IMAGE_TMP)
 	cp ./docker/Dockerfile $(IMAGE_TMP)
 	cp $(BINARY_NAME) $(IMAGE_TMP)
-	docker build -t $(IMAGE_E2E) $(IMAGE_TMP)
+	docker build --platform=${GOOS}/${GOARCH} -t $(IMAGE_E2E) $(IMAGE_TMP)
 	rm -rf $(IMAGE_TMP)
+
+cross_build_images:
+	bash hack/make-rules/cross_build_images.sh
+
 clean:
 	rm -rf $(OUT)
 style-check:
