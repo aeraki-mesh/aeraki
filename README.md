@@ -137,7 +137,7 @@ https://www.aeraki.net/docs/v1.x/install/
 make build
 
 # build aeraki binary on darwin
-make build-mac
+make build IMAGE_OS=darwin
 ```
 
 ### Build Aeraki Image
@@ -147,7 +147,7 @@ make build-mac
 make docker-build
 
 # build aeraki docker image with xxx tag
-make docker-build tag=xxx
+make docker-build IMAGE_TAG=xxx
 
 # build aeraki e2e docker image
 make docker-build-e2e
