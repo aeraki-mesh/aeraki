@@ -16,6 +16,8 @@
 
 BASEDIR=$(dirname "$0")/..
 
+SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
+
 MODE=$1
 
 if [ -z "$ISTIO_NAMESPACE" ]; then
@@ -35,3 +37,5 @@ else
 fi
 
 kubectl delete validatingwebhookconfigurations aeraki-${AERAKI_NAMESPACE} || true
+
+bash ${SCRIPTS_DIR}/remove-aeraki-configmap.sh
