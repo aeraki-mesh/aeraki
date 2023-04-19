@@ -18,8 +18,8 @@ kind: Role
 metadata:
   labels:
     app: aeraki
-  name: aeraki
-  namespace: {{ .Release.Namespace }}
+  name: aeraki-{{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
+  namespace: {{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
 rules:
   - apiGroups:
       - ""

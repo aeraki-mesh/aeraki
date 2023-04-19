@@ -26,6 +26,7 @@ image:
   tag: latest
 
 AERAKI_ENV:
+  AERAKI_NAMESPACE: "istio-system"
   AERAKI_IS_MASTER:
   AERAKI_ISTIOD_ADDR: "istiod.istio-system:15010"
   AERAKI_CLUSTER_ID:

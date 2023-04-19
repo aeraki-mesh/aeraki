@@ -18,7 +18,7 @@ kind: ClusterRole
 metadata:
   labels:
     app: aeraki
-  name: aeraki
+  name: aeraki-{{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
 rules:
   - apiGroups:
       - ""

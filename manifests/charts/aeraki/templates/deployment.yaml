@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aeraki
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
   labels:
     app: aeraki
 spec:

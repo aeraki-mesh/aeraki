@@ -118,7 +118,7 @@ kind: Role
 metadata:
   labels:
     app: aeraki
-  name: aeraki
+  name: aeraki-${AERAKI_NAMESPACE}
   namespace: ${AERAKI_NAMESPACE}
 rules:
   - apiGroups:
@@ -140,12 +140,12 @@ kind: RoleBinding
 metadata:
   labels:
     app: aeraki
-  name: aeraki
+  name: aeraki-${AERAKI_NAMESPACE}
   namespace: ${AERAKI_NAMESPACE}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: aeraki
+  name: aeraki-${AERAKI_NAMESPACE}
 subjects:
   - kind: ServiceAccount
     name: aeraki
@@ -155,7 +155,7 @@ kind: ClusterRole
 metadata:
   labels:
     app: aeraki
-  name: aeraki
+  name: aeraki-${AERAKI_NAMESPACE}
 rules:
   - apiGroups:
       - ""
@@ -200,11 +200,11 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: aeraki
-  name: aeraki
+  name: aeraki-${AERAKI_NAMESPACE}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: aeraki
+  name: aeraki-${AERAKI_NAMESPACE}
 subjects:
   - kind: ServiceAccount
     name: aeraki

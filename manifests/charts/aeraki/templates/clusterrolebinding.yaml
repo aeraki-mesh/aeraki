@@ -18,12 +18,12 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: aeraki
-  name: aeraki
+  name: aeraki-{{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: aeraki
+  name: aeraki-{{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
 subjects:
   - kind: ServiceAccount
     name: aeraki
-    namespace: {{ .Release.Namespace }}
+    namespace: {{ .Values.AERAKI_ENV.AERAKI_NAMESPACE }}
