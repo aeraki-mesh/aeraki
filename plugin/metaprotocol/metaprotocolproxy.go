@@ -15,8 +15,6 @@
 package metaprotocol
 
 import (
-	"fmt"
-
 	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -25,6 +23,11 @@ import (
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
+)
+
+const (
+	// defaultRandomSampling is the default value for metaprotocol tracing sampling
+	defaultRandomSampling = 1.0
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext,
@@ -120,9 +123,10 @@ func configAccessLog(context *model.EnvoyFilterContext, metaProtocolProy *metapr
 
 func configTracing(context *model.EnvoyFilterContext, metaProtocolProy *metaprotocol.MetaProtocolProxy) {
 	if context.MeshConfig.Mesh().EnableTracing {
-		randomSampling := 1.0
-		fmt.Printf("%v", context.MeshConfig.Mesh().DefaultConfig.Tracing)
-		if context.MeshConfig.Mesh().DefaultConfig.Tracing != nil {
+		randomSampling := defaultRandomSampling
+		tracing := context.MeshConfig.Mesh().DefaultConfig.Tracing
+		generatorLog.Infof("MetaProtocolProxy Tracing Address: %v", tracing)
+		if tracing != nil {
 			randomSampling = context.MeshConfig.Mesh().DefaultConfig.Tracing.Sampling
 		}
 		metaProtocolProy.Tracing = &metaprotocol.Tracing{
