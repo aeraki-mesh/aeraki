@@ -69,8 +69,9 @@ var (
 // serviceEntryController allocate VIPs to service entries
 type serviceEntryController struct {
 	controllerclient.Client
-	serviceIPs map[string]controllerclient.ObjectKey
-	maxIP      int
+	serviceIPs    map[string]controllerclient.ObjectKey
+	maxIP         int
+	rootNamespace string
 }
 
 // Reconcile will try to trigger once mcp push.
@@ -94,10 +95,11 @@ func (c *serviceEntryController) Reconcile(ctx context.Context, request reconcil
 }
 
 // AddServiceEntryController adds serviceEntryController
-func AddServiceEntryController(mgr manager.Manager) error {
+func AddServiceEntryController(mgr manager.Manager, rootNamespace string) error {
 	serviceEntryCtrl := &serviceEntryController{
-		Client:     mgr.GetClient(),
-		serviceIPs: make(map[string]controllerclient.ObjectKey),
+		Client:        mgr.GetClient(),
+		serviceIPs:    make(map[string]controllerclient.ObjectKey),
+		rootNamespace: rootNamespace,
 	}
 	c, err := controller.New("aeraki-service-entry-controller", mgr,
 		controller.Options{Reconciler: serviceEntryCtrl})
@@ -158,7 +160,7 @@ func (c *serviceEntryController) autoAllocateIP(key controllerclient.ObjectKey, 
 func (c *serviceEntryController) updateServiceEntry(s *networking.ServiceEntry, key controllerclient.ObjectKey) {
 	err := c.Client.Update(context.TODO(), s,
 		&controllerclient.UpdateOptions{
-			FieldManager: constants.AerakiFieldManager,
+			FieldManager: constants.AerakiFieldManager + "-" + c.rootNamespace,
 		})
 	if err == nil {
 		c.serviceIPs[s.Spec.Addresses[0]] = key

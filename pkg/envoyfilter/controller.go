@@ -131,9 +131,8 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		return fmt.Errorf("failed to generate EnvoyFilter: %v", err)
 	}
 
-	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters("").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "manager=" + constants.AerakiFieldManager,
-	})
+	existingEnvoyFilters, _ := c.istioClientset.NetworkingV1alpha3().EnvoyFilters("").List(context.TODO(),
+		v1.ListOptions{LabelSelector: "manager=" + constants.AerakiFieldManager + "-" + c.namespace})
 
 	// Deleted envoyFilters
 	for i := range existingEnvoyFilters.Items {
@@ -157,7 +156,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 					newEnvoyFilter.Name, model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
 				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(newEnvoyFilter.Namespace).Update(context.TODO(),
 					c.toEnvoyFilterCRD(newEnvoyFilter, oldEnvoyFilter),
-					v1.UpdateOptions{FieldManager: constants.AerakiFieldManager})
+					v1.UpdateOptions{FieldManager: constants.AerakiFieldManager + "-" + c.namespace})
 			} else {
 				controllerLog.Infof("envoyFilter: namespace: %s name: %s unchanged", oldEnvoyFilter.Namespace,
 					oldEnvoyFilter.Name)
@@ -171,9 +170,8 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		controllerLog.Infof("creating EnvoyFilter: namespace: %s name: %s %v", wrapper.Namespace, wrapper.Name,
 			model.Struct2JSON(wrapper.Envoyfilter))
 		_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(wrapper.Namespace).Create(context.TODO(),
-			c.toEnvoyFilterCRD(wrapper,
-				nil),
-			v1.CreateOptions{FieldManager: constants.AerakiFieldManager})
+			c.toEnvoyFilterCRD(wrapper, nil),
+			v1.CreateOptions{FieldManager: constants.AerakiFieldManager + "-" + c.namespace})
 	}
 	return err
 }
@@ -185,7 +183,7 @@ func (c *Controller) toEnvoyFilterCRD(newEf *model.EnvoyFilterWrapper,
 			Name:      newEf.Name,
 			Namespace: newEf.Namespace,
 			Labels: map[string]string{
-				"manager": constants.AerakiFieldManager,
+				"manager": constants.AerakiFieldManager + "-" + c.namespace,
 			},
 		},
 		Spec: *newEf.Envoyfilter,

@@ -72,7 +72,7 @@ func main() {
 
 	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
 	args.RootNamespace = env.RegisterStringVar("AERAKI_NAMESPACE", args.RootNamespace, "").Get()
-	args.EnableEnvoyFilterNSScope = env.RegisterBoolVar("AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE",
+	args.EnableEnvoyFilterNSScope = env.RegisterBoolVar(constants.DefaultAerakiEnableEnvoyFilterNsScope,
 		args.EnableEnvoyFilterNSScope, "").Get()
 	args.IstiodAddr = env.RegisterStringVar("AERAKI_ISTIOD_ADDR", args.IstiodAddr, "").Get()
 	args.AerakiXdsAddr = env.RegisterStringVar("AERAKI_XDS_ADDR", constants.DefaultAerakiXdsAddr, "").Get()

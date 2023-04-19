@@ -50,8 +50,9 @@ var (
 // namespaceController creates bootstrap configMap for sidecar proxies
 type namespaceController struct {
 	controllerclient.Client
-	AerakiAddr string
-	AerakiPort string
+	rootNamespace string
+	AerakiAddr    string
+	AerakiPort    string
 }
 
 // Reconcile watch namespace change and create bootstrap configmap for sidecar proxies
@@ -75,11 +76,12 @@ func (c *namespaceController) Reconcile(ctx context.Context, request reconcile.R
 }
 
 // AddNamespaceController adds namespaceController
-func AddNamespaceController(mgr manager.Manager, aerakiAddr, aerakiPort string) error {
+func AddNamespaceController(mgr manager.Manager, rootNamespace, aerakiAddr, aerakiPort string) error {
 	namespaceCtrl := &namespaceController{
-		Client:     mgr.GetClient(),
-		AerakiAddr: aerakiAddr,
-		AerakiPort: aerakiPort,
+		Client:        mgr.GetClient(),
+		rootNamespace: rootNamespace,
+		AerakiAddr:    aerakiAddr,
+		AerakiPort:    aerakiPort,
 	}
 	c, err := controller.New("aeraki-namespace-controller", mgr,
 		controller.Options{Reconciler: namespaceCtrl})
@@ -105,7 +107,7 @@ func (c *namespaceController) createBootstrapConfigMap(ns string) {
 		"custom_bootstrap.json": GetBootstrapConfig(c.AerakiAddr, c.AerakiPort),
 	}
 	if err := c.Client.Create(context.TODO(), cm, &controllerclient.CreateOptions{
-		FieldManager: constants.AerakiFieldManager,
+		FieldManager: constants.AerakiFieldManager + "-" + c.rootNamespace,
 	}); err != nil {
 		if !errors.IsAlreadyExists(err) {
 			namespaceLog.Errorf("failed to create configMap: %v", err)

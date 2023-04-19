@@ -220,11 +220,11 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 	if err != nil {
 		return nil, err
 	}
-	err = kube.AddServiceEntryController(mgr)
+	err = kube.AddServiceEntryController(mgr, args.RootNamespace)
 	if err != nil {
 		aerakiLog.Fatalf("could not add ServiceEntryController: %e", err)
 	}
-	err = kube.AddNamespaceController(mgr, args.AerakiXdsAddr, args.AerakiXdsPort)
+	err = kube.AddNamespaceController(mgr, args.RootNamespace, args.AerakiXdsAddr, args.AerakiXdsPort)
 	if err != nil {
 		aerakiLog.Fatalf("could not add NamespaceController: %e", err)
 	}
