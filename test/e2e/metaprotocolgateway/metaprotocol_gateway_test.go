@@ -40,7 +40,6 @@ func setup() {
 	util.KubeApply("istio-system", "../../../k8s/aeraki-bootstrap-config.yaml", "")
 	util.KubeApply("meta-thrift", "testdata/thrift-sample.yaml", "")    // thrift server/svc
 	util.KubeApply("istio-system", "testdata/ingress-gateway.yaml", "") // ingress gateway
-	util.KubeApply("meta-thrift", "testdata/virtualservice.yaml", "")
 	util.KubeApply("meta-thrift", "testdata/destinationrule.yaml", "")
 	util.KubeApply("meta-thrift", "testdata/metarouter.yaml", "")
 }
