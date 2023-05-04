@@ -255,7 +255,6 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 }
 
 func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.EnvoyFilterWrapper) error {
-	envoyfiltersByGateway := make(map[string]*model.EnvoyFilterWrapper)
 	var envoyFilterContexts []*model.EnvoyFilterContext
 	gateways, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind(), "")
 	if err != nil {
@@ -281,7 +280,7 @@ func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.
 			if generator, ok := c.generators[instance]; ok {
 				controllerLog.Infof("found generator for router port: %s", server.Port.Name)
 
-				ctxs, err := c.routerEnvoyFilterContexts(gw, &gateways[i], server.Port.Number)
+				ctxs, err := c.gatewayEnvoyFilterContexts(gw, &gateways[i], server.Port.Number)
 				if err != nil {
 					log.Errorf("failed to build EnvoyFilter Context router: %s, port: %s, error: %v",
 						gateways[i].Name,
@@ -302,7 +301,6 @@ func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.
 					}
 					for _, wrapper := range envoyFilterWrappers {
 						envoyFilters[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
-						envoyfiltersByGateway[envoyFilterMapKey(wrapper.Name, wrapper.Namespace)] = wrapper
 					}
 				}
 			}
@@ -365,8 +363,8 @@ func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
 	}, nil
 }
 
-// envoyFilterContext wraps all the resources needed to create the EnvoyFilter
-func (c *Controller) routerEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config,
+// gatewayEnvoyFilterContexts wraps all the resources needed to create the EnvoyFilters for a gateway
+func (c *Controller) gatewayEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config,
 	portNumber uint32) ([]*model.EnvoyFilterContext, error) {
 	var ctxs []*model.EnvoyFilterContext
 	metaRouterList := metaprotocol.MetaRouterList{}
