@@ -19,8 +19,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
-
 	"k8s.io/apimachinery/pkg/api/errors"
 
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
@@ -30,11 +28,10 @@ import (
 )
 
 // GenerateWebhookConfig creates ValidationWebhookConfiguration with the Aeraki ca
-func GenerateWebhookConfig(caCert *bytes.Buffer) error {
+func GenerateWebhookConfig(caCert *bytes.Buffer, namespace string) error {
 	var (
-		webhookNamespace = constants.DefaultRootNamespace
-		webhookCfgName   = "aeraki-" + webhookNamespace
-		webhookService   = "aeraki"
+		webhookCfgName = "aeraki-" + namespace
+		webhookService = "aeraki"
 	)
 
 	kubeClient, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
@@ -56,7 +53,7 @@ func GenerateWebhookConfig(caCert *bytes.Buffer) error {
 				CABundle: caCert.Bytes(), // CA bundle created earlier
 				Service: &admissionregistrationv1.ServiceReference{
 					Name:      webhookService,
-					Namespace: webhookNamespace,
+					Namespace: namespace,
 					Path:      &path,
 				},
 			},

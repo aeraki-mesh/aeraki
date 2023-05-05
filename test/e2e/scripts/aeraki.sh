@@ -16,7 +16,7 @@
 
 set -e
 
-BASEDIR=$(dirname "$0")
+BASEDIR=$(dirname "$0")/../../..
 
 if [ "$1" == "mode=tcm" ]; then
   if [ -z "$AERAKI_TAG" ]; then
@@ -39,12 +39,16 @@ if [ -z "$AERAKI_TAG" ]; then
   export AERAKI_TAG=`git log --format="%H" -n 1`
 fi
 
-if [ -z "$AERAKI_ISTIOD_ADDR" ]; then
-  export AERAKI_ISTIOD_ADDR="istiod.istio-system:15010"
+if [ -z "$ISTIO_NAMESPACE" ]; then
+  export ISTIO_NAMESPACE="istio-system"
 fi
 
 if [ -z "$AERAKI_NAMESPACE" ]; then
-  export AERAKI_NAMESPACE="istio-system"
+  export AERAKI_NAMESPACE=${ISTIO_NAMESPACE}
+fi
+
+if [ -z "$AERAKI_ISTIOD_ADDR" ]; then
+  export AERAKI_ISTIOD_ADDR="istiod.${ISTIO_NAMESPACE}:15010"
 fi
 
 if [ -z "$AERAKI_IS_MASTER" ]; then
@@ -55,14 +59,34 @@ if [ -z "$AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE" ]; then
   export AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE="false"
 fi
 
+if [ -z "$AERAKI_IMG_PULL_POLICY" ]; then
+  export AERAKI_IMG_PULL_POLICY=Always
+fi
+
+if [ -z "$AERAKI_IMAGE" ]; then
+  export AERAKI_IMAGE="ghcr.io/aeraki-mesh/aeraki"
+fi
+
+if [ -z "$AERAKI_XDS_ADDR" ]; then
+  export AERAKI_XDS_ADDR="aeraki.${ISTIO_NAMESPACE}"
+fi
+
+if [ -z "$AERAKI_XDS_PORT" ]; then
+  export AERAKI_XDS_PORT=":15010"
+fi
+
+kubectl create ns ${ISTIO_NAMESPACE} || true
+kubectl create ns ${AERAKI_NAMESPACE} || true
+
+rm -rf ~/.aeraki/aeraki.yaml
 mkdir -p ~/.aeraki
-envsubst < $BASEDIR/../../../k8s/aeraki.yaml > ~/.aeraki/aeraki.yaml
+envsubst < $BASEDIR/k8s/aeraki.yaml > ~/.aeraki/aeraki.yaml
 if [ "$1" == "mode=tcm" ]; then
-  kubectl apply -f $BASEDIR/../../../k8s/tcm-apiservice.yaml
-  kubectl apply -f $BASEDIR/../../../k8s/tcm-istio-cm.yaml
+  kubectl apply -f $BASEDIR/k8s/tcm-apiservice.yaml
+  kubectl apply -f $BASEDIR/k8s/tcm-istio-cm.yaml
 else
   # ApplicationProtocol is changed from namespace scope to cluster scope
   kubectl delete crd applicationprotocols.metaprotocol.aeraki.io || true
-  kubectl apply -f $BASEDIR/../../../k8s/crd.yaml
+  kubectl apply -f $BASEDIR/k8s/crd.yaml
 fi
 kubectl apply -f ~/.aeraki/aeraki.yaml -n ${AERAKI_NAMESPACE}

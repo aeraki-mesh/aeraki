@@ -35,7 +35,6 @@ func TestMain(m *testing.M) {
 func setup() {
 	util.CreateNamespace("metaprotocol", "")
 	util.LabelNamespace("metaprotocol", "istio-injection=enabled", "")
-	util.KubeApply("metaprotocol", "../../../k8s/aeraki-bootstrap-config.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/metaprotocol-sample.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/serviceentry.yaml", "")
 	util.KubeApply("metaprotocol", "testdata/destinationrule.yaml", "")

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +21,5 @@ kubectl create ns meta-brpc
 LabelIstioInjectLabel meta-brpc
 
 kubectl apply -f $BASEDIR/brpc-protocol.yaml -n meta-brpc
-kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-brpc
 kubectl apply -f $BASEDIR/brpc-sample.yaml -n meta-brpc
 kubectl apply -f $BASEDIR/service.yaml -n meta-brpc

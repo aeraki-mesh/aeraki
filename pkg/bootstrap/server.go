@@ -103,7 +103,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	})
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
-		args.EnableEnvoyFilterNSScope)
+		args.EnableEnvoyFilterNSScope, args.RootNamespace)
 	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
@@ -114,7 +114,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		routeCacheMgr.ConfigUpdated(prev, curr, event)
 	})
 	// xdsServer is the RDS server for metaProtocol proxy
-	xdsServer := xds.NewServer(args.XdsAddr, routeCacheMgr)
+	xdsServer := xds.NewServer(args.AerakiXdsPort, routeCacheMgr)
 
 	// crdCtrlMgr watches Aeraki CRDs,  such as MetaRouter, ApplicationProtocol, etc.
 	scalableCtrlMgr, err := createScalableControllers(args, kubeConfig, envoyFilterController, routeCacheMgr)
@@ -224,7 +224,7 @@ func createSingletonControllers(args *AerakiArgs, kubeConfig *rest.Config) (mana
 	if err != nil {
 		aerakiLog.Fatalf("could not add ServiceEntryController: %e", err)
 	}
-	err = kube.AddNamespaceController(mgr)
+	err = kube.AddNamespaceController(mgr, args.AerakiXdsAddr, args.AerakiXdsPort)
 	if err != nil {
 		aerakiLog.Fatalf("could not add NamespaceController: %e", err)
 	}
@@ -274,7 +274,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 	}()
 
 	go func() {
-		aerakiLog.Infof("starting MetaProtocol RDS server, listening on %s", s.args.XdsAddr)
+		aerakiLog.Infof("starting MetaProtocol RDS server, listening on %s", s.args.AerakiXdsPort)
 		s.xdsServer.Run(stop)
 	}()
 

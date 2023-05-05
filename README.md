@@ -3,6 +3,9 @@
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Faeraki-mesh%2Faeraki.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Faeraki-mesh%2Faeraki?ref=badge_large)
+
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
@@ -24,6 +27,7 @@
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-thrift/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-thrift%22)
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-kafka-zookeeper/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-kafka-zookeeper%22)
 [![E2E Tests](https://github.com/aeraki-mesh/aeraki/workflows/e2e-redis/badge.svg?branch=master)](https://github.com/aeraki-mesh/aeraki/actions?query=branch%3Amaster+event%3Apush+workflow%3A%22e2e-redis%22)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Faeraki-mesh%2Faeraki.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Faeraki-mesh%2Faeraki?ref=badge_shield)
 
 <a href="https://aeraki.net/">
     <img src="docs/aeraki-log.png"
@@ -133,7 +137,7 @@ https://www.aeraki.net/docs/v1.x/install/
 make build
 
 # build aeraki binary on darwin
-make build-mac
+make build IMAGE_OS=darwin
 ```
 
 ### Build Aeraki Image
@@ -143,7 +147,7 @@ make build-mac
 make docker-build
 
 # build aeraki docker image with xxx tag
-make docker-build tag=xxx
+make docker-build IMAGE_TAG=xxx
 
 # build aeraki e2e docker image
 make docker-build-e2e

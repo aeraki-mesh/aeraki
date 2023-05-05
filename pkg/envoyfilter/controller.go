@@ -63,6 +63,7 @@ type Controller struct {
 	configStore                istiomodel.ConfigStore
 	generators                 map[protocol.Instance]Generator
 	namespaceScoped            bool
+	namespace                  string
 	// Sending on this channel results in a push.
 	pushChannel chan istiomodel.Event
 	meshConfig  mesh.Holder
@@ -70,12 +71,13 @@ type Controller struct {
 
 // NewController creates a new controller instance based on the provided arguments.
 func NewController(istioClientset *istioclient.Clientset, store istiomodel.ConfigStore,
-	generators map[protocol.Instance]Generator, namespaceScoped bool) *Controller {
+	generators map[protocol.Instance]Generator, namespaceScoped bool, namespace string) *Controller {
 	controller := &Controller{
 		istioClientset:  istioClientset,
 		configStore:     store,
 		generators:      generators,
 		namespaceScoped: namespaceScoped,
+		namespace:       namespace,
 		pushChannel:     make(chan istiomodel.Event, 100),
 	}
 	return controller
@@ -247,12 +249,13 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 	}
 
 	// generate envoyFilters for gateway with tcp-metaprotocol server
-	c.generateGatewayEnvoyFilters(envoyFilters)
+	err = c.generateGatewayEnvoyFilters(envoyFilters)
 
-	return envoyFilters, nil
+	return envoyFilters, err
 }
 
-func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.EnvoyFilterWrapper) {
+func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.EnvoyFilterWrapper) error {
+	var envoyFilterContexts []*model.EnvoyFilterContext
 	gateways, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind(), "")
 	if err != nil {
 		log.Errorf("failed to listconfigs: %v", err)
@@ -277,16 +280,17 @@ func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.
 			if generator, ok := c.generators[instance]; ok {
 				controllerLog.Infof("found generator for router port: %s", server.Port.Name)
 
-				ctxs, err := c.routerEnvoyFilterContexts(gw, &gateways[i], server.Port.Number)
+				ctxs, err := c.gatewayEnvoyFilterContexts(gw, &gateways[i], server.Port.Number)
 				if err != nil {
 					log.Errorf("failed to build EnvoyFilter Context router: %s, port: %s, error: %v",
 						gateways[i].Name,
 						server.Name, err)
-					return
+					return nil
 				}
 				if len(ctxs) == 0 {
 					continue
 				}
+				envoyFilterContexts = append(envoyFilterContexts, ctxs...)
 				for _, ctx := range ctxs {
 					envoyFilterWrappers, err := generator.Generate(ctx)
 					if err != nil {
@@ -302,6 +306,9 @@ func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.
 			}
 		}
 	}
+
+	// must create listeners for gateway before generate EnvoyFilters
+	return c.generateListenerForGateway(envoyFilterContexts)
 }
 
 func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext, wrapper *model.EnvoyFilterWrapper,
@@ -321,7 +328,7 @@ func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext
 			if exportNS == "." {
 				exportNS = ctx.MetaRouter.Namespace
 			} else if exportNS == "*" {
-				exportNS = constants.DefaultRootNamespace
+				exportNS = c.namespace
 			}
 			wrapperClone := &model.EnvoyFilterWrapper{
 				Name:        wrapper.Name,
@@ -356,8 +363,8 @@ func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
 	}, nil
 }
 
-// envoyFilterContext wraps all the resources needed to create the EnvoyFilter
-func (c *Controller) routerEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config,
+// gatewayEnvoyFilterContexts wraps all the resources needed to create the EnvoyFilters for a gateway
+func (c *Controller) gatewayEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config,
 	portNumber uint32) ([]*model.EnvoyFilterContext, error) {
 	var ctxs []*model.EnvoyFilterContext
 	metaRouterList := metaprotocol.MetaRouterList{}
@@ -391,12 +398,49 @@ func (c *Controller) routerEnvoyFilterContexts(gatewaySpec *networking.Gateway, 
 					},
 				},
 				MetaRouter: &metaRouterList.Items[i],
+				VirtualService: buildVirtualServiceWrapper(portNumber, gateway.Name, gateway.Namespace,
+					metaRouterList.Items[i].Spec.Hosts[0]),
 			})
 			// A gateway port can only be defined by a MetaRouter
 			break
 		}
 	}
 	return ctxs, nil
+}
+
+func buildVirtualServiceWrapper(portNumber uint32, gatewayName, gatewayNs, host string) *model.VirtualServiceWrapper {
+	return &model.VirtualServiceWrapper{
+		Meta: config.Meta{
+			Name:      fmt.Sprintf("aeraki-vs-%s.%s-%d", gatewayNs, gatewayName, portNumber),
+			Namespace: gatewayNs,
+			Labels: map[string]string{
+				"manager": constants.AerakiFieldManager,
+			},
+		},
+		Spec: &networking.VirtualService{
+			Hosts:    []string{host},
+			Gateways: []string{fmt.Sprintf("%s/%s", gatewayNs, gatewayName)},
+			Tcp: []*networking.TCPRoute{
+				{
+					Match: []*networking.L4MatchAttributes{
+						{
+							Port: portNumber,
+						},
+					},
+					Route: []*networking.RouteDestination{
+						{
+							Destination: &networking.Destination{
+								Host: host,
+								Port: &networking.PortSelector{
+									Number: portNumber,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
 func isMatchPort(portNumber uint32, routes []*v1alpha1.MetaRoute) bool {
@@ -421,7 +465,7 @@ func (c *Controller) defaultEnvoyFilterNS(serviceNS string) string {
 	if c.namespaceScoped {
 		return serviceNS
 	}
-	return constants.DefaultRootNamespace
+	return c.namespace
 }
 
 func envoyFilterMapKey(name, ns string) string {
@@ -475,4 +519,76 @@ func (c *Controller) findRelatedMetaRouter(service *networking.ServiceEntry) (*m
 // ConfigUpdated sends a config change event to the pushChannel to trigger the generation of envoyfilters
 func (c *Controller) ConfigUpdated(event istiomodel.Event) {
 	c.pushChannel <- event
+}
+
+// generateListenerForGateway generate listeners for gateway by create VirtualService
+func (c *Controller) generateListenerForGateway(ctxs []*model.EnvoyFilterContext) error {
+	generatedVirtualService := make(map[string]*v1alpha3.VirtualService)
+	for _, ctx := range ctxs {
+		if ctx.VirtualService == nil {
+			continue
+		}
+		vs := &v1alpha3.VirtualService{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      ctx.VirtualService.Name,
+				Namespace: ctx.VirtualService.Namespace,
+				Labels:    ctx.VirtualService.Labels,
+			},
+			Spec: networking.VirtualService{
+				Hosts:    ctx.VirtualService.Spec.Hosts,
+				Gateways: ctx.VirtualService.Spec.Gateways,
+				Tcp:      ctx.VirtualService.Spec.Tcp,
+			},
+		}
+		generatedVirtualService[virtualServiceMapKey(ctx.VirtualService.Name, ctx.VirtualService.Namespace)] = vs
+	}
+
+	existingVirtualService, _ := c.istioClientset.NetworkingV1alpha3().VirtualServices("").
+		List(context.TODO(), v1.ListOptions{
+			LabelSelector: "manager=" + constants.AerakiFieldManager,
+		})
+
+	// Deleted virtualServices
+	var err error
+	for i := range existingVirtualService.Items {
+		oldVirtualService := &existingVirtualService.Items[i]
+		if _, ok := generatedVirtualService[virtualServiceMapKey(oldVirtualService.Name, oldVirtualService.Namespace)]; !ok {
+			controllerLog.Infof("deleting VirtualService: namespace: %s name: %s %v", oldVirtualService.Namespace,
+				oldVirtualService.Name, model.Struct2JSON(oldVirtualService))
+			err = c.istioClientset.NetworkingV1alpha3().VirtualServices(oldVirtualService.Namespace).Delete(context.TODO(),
+				oldVirtualService.Name,
+				v1.DeleteOptions{})
+		}
+	}
+
+	// Changed virtualServices
+	for i := range existingVirtualService.Items {
+		oldVirtualService := &existingVirtualService.Items[i]
+		mapKey := virtualServiceMapKey(oldVirtualService.Name, oldVirtualService.Namespace)
+		if newVirtualService, ok := generatedVirtualService[mapKey]; ok {
+			if !proto.Equal(&newVirtualService.Spec, &oldVirtualService.Spec) {
+				controllerLog.Infof("updating VirtualService: namespace: %s name: %s %v", newVirtualService.Namespace,
+					newVirtualService.Name, model.Struct2JSON(newVirtualService))
+				_, err = c.istioClientset.NetworkingV1alpha3().VirtualServices(newVirtualService.Namespace).Update(context.TODO(),
+					newVirtualService, v1.UpdateOptions{FieldManager: constants.AerakiFieldManager})
+			} else {
+				controllerLog.Infof("VirtualService: namespace: %s name: %s unchanged", newVirtualService.Namespace,
+					newVirtualService.Name)
+			}
+			delete(generatedVirtualService, mapKey)
+		}
+	}
+
+	// New envoyFilters
+	for _, vs := range generatedVirtualService {
+		controllerLog.Infof("creating VirtualService: namespace: %s name: %s %v", vs.Namespace, vs.Name,
+			model.Struct2JSON(vs))
+		_, err = c.istioClientset.NetworkingV1alpha3().VirtualServices(vs.Namespace).Create(context.TODO(),
+			vs, v1.CreateOptions{FieldManager: constants.AerakiFieldManager})
+	}
+	return err
+}
+
+func virtualServiceMapKey(name, namespace string) string {
+	return namespace + "/" + name
 }

@@ -14,9 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BASEDIR=$(dirname "$0")
+set -e
 
-kubectl delete -f $BASEDIR/dubbo-sample.yaml -n meta-dubbo
-kubectl delete -f $BASEDIR/serviceentry.yaml -n meta-dubbo
-kubectl delete -f $BASEDIR/destinationrule.yaml -n meta-dubbo
-kubectl delete ns meta-dubbo || true
+if [ -z "$AERAKI_CONFIGMAP_NAME" ]; then
+  export AERAKI_CONFIGMAP_NAME=aeraki-bootstrap-config
+fi
+
+namespaces=`kubectl get ns | awk 'NR != 1 {print $1}'`
+
+for ns in  $namespaces; do
+  kubectl delete configmap $AERAKI_CONFIGMAP_NAME -n $ns || true
+done

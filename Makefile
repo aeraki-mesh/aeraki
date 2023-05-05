@@ -22,20 +22,17 @@ GOGET?=$(GOCMD) get
 GOBIN?=$(GOPATH)/bin
 GOMOD?=$(GOCMD) mod
 
-# Build parameters
-IMAGE_TAG := $(tag)
-
-ifeq ($(IMAGE_TAG),)
-IMAGE_TAG := latest
-endif
-
 OUT?=./out
-DOCKER_TMP?=$(OUT)/docker_temp/
-DOCKER_TAG_E2E?=ghcr.io/aeraki-mesh/aeraki:`git log --format="%H" -n 1`
-DOCKER_TAG?=ghcr.io/aeraki-mesh/aeraki:$(IMAGE_TAG)
-BINARY_NAME?=$(OUT)/aeraki
-BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
-MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
+IMAGE_REPO?=ghcr.io/aeraki-mesh
+IMAGE_NAME?=aeraki
+IMAGE_TAG?=latest
+IMAGE?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_TAG)
+IMAGE_E2E_TAG?=`git log --format="%H" -n 1`
+IMAGE_E2E?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_E2E_TAG)
+MAIN_PATH=./cmd/aeraki/main.go
+IMAGE_OS?=linux
+IMAGE_ARCH?=amd64
+IMAGE_DOCKERFILE_PATH?=docker/Dockerfile
 
 .DEFAULT_GOAL := build
 
@@ -46,7 +43,7 @@ install-for-tcm:
 demo:
 	bash demo/install-demo.sh default
 uninstall-aeraki:
-	bash demo/uninstall-aeraki.sh 
+	bash demo/uninstall-aeraki.sh
 uninstall-demo:
 	bash demo/uninstall-demo.sh default
 demo-kafka:
@@ -61,25 +58,17 @@ test: style-check
 	$(GOMOD) tidy
 	$(GOTEST) -race  `go list ./... | grep -v e2e`
 build: test
-	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_CONSUL_MCP)
-build-mac: test
-	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_CONSUL_MCP)
+	CGO_ENABLED=0 GOOS=$(IMAGE_OS) GOARCH=$(IMAGE_ARCH) $(GOBUILD) -o $(OUT)/$(IMAGE_ARCH)/$(IMAGE_OS)/$(IMAGE_NAME) $(MAIN_PATH)
 docker-build: build
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
-	cp $(BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(DOCKER_TAG) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
+	docker build --build-arg AERAKI_ROOT_BIN_DIR=${OUT} --build-arg ARCH=${IMAGE_ARCH} --build-arg OS=${IMAGE_OS} \
+	--no-cache --platform=${IMAGE_OS}/${IMAGE_ARCH} -t ${IMAGE} -f ${IMAGE_DOCKERFILE_PATH} .
 docker-push: docker-build
-	docker push $(DOCKER_TAG)
+	docker push $(IMAGE)
 docker-build-e2e: build
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
-	cp $(BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(DOCKER_TAG_E2E) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
+	docker build --build-arg AERAKI_ROOT_BIN_DIR=${OUT} --build-arg ARCH=${IMAGE_ARCH} --build-arg OS=${IMAGE_OS} \
+  	--no-cache --platform=${IMAGE_OS}/${IMAGE_ARCH} -t ${IMAGE_E2E} -f ${IMAGE_DOCKERFILE_PATH} .
+cross_build_images:
+	bash hack/make-rules/cross_build_images.sh
 clean:
 	rm -rf $(OUT)
 style-check:

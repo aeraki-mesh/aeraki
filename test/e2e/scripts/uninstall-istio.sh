@@ -28,12 +28,18 @@ if [ -z "$ISTIO_VERSION" ]; then
   export ISTIO_VERSION=1.14.5
 fi
 
-kubectl create ns ${ISTIO_NAMESPACE} || true
-
 rm -rf ~/.aeraki/istio/istio-config.yaml
 mkdir -p ~/.aeraki/istio
-envsubst < ${COMMON_DIR}/istio-config.yaml > ~/.aeraki/istio/istio-config.yaml
+envsubst <${COMMON_DIR}/istio-config.yaml> ~/.aeraki/istio/istio-config.yaml
 
-[ -n "$(istioctl version --remote=false |grep $ISTIO_VERSION)" ] || (curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION  sh - && sudo mv $PWD/istio-$ISTIO_VERSION/bin/istioctl /usr/local/bin/)
+[ -n $(istioctl version --remote=false |grep $ISTIO_VERSION) ] || (curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION  sh - && sudo mv $PWD/istio-$ISTIO_VERSION/bin/istioctl /usr/local/bin/)
 
-/usr/local/bin/istioctl install -f ~/.aeraki/istio/istio-config.yaml -y
+istioctl x uninstall -f ~/.aeraki/istio/istio-config.yaml -y || true
+
+# By default, istioctl will generates validatingwebhookconfigurations and mutatingwebhookconfigurations for istio-system.
+# This is a known bug, so manually delete it here.
+kubectl delete validatingwebhookconfigurations istiod-default-validator || true
+kubectl delete mutatingwebhookconfigurations istio-revision-tag-default || true
+kubectl delete mutatingwebhookconfigurations istio-revision-tag-default-${ISTIO_NAMESPACE} || true
+
+kubectl delete ns ${ISTIO_NAMESPACE} || true

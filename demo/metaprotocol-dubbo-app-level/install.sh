@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +17,8 @@
 BASEDIR=$(dirname "$0")
 source $BASEDIR/../common_func.sh
 
-
 kubectl create ns meta-dubbo
 LabelIstioInjectLabel meta-dubbo
+
 kubectl apply -f $BASEDIR/dubbo-sample.yaml -n meta-dubbo
 kubectl apply -f $BASEDIR/destinationrule.yaml -n meta-dubbo

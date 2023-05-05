@@ -15,9 +15,10 @@
 package constants
 
 const (
-	// DefaultRootNamespace is the root config namespace
-	DefaultRootNamespace = "istio-system"
-
 	// AerakiFieldManager is the FileldManager for Aeraki CRDs
 	AerakiFieldManager = "Aeraki"
+	// DefaultAerakiXdsPort is the default value for Aeraki xds port
+	DefaultAerakiXdsPort = ":15010"
+	// DefaultAerakiXdsAddr is the default value for Aeraki xds address
+	DefaultAerakiXdsAddr = "aeraki.istio-system"
 )

@@ -15,15 +15,15 @@
 # limitations under the License.
 
 
-#set -x
+set -x
 
 function LabelIstioInjectLabel() 
 {  
-    ns=$1
+  ns=$1
 	echo $ns
-	label=`kubectl get po -n istio-system  |grep istiod | awk '{print $1}'  |xargs kubectl get po  -o yaml  -n istio-system  |grep -A 1 REVIS |grep value:  |awk  '{print $2}'`
+	label=`kubectl get po -n ${ISTIO_NAMESPACE}  |grep istiod | awk '{print $1}'  |xargs kubectl get po  -o yaml  -n ${ISTIO_NAMESPACE}  |grep -A 1 REVIS |grep value:  |awk  '{print $2}'`
 	echo $label
-	if [ $label != "" ];then
+	if [ "$label" != "" ];then
 		kubectl label namespace $ns istio.io/rev=$label --overwrite
 	else
 		kubectl label namespace $ns istio-injection=enabled --overwrite=true

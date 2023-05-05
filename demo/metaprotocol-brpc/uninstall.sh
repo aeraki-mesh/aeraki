@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,4 +19,4 @@ BASEDIR=$(dirname "$0")
 kubectl delete -f $BASEDIR/brpc-protocol.yaml -n meta-brpc
 kubectl delete -f $BASEDIR/brpc-sample.yaml -n meta-brpc
 kubectl delete -f $BASEDIR/service.yaml -n meta-brpc
-kubectl delete ns meta-brpc
+kubectl delete ns meta-brpc || true

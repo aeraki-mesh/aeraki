@@ -1,10 +1,14 @@
 ---
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
+metadata:
+  name: test-iop
+  namespace: ${ISTIO_NAMESPACE}
 spec:
   profile: default
   values:
     global:
+      istioNamespace: ${ISTIO_NAMESPACE}
       logging:
         level: default:debug
   meshConfig:
@@ -33,8 +37,8 @@ spec:
       tracing:
         sampling: 100
         zipkin:
-          address: zipkin.istio-system:9411
+          address: zipkin.${ISTIO_NAMESPACE}:9411
   components:
     pilot:
       hub: istio
-      tag: 1.14.5
+      tag: ${ISTIO_VERSION}
