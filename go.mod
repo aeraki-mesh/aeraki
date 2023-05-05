@@ -15,10 +15,6 @@ replace github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200
 // Client-go does not handle different versions of mergo due to some breaking changes - use the matching version
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 
-//replace github.com/envoyproxy/go-control-plane => /Users/huabingzhao/workspace/go-control-plane
-
-//replace github.com/aeraki-mesh/meta-protocol-control-plane-api =>/Users/huabingzhao/workspace/meta-protocol-control-plane
-
 require (
 	github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20230205134842-bc2993738de0
 	github.com/apache/thrift v0.18.1
