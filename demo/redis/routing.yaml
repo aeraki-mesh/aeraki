@@ -13,25 +13,19 @@
 # limitations under the License.
 
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: redis.aeraki.io/v1alpha1
+kind: RedisService
 metadata:
-  labels:
-    app: redis-client
-  name: redis-client
+  name: redis-cluster
   namespace: redis
 spec:
-  selector:
-    matchLabels:
-      app: redis-client
-  template:
-    metadata:
-      annotations:
-        sidecar.istio.io/logLevel: debug
-      labels:
-        app: redis-client
-    spec:
-      containers:
-        - image: redis
-          imagePullPolicy: Always
-          name: redis-client
+  host:
+    - redis-cluster.redis.svc.cluster.local
+  redis:
+    - match:
+        key:
+          prefix: cluster
+      route:
+        host: redis-cluster.redis.svc.cluster.local
+    - route:
+        host: redis-single.redis.svc.cluster.local

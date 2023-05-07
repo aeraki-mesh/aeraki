@@ -13,25 +13,30 @@
 # limitations under the License.
 
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  labels:
-    app: redis-client
-  name: redis-client
+  name: external-redis
   namespace: redis
 spec:
-  selector:
-    matchLabels:
-      app: redis-client
-  template:
-    metadata:
-      annotations:
-        sidecar.istio.io/logLevel: debug
-      labels:
-        app: redis-client
-    spec:
-      containers:
-        - image: redis
-          imagePullPolicy: Always
-          name: redis-client
+  ports:
+    - name: tcp-redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: external-redis
+  namespace: redis
+  labels:
+    kubernetes.io/service-name: external-redis
+addressType: IPv4
+ports:
+  - name: tcp-redis
+    port: 6379
+    protocol: TCP
+endpoints:
+  - addresses:
+      - 10.244.0.26 # 集群外 Redis 实例的地址，比如云厂商提供的 Redis 服务。
