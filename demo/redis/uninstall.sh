@@ -17,6 +17,7 @@
 BASEDIR=$(dirname "$0")
 source $BASEDIR/../common_func.sh
 
+kubectl -n redis delete -f $BASEDIR/redis-client.yaml
 kubectl -n redis delete -f $BASEDIR/redis-single.yaml
 kubectl -n redis delete -f $BASEDIR/redis-cluster.yaml
 kubectl delete ns redis
