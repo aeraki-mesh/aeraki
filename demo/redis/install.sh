@@ -14,6 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set +x
+
+if ! command -v jq &> /dev/null
+then
+    echo "can't find jq, please install jq first"
+    exit 1
+fi
+
+set -x
+
 BASEDIR=$(dirname "$0")
 source $BASEDIR/../common_func.sh
 
