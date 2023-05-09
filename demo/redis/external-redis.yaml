@@ -39,4 +39,4 @@ ports:
     protocol: TCP
 endpoints:
   - addresses:
-      - 10.244.0.26 # 集群外 Redis 实例的地址，比如云厂商提供的 Redis 服务。
+      - 10.244.0.26     # 集群外 Redis 实例的地址，比如云厂商提供的 Redis 服务。
