@@ -18,5 +18,8 @@ ARG AERAKI_ROOT_BIN_DIR
 ARG ARCH
 ARG OS
 
+RUN apk update && \
+    apk add curl
+
 COPY ${AERAKI_ROOT_BIN_DIR}/${ARCH}/${OS}/aeraki /usr/local/bin/
 ENTRYPOINT /usr/local/bin/aeraki

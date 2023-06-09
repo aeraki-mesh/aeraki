@@ -64,6 +64,7 @@ func main() {
 		"Generate Envoy Filters in the service namespace")
 	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
 	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
+	flag.StringVar(&args.HTTPAddr, "httpAddr", ":8080", "Aeraki readiness service HTTP address")
 
 	flag.Parse()
 	if args.ServerID == "" {

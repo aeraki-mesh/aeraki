@@ -23,6 +23,8 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	//nolint: gosec
 	_ "net/http/pprof" // pprof
@@ -48,6 +50,7 @@ import (
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/leaderelection"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
+	"github.com/aeraki-mesh/aeraki/pkg/util"
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
 	"github.com/aeraki-mesh/aeraki/plugin/dubbo"
 	"github.com/aeraki-mesh/aeraki/plugin/redis"
@@ -56,6 +59,9 @@ import (
 var (
 	aerakiLog = log.RegisterScope("aeraki-server", "aeraki-server debugging", 0)
 )
+
+// readinessProbe defines a function that will be used indicate whether a server is ready.
+type readinessProbe func() bool
 
 // Server contains the runtime configuration for the Aeraki service.
 type Server struct {
@@ -75,6 +81,13 @@ type Server struct {
 	istiodCert      *tls.Certificate
 	CABundle        *bytes.Buffer
 	stopControllers func()
+	// serverReady indicates server is ready to process requests.
+	serverReady     atomic.Bool
+	readinessProbes map[string]readinessProbe
+	// httpMux listens on the httpAddr (8080).
+	// monitoring and readiness Server.
+	httpServer *http.Server
+	httpMux    *http.ServeMux
 
 	// internalStop is closed when the server is shutdown. This should be avoided as much as possible, in
 	// favor of AddStartFunc. This is only required if we *must* start something outside of this process.
@@ -115,7 +128,6 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	})
 	// xdsServer is the RDS server for metaProtocol proxy
 	xdsServer := xds.NewServer(args.AerakiXdsPort, routeCacheMgr)
-
 	// crdCtrlMgr watches Aeraki CRDs,  such as MetaRouter, ApplicationProtocol, etc.
 	scalableCtrlMgr, err := createScalableControllers(args, kubeConfig, envoyFilterController, routeCacheMgr)
 	if err != nil {
@@ -125,12 +137,10 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	routeCacheMgr.MetaRouterControllerClient = scalableCtrlMgr.GetClient()
 	// envoyFilterController uses controller manager client to get the rate limit configuration in MetaRouters
 	envoyFilterController.MetaRouterControllerClient = scalableCtrlMgr.GetClient()
-
 	// todo replace config with cached client
 	cfg := scalableCtrlMgr.GetConfig()
 	args.Protocols[protocol.Dubbo] = dubbo.NewGenerator(scalableCtrlMgr.GetConfig())
 	args.Protocols[protocol.Redis] = redis.New(cfg, configController.Store)
-
 	// singletonCtrlMgr
 	singletonCtrlMgr, err := createSingletonControllers(args, kubeConfig)
 	if err != nil {
@@ -145,6 +155,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		xdsCacheMgr:           routeCacheMgr,
 		xdsServer:             xdsServer,
 		internalStop:          make(chan struct{}),
+		readinessProbes:       make(map[string]readinessProbe),
 	}
 	if err := server.initKubeClient(); err != nil {
 		return nil, fmt.Errorf("error initializing kube client: %v", err)
@@ -162,7 +173,57 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 		envoyFilterController.ConfigUpdated(model.EventUpdate)
 	})
 	envoyFilterController.InitMeshConfig(server.configMapWatcher)
+	server.initAerakiServer(args)
 	return server, err
+}
+
+func (s *Server) initAerakiServer(args *AerakiArgs) {
+	// make sure we have a readiness probe before serving HTTP to avoid marking ready too soon
+	s.initReadinessProbes()
+	s.initServers(args)
+	// Readiness Handler.
+	s.httpMux.HandleFunc("/ready", s.aerakiReadyHandler)
+}
+
+// aerakiReadyHandler handler readiness event
+func (s *Server) aerakiReadyHandler(w http.ResponseWriter, _ *http.Request) {
+	for name, fn := range s.readinessProbes {
+		if ready := fn(); !ready {
+			log.Warnf("%s is not ready", name)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) initReadinessProbes() {
+	probes := map[string]readinessProbe{
+		"aeraki": func() bool {
+			return s.serverReady.Load()
+		},
+	}
+	for name, probe := range probes {
+		s.addReadinessProbe(name, probe)
+	}
+}
+
+// adds a readiness probe for Aeraki Server.
+func (s *Server) addReadinessProbe(name string, fn readinessProbe) {
+	s.readinessProbes[name] = fn
+}
+
+// initHttpServer init servers
+func (s *Server) initServers(args *AerakiArgs) {
+	aerakiLog.Info("initializing HTTP server for aeraki")
+	s.httpMux = http.NewServeMux()
+	s.httpServer = &http.Server{
+		Addr:              args.HTTPAddr,
+		Handler:           s.httpMux,
+		WriteTimeout:      30 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 30 * time.Second,
+	}
 }
 
 // These controllers are horizontally scalable, multiple instances can be deployed to share the load
@@ -299,25 +360,32 @@ func (s *Server) Start(stop <-chan struct{}) {
 	}
 	go func() {
 		log.Infof("starting webhook service at %s", httpsListener.Addr())
-		if err := s.httpsServer.ServeTLS(httpsListener, "", ""); isUnexpectedListenerError(err) {
+		if err := s.httpsServer.ServeTLS(httpsListener, "", ""); util.IsUnexpectedListenerError(err) {
 			log.Errorf("error serving https server: %v", err)
 		}
 	}()
 
+	if err = s.serveHTTP(); err != nil {
+		aerakiLog.Errorf("failed to http server: %v", err)
+	}
+	s.serverReady.Store(true)
 	s.waitForShutdown(stop)
 }
 
-func isUnexpectedListenerError(err error) bool {
-	if err == nil {
-		return false
+// serveHTTP starts Http Listener so that it can respond to readiness events.
+func (s *Server) serveHTTP() error {
+	log.Infof("starting HTTP service at %s", s.httpServer.Addr)
+	httpListener, err := net.Listen("tcp", s.httpServer.Addr)
+	if err != nil {
+		return err
 	}
-	if errors.Is(err, net.ErrClosed) {
-		return false
-	}
-	if errors.Is(err, http.ErrServerClosed) {
-		return false
-	}
-	return true
+	go func() {
+		log.Infof("starting HTTP service at %s", httpListener.Addr())
+		if err := s.httpServer.Serve(httpListener); util.IsUnexpectedListenerError(err) {
+			log.Errorf("error serving http server: %v", err)
+		}
+	}()
+	return nil
 }
 
 // Wait for the stop, and do cleanups

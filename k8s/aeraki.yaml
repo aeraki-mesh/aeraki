@@ -38,6 +38,23 @@ spec:
           image: ${AERAKI_IMAGE}:${AERAKI_TAG}
           # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
           imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 15010
+            protocol: TCP
+          - containerPort: 15017
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 5
           resources:
             requests:
               memory: "1Gi"
