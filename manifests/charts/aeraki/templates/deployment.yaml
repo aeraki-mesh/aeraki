@@ -41,6 +41,22 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 15010
+              protocol: TCP
+            - containerPort: 15017
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            timeoutSeconds: 5
+          resources:
+            { { - toYaml .Values.resources | nindent 12 } }
           env:
             - name: AERAKI_IS_MASTER
               value: {{ .Values.AERAKI_ENV.AERAKI_IS_MASTER }}
@@ -71,20 +87,6 @@ spec:
             - name: istiod-ca-cert
               mountPath: /var/run/secrets/istio
               readOnly: true
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      #          ports:
-      #            - name: http
-      #              containerPort: 80
-      #              protocol: TCP
-      #          livenessProbe:
-      #            httpGet:
-      #              path: /
-      #              port: http
-      #          readinessProbe:
-      #            httpGet:
-      #              path: /
-      #              port: http
       volumes:
         - name: istiod-ca-cert
           configMap:

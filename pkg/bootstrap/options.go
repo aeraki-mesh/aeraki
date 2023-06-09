@@ -21,14 +21,14 @@ import (
 
 // AerakiArgs provides all of the configuration parameters for the Aeraki service.
 type AerakiArgs struct {
-	Master             bool
-	IstiodAddr         string
-	AerakiXdsAddr      string
-	AerakiXdsPort      string
-	PodName            string
-	IstioConfigMapName string
-	// The listening address for HTTPS (webhooks).
-	HTTPSAddr                string
+	Master                   bool
+	IstiodAddr               string
+	AerakiXdsAddr            string
+	AerakiXdsPort            string
+	PodName                  string
+	IstioConfigMapName       string
+	HTTPSAddr                string // The listening address for HTTPS (webhooks).
+	HTTPAddr                 string // The listening address for HTTP (health).
 	RootNamespace            string
 	ClusterID                string
 	ConfigStoreSecret        string
