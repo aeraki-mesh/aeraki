@@ -32,7 +32,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/plugin/thrift"
 	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
 
-	"istio.io/pkg/env"
 	"istio.io/pkg/log"
 )
 
@@ -49,6 +48,8 @@ const (
 func main() {
 	args := bootstrap.NewAerakiArgs()
 	flag.BoolVar(&args.Master, "master", true, "Run as master")
+	flag.BoolVar(&args.EnableEnvoyFilterNSScope, "enable-envoy-filter-namespace-scope", false,
+		"Generate Envoy Filters in the service namespace")
 	flag.StringVar(&args.AerakiXdsAddr, "aeraki-xds-address", constants.DefaultAerakiXdsAddr, "Aeraki xds server address")
 	flag.StringVar(&args.AerakiXdsPort, "aeraki-xds-port", constants.DefaultAerakiXdsPort, "Aeraki xds server port")
 	flag.StringVar(&args.IstiodAddr, "istiod-address", defaultIstiodAddr, "Istiod xds server address")
@@ -60,28 +61,21 @@ func main() {
 	flag.StringVar(&args.ElectionID, "election-id", defaultElectionID, "ElectionID to elect master controller")
 	flag.StringVar(&args.ServerID, "server-id", "", "Aeraki server id")
 	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
-	flag.BoolVar(&args.EnableEnvoyFilterNSScope, "enable-envoy-filter-namespace-scope", false,
-		"Generate Envoy Filters in the service namespace")
 	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
 	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
 	flag.StringVar(&args.HTTPAddr, "httpAddr", ":8080", "Aeraki readiness service HTTP address")
-
 	flag.Parse()
-	if args.ServerID == "" {
-		args.ServerID = "Aeraki-" + uuid.New().String()
-	}
-
-	args.PodName = env.RegisterStringVar("POD_NAME", args.ServerID, "").Get()
-	args.RootNamespace = env.RegisterStringVar("AERAKI_NAMESPACE", args.RootNamespace, "").Get()
-	args.EnableEnvoyFilterNSScope = env.RegisterBoolVar("AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE",
-		args.EnableEnvoyFilterNSScope, "").Get()
-	args.IstiodAddr = env.RegisterStringVar("AERAKI_ISTIOD_ADDR", args.IstiodAddr, "").Get()
-	args.AerakiXdsAddr = env.RegisterStringVar("AERAKI_XDS_ADDR", constants.DefaultAerakiXdsAddr, "").Get()
-	args.AerakiXdsPort = env.RegisterStringVar("AERAKI_XDS_PORT", constants.DefaultAerakiXdsPort, "").Get()
 
 	flag.VisitAll(func(flag *flag.Flag) {
 		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
 	})
+
+	if args.ServerID == "" {
+		args.ServerID = "Aeraki-" + uuid.New().String()
+	}
+
+	initArgsWithEnv(args)
+	log.Infof("Aeraki bootstrap parameter: %v", args)
 
 	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.
@@ -98,6 +92,50 @@ func main() {
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChan
 	stopChan <- struct{}{}
+}
+
+func initArgsWithEnv(args *bootstrap.AerakiArgs) {
+	xdsAddr := os.Getenv("AERAKI_XDS_ADDR")
+	if xdsAddr != "" {
+		args.AerakiXdsAddr = xdsAddr
+	}
+
+	xdsPort := os.Getenv("AERAKI_XDS_PORT")
+	if xdsPort != "" {
+		args.AerakiXdsPort = xdsPort
+	}
+
+	istiodAddr := os.Getenv("AERAKI_ISTIOD_ADDR")
+	if istiodAddr != "" {
+		args.IstiodAddr = istiodAddr
+	}
+
+	namespace := os.Getenv("AERAKI_NAMESPACE")
+	if namespace != "" {
+		args.RootNamespace = namespace
+	}
+
+	clusterID := os.Getenv("AERAKI_CLUSTER_ID")
+	if clusterID != "" {
+		args.ClusterID = clusterID
+	}
+
+	secret := os.Getenv("AERAKI_ISTIO_CONFIG_STORE_SECRET")
+	if secret != "" {
+		args.ConfigStoreSecret = secret
+	}
+
+	logLevel := os.Getenv("AERAKI_LOG_LEVEL")
+	if logLevel != "" {
+		args.LogLevel = logLevel
+	}
+
+	podName := os.Getenv("POD_NAME")
+	if podName != "" {
+		args.PodName = os.Getenv("POD_NAME")
+	} else {
+		args.PodName = args.ServerID
+	}
 }
 
 func initGenerators() map[protocol.Instance]envoyfilter.Generator {
