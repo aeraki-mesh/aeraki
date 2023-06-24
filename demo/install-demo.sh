@@ -21,7 +21,7 @@ DEMO=$1
 SCRIPTS_DIR=$BASEDIR/test/e2e/scripts
 
 if [ -z "$AERAKI_TAG" ]; then
-  export AERAKI_TAG="1.2.3"
+  export AERAKI_TAG="1.3.0"
 fi
 bash ${SCRIPTS_DIR}/istio.sh
 bash ${SCRIPTS_DIR}/addons.sh
