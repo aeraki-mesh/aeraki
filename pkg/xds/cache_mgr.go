@@ -21,28 +21,21 @@ import (
 	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-
-	"github.com/golang/protobuf/ptypes/wrappers"
-
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	"github.com/golang/protobuf/ptypes/wrappers"
+	"github.com/zhaohuabing/debounce"
+	networking "istio.io/api/networking/v1alpha3"
+	istiomodel "istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	"istio.io/istio/pkg/config/schema/collections"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
 	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
-
 	"github.com/aeraki-mesh/aeraki/pkg/model"
-
-	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-	networking "istio.io/api/networking/v1alpha3"
-
+	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/config/route/v1alpha"
-
-	"github.com/zhaohuabing/debounce"
-	istiomodel "istio.io/istio/pilot/pkg/model"
-	"istio.io/istio/pkg/config/schema/collections"
 )
 
 const (
@@ -217,7 +210,7 @@ func isMetaProtocolService(service *networking.ServiceEntry) bool {
 
 func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
 	port *networking.Port, metaRouter *metaprotocol.MetaRouter, dr *model.DestinationRuleWrapper) *metaroute.
-	RouteConfiguration {
+RouteConfiguration {
 	var routes []*metaroute.Route
 	for _, route := range metaRouter.Spec.Routes {
 		routes = append(routes, &metaroute.Route{

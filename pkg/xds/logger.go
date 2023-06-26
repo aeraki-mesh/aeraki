@@ -20,7 +20,7 @@ package xds
 type logger struct {
 }
 
-// Log to stdout only if Debug is true.
+// Debugf Log to stdout only if Debug is true.
 func (logger logger) Debugf(format string, args ...interface{}) {
 	newArgs := []interface{}{}
 	newArgs = append(newArgs, format)
@@ -28,7 +28,7 @@ func (logger logger) Debugf(format string, args ...interface{}) {
 	xdsLog.Debugf(newArgs...)
 }
 
-// Log to stdout only if Debug is true.
+// Infof Log to stdout only if Debug is true.
 func (logger logger) Infof(format string, args ...interface{}) {
 	newArgs := []interface{}{}
 	newArgs = append(newArgs, format)
@@ -36,7 +36,7 @@ func (logger logger) Infof(format string, args ...interface{}) {
 	xdsLog.Infof(newArgs...)
 }
 
-// Log to stdout always.
+// Warnf Log to stdout always.
 func (logger logger) Warnf(format string, args ...interface{}) {
 	newArgs := []interface{}{}
 	newArgs = append(newArgs, format)
@@ -44,7 +44,7 @@ func (logger logger) Warnf(format string, args ...interface{}) {
 	xdsLog.Warnf(newArgs...)
 }
 
-// Log to stdout always.
+// Errorf Log to stdout always.
 func (logger logger) Errorf(format string, args ...interface{}) {
 	newArgs := []interface{}{}
 	newArgs = append(newArgs, format)

@@ -16,15 +16,16 @@ package leaderelection
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"time"
 
 	"go.uber.org/atomic"
+	"istio.io/pkg/log"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-
-	"istio.io/pkg/log"
 )
 
 // Various locks used throughout the code
@@ -88,9 +89,10 @@ func (l *LeaderElection) create() (*leaderelection.LeaderElector, error) {
 			log.Infof("leader election lock lost: %v", l.electionID)
 		},
 	}
-	lock := resourcelock.ConfigMapLock{
-		ConfigMapMeta: metaV1.ObjectMeta{Namespace: l.namespace, Name: l.electionID},
-		Client:        l.client.CoreV1(),
+	// TODO migrate the leaderelection to pilot/pkg/leaderelection/leaderelection.go
+	lock := resourcelock.LeaseLock{
+		LeaseMeta: metaV1.ObjectMeta{Namespace: l.namespace, Name: l.electionID},
+		Client:    l.client.CoordinationV1(),
 		LockConfig: resourcelock.ResourceLockConfig{
 			Identity: l.name,
 		},
@@ -118,7 +120,8 @@ func (l *LeaderElection) AddRunFunction(f func(stop <-chan struct{})) *LeaderEle
 // NewLeaderElection creates a new LeaderElection
 func NewLeaderElection(namespace, name, electionID string, client kubernetes.Interface) *LeaderElection {
 	if name == "" {
-		name = "unknown"
+		hn, _ := os.Hostname()
+		name = fmt.Sprintf("unknown-%s", hn)
 	}
 	return &LeaderElection{
 		namespace:  namespace,

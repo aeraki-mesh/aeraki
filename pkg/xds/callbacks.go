@@ -26,7 +26,7 @@ type callbacks struct {
 }
 
 func newCallbacks(cacheMgr cacheMgr) serverv3.Callbacks {
-	return &callbacks{
+	return callbacks{
 		cacheMgr: cacheMgr,
 	}
 }

@@ -26,21 +26,19 @@ import (
 	"sync/atomic"
 	"time"
 
-	//nolint: gosec
-	_ "net/http/pprof" // pprof
-
-	"istio.io/istio/pkg/config/mesh"
-
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	"istio.io/istio/pkg/config/mesh"
 	kubelib "istio.io/istio/pkg/kube"
 	"istio.io/pkg/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	//nolint: gosec
+	_ "net/http/pprof" // pprof
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -315,7 +313,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 		go func() {
 			leaderelection.
 				NewLeaderElection(s.args.RootNamespace, s.args.ServerID, leaderelection.EnvoyFilterController,
-					s.kubeClient).
+					s.kubeClient.Kube()).
 				AddRunFunction(func(leaderStop <-chan struct{}) {
 					aerakiLog.Infof("starting EnvoyFilter creation controller")
 					s.envoyFilterController.Run(stop)

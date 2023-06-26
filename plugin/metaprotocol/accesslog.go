@@ -15,16 +15,15 @@
 package metaprotocol
 
 import (
-	"google.golang.org/protobuf/types/known/structpb"
-	"istio.io/istio/pkg/util/protomarshal"
-	"istio.io/pkg/log"
-
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	fileaccesslog "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	"google.golang.org/protobuf/types/known/structpb"
 	meshconfig "istio.io/api/mesh/v1alpha1"
-	"istio.io/istio/pilot/pkg/networking/util"
+	"istio.io/istio/pilot/pkg/util/protoconv"
+	"istio.io/istio/pkg/util/protomarshal"
+	"istio.io/pkg/log"
 )
 
 const (
@@ -109,7 +108,7 @@ func buildFileAccessLogHelper(path string, mesh *meshconfig.MeshConfig) *accessl
 
 	al := &accesslog.AccessLog{
 		Name:       wellknown.FileAccessLog,
-		ConfigType: &accesslog.AccessLog_TypedConfig{TypedConfig: util.MessageToAny(fl)},
+		ConfigType: &accesslog.AccessLog_TypedConfig{TypedConfig: protoconv.MessageToAny(fl)},
 	}
 
 	return al

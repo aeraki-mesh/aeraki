@@ -19,7 +19,6 @@ import (
 	"strings"
 
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
-
 	"istio.io/istio/pkg/spiffe"
 
 	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/matcher"

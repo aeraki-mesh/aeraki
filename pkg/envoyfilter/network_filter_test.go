@@ -18,9 +18,8 @@ import (
 	"reflect"
 	"testing"
 
-	istioconfig "istio.io/istio/pkg/config"
-
 	networking "istio.io/api/networking/v1alpha3"
+	istioconfig "istio.io/istio/pkg/config"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )

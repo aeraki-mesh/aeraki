@@ -20,14 +20,13 @@ import (
 	"strings"
 	"time"
 
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
-	"istio.io/istio/pkg/config"
-
 	"github.com/gogo/protobuf/proto"
 	"github.com/zhaohuabing/debounce"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	istiomodel "istio.io/istio/pilot/pkg/model"
+	"istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/mesh"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
@@ -137,7 +136,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 
 	// Deleted envoyFilters
 	for i := range existingEnvoyFilters.Items {
-		oldEnvoyFilter := &existingEnvoyFilters.Items[i]
+		oldEnvoyFilter := existingEnvoyFilters.Items[i]
 		if _, ok := generatedEnvoyFilters[envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)]; !ok {
 			controllerLog.Infof("deleting EnvoyFilter: namespace: %s name: %s %v", oldEnvoyFilter.Namespace,
 				oldEnvoyFilter.Name, model.Struct2JSON(oldEnvoyFilter))
@@ -149,7 +148,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 
 	// Changed envoyFilters
 	for i := range existingEnvoyFilters.Items {
-		oldEnvoyFilter := &existingEnvoyFilters.Items[i]
+		oldEnvoyFilter := existingEnvoyFilters.Items[i]
 		mapKey := envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)
 		if newEnvoyFilter, ok := generatedEnvoyFilters[mapKey]; ok {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
@@ -551,7 +550,7 @@ func (c *Controller) generateListenerForGateway(ctxs []*model.EnvoyFilterContext
 	// Deleted virtualServices
 	var err error
 	for i := range existingVirtualService.Items {
-		oldVirtualService := &existingVirtualService.Items[i]
+		oldVirtualService := existingVirtualService.Items[i]
 		if _, ok := generatedVirtualService[virtualServiceMapKey(oldVirtualService.Name, oldVirtualService.Namespace)]; !ok {
 			controllerLog.Infof("deleting VirtualService: namespace: %s name: %s %v", oldVirtualService.Namespace,
 				oldVirtualService.Name, model.Struct2JSON(oldVirtualService))
@@ -563,7 +562,7 @@ func (c *Controller) generateListenerForGateway(ctxs []*model.EnvoyFilterContext
 
 	// Changed virtualServices
 	for i := range existingVirtualService.Items {
-		oldVirtualService := &existingVirtualService.Items[i]
+		oldVirtualService := existingVirtualService.Items[i]
 		mapKey := virtualServiceMapKey(oldVirtualService.Name, oldVirtualService.Namespace)
 		if newVirtualService, ok := generatedVirtualService[mapKey]; ok {
 			if !proto.Equal(&newVirtualService.Spec, &oldVirtualService.Spec) {

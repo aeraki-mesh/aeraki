@@ -21,7 +21,8 @@ import (
 )
 
 func (g *Generator) buildInboundProxy(context *model.EnvoyFilterContext) *redis.RedisProxy {
-	name := model.BuildClusterName(model.TrafficDirectionInbound, "", "", int(context.ServiceEntry.Spec.Ports[0].Number))
+	name := model.BuildClusterName(model.TrafficDirectionInbound,
+		"", "", int(context.ServiceEntry.Spec.Ports[0].Number))
 	proxy := &redis.RedisProxy{
 		StatPrefix: name,
 		Settings: &redis.RedisProxy_ConnPoolSettings{

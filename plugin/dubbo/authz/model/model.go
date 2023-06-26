@@ -18,10 +18,9 @@ import (
 	"fmt"
 
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
+	"istio.io/istio/pilot/pkg/security/trustdomain"
 
 	dubbopb "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
-
-	"istio.io/istio/pilot/pkg/security/trustdomain"
 )
 
 const (

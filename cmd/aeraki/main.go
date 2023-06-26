@@ -22,6 +22,7 @@ import (
 	"syscall"
 
 	"github.com/google/uuid"
+	"istio.io/pkg/log"
 
 	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
@@ -31,8 +32,6 @@ import (
 	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
 	"github.com/aeraki-mesh/aeraki/plugin/thrift"
 	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
-
-	"istio.io/pkg/log"
 )
 
 const (

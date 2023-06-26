@@ -21,15 +21,12 @@ import (
 	"path"
 	"time"
 
-	"istio.io/istio/security/pkg/pki/util"
-
-	"istio.io/istio/pilot/pkg/bootstrap"
-	"istio.io/istio/security/pkg/cmd"
-	"istio.io/pkg/env"
-
 	"istio.io/istio/pkg/security"
+	"istio.io/istio/security/pkg/cmd"
 	"istio.io/istio/security/pkg/pki/ca"
 	"istio.io/istio/security/pkg/pki/ra"
+	"istio.io/istio/security/pkg/pki/util"
+	"istio.io/pkg/env"
 	"istio.io/pkg/log"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
@@ -99,18 +96,18 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 	}
 
 	var caOpts *ca.IstioCAOptions
+	var err error
 
-	// In pods, this is the optional 'cacerts' Secret.
-	signingKeyFile := path.Join(bootstrap.LocalCertDir.Get(), ca.CAPrivateKeyFile)
-
-	// If not found, will default to ca-cert.pem. May contain multiple roots.
-	rootCertFile := path.Join(localCertDir.Get(), ca.RootCertFile)
-	if _, err := os.Stat(rootCertFile); err != nil {
+	fileBundle, err := detectSigningCABundle()
+	if err != nil {
+		return nil, fmt.Errorf("unable to determine signing file format %v", err)
+	}
+	if _, err := os.Stat(fileBundle.RootCertFile); err != nil {
 		// In Citadel, normal self-signed doesn't use a root-cert.pem file for additional roots.
 		// In Istiod, it is possible to provide one via "cacerts" secret in both cases, for consistency.
-		rootCertFile = ""
+		fileBundle.RootCertFile = ""
 	}
-	if _, err := os.Stat(signingKeyFile); err != nil {
+	if _, err := os.Stat(fileBundle.SigningKeyFile); err != nil {
 		// The user-provided certs are missing - create a self-signed cert.
 		if client != nil {
 			log.Info("Use self-signed certificate as the CA certificate")
@@ -125,14 +122,14 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 				selfSignedRootCertGracePeriodPercentile.Get(), selfSignedCACertTTL.Get(),
 				selfSignedRootCertCheckInterval.Get(), workloadCertTTL.Get(),
 				maxWorkloadCertTTL.Get(), opts.TrustDomain, true,
-				opts.Namespace, -1, client, rootCertFile,
+				opts.Namespace, -1, client, fileBundle.RootCertFile,
 				enableJitterForRootCertRotator.Get(), caRSAKeySize.Get())
 		} else {
 			log.Warnf(
 				"Use local self-signed CA certificate for testing. Will use in-memory root CA, no K8S access and no ca key file %s",
-				signingKeyFile)
+				fileBundle.SigningKeyFile)
 
-			caOpts, err = ca.NewSelfSignedDebugIstioCAOptions(rootCertFile, selfSignedCACertTTL.Get(),
+			caOpts, err = ca.NewSelfSignedDebugIstioCAOptions(fileBundle.RootCertFile, selfSignedCACertTTL.Get(),
 				workloadCertTTL.Get(), maxWorkloadCertTTL.Get(), opts.TrustDomain, caRSAKeySize.Get())
 		}
 		if err != nil {
@@ -141,16 +138,58 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 	} else {
 		log.Info("Use local CA certificate")
 
-		// The cert corresponding to the key, self-signed or chain.
-		// rootCertFile will be added at the end, if present, to form 'rootCerts'.
-		signingCertFile := path.Join(localCertDir.Get(), ca.CACertFile)
-		certChainFile := path.Join(localCertDir.Get(), ca.CertChainFile)
-		caOpts, err = ca.NewPluggedCertIstioCAOptions(certChainFile, signingCertFile, signingKeyFile,
-			rootCertFile, workloadCertTTL.Get(), maxWorkloadCertTTL.Get(), caRSAKeySize.Get())
+		caOpts, err = ca.NewPluggedCertIstioCAOptions(fileBundle, workloadCertTTL.Get(), maxWorkloadCertTTL.Get(), caRSAKeySize.Get())
 		if err != nil {
 			return nil, fmt.Errorf("failed to create an istiod CA: %v", err)
 		}
+
+		//if features.AutoReloadPluginCerts {
+		//	s.initCACertsWatcher()
+		//}
+	}
+	istioCA, err := ca.NewIstioCA(caOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create an istiod CA: %v", err)
 	}
 
-	return caOpts.KeyCertBundle, nil
+	// TODO: provide an endpoint returning all the roots. SDS can only pull a single root in current impl.
+	// ca.go saves or uses the secret, but also writes to the configmap "istio-security", under caTLSRootCert
+	// rootCertRotatorChan channel accepts signals to stop root cert rotator for
+	// self-signed CA.
+	// Start root cert rotator in a separate goroutine.
+	// istioCA.Run(s.internalStop)
+	return istioCA.GetCAKeyCertBundle(), nil
+}
+
+// detectSigningCABundle determines in which format the signing ca files are created.
+// kubernetes tls secrets mount files as tls.crt,tls.key,ca.crt
+// istiod secret is ca-cert.pem ca-key.pem cert-chain.pem root-cert.pem
+func detectSigningCABundle() (ca.SigningCAFileBundle, error) {
+	tlsSigningFile := path.Join(localCertDir.Get(), ca.TLSSecretCACertFile)
+
+	// looking for tls file format (tls.crt)
+	if _, err := os.Stat(tlsSigningFile); !os.IsNotExist(err) {
+		log.Info("Using kubernetes.io/tls secret type for signing ca files")
+		return ca.SigningCAFileBundle{
+			RootCertFile: path.Join(localCertDir.Get(), ca.TLSSecretRootCertFile),
+			CertChainFiles: []string{
+				tlsSigningFile,
+				path.Join(localCertDir.Get(), ca.TLSSecretRootCertFile),
+			},
+			SigningCertFile: tlsSigningFile,
+			SigningKeyFile:  path.Join(localCertDir.Get(), ca.TLSSecretCAPrivateKeyFile),
+		}, nil
+	} else if os.IsNotExist(err) {
+		// noop, file does not exist, move on
+	} else if err != nil {
+		return ca.SigningCAFileBundle{}, err
+	}
+	log.Info("Using istiod file format for signing ca files")
+	// default ca file format
+	return ca.SigningCAFileBundle{
+		RootCertFile:    path.Join(localCertDir.Get(), ca.RootCertFile),
+		CertChainFiles:  []string{path.Join(localCertDir.Get(), ca.CertChainFile)},
+		SigningCertFile: path.Join(localCertDir.Get(), ca.CACertFile),
+		SigningKeyFile:  path.Join(localCertDir.Get(), ca.CAPrivateKeyFile),
+	}, nil
 }

@@ -15,7 +15,6 @@
 package metaprotocol
 
 import (
-	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoytype "github.com/envoyproxy/go-control-plane/envoy/type/v3"
@@ -23,6 +22,7 @@ import (
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	metaprotocolmodel "github.com/aeraki-mesh/aeraki/pkg/model/metaprotocol"
+	metaprotocol "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 )
 
 const (
@@ -67,6 +67,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 				},
 			},
 		},
+		// todo upgrade to use ApplicationProtocol
 		ApplicationProtocol: applicationProtocol,
 		Codec: &metaprotocol.Codec{
 			Name: codec,

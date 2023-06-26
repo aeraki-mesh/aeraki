@@ -20,13 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/pkg/model"
-
-	"istio.io/istio/pkg/security"
-
-	"istio.io/istio/security/pkg/nodeagent/cache"
-
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v4"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/config/memory"
@@ -35,9 +29,12 @@ import (
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
+	"istio.io/istio/pkg/security"
+	"istio.io/istio/security/pkg/nodeagent/cache"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
 	"istio.io/pkg/log"
 
+	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
 )
 

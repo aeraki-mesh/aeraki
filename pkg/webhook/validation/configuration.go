@@ -19,12 +19,11 @@ import (
 	"context"
 	"reflect"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-
 	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	ctrl "sigs.k8s.io/controller-runtime"
+	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
 // GenerateWebhookConfig creates ValidationWebhookConfiguration with the Aeraki ca
@@ -34,7 +33,7 @@ func GenerateWebhookConfig(caCert *bytes.Buffer, namespace string) error {
 		webhookService = "aeraki"
 	)
 
-	kubeClient, err := kubernetes.NewForConfig(ctrl.GetConfigOrDie())
+	kubeClient, err := kubernetes.NewForConfig(controllerruntime.GetConfigOrDie())
 	if err != nil {
 		panic("failed to set go -client")
 	}

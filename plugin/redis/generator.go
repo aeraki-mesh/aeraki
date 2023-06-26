@@ -22,24 +22,27 @@ import (
 	"time"
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/structpb"
+	networking "istio.io/api/networking/v1alpha3"
+	istiomodel "istio.io/istio/pilot/pkg/model"
+	"istio.io/pkg/log"
 	"k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 
 	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
 	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
-
-	gogojsonpb "github.com/gogo/protobuf/jsonpb"
-	"google.golang.org/protobuf/encoding/protojson"
-	"google.golang.org/protobuf/proto"
-	networking "istio.io/api/networking/v1alpha3"
-	istiomodel "istio.io/istio/pilot/pkg/model"
-	"istio.io/pkg/log"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
+
+// ListApiServerTimeout is the default timeout for listing object from apiserver
+const ListApiServerTimeout = time.Second * 10
 
 var generatorLog = log.RegisterScope("redis-generator", "redis generator", 0)
 
@@ -71,12 +74,9 @@ type Generator struct {
 	store         istiomodel.ConfigStore
 }
 
-// Timeout is the default timeout for listing object from apiserver
-const Timeout = time.Second * 10
-
 // Generate redis envoy filter
 func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters []*model.EnvoyFilterWrapper, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	ctx, cancel := context.WithTimeout(context.Background(), ListApiServerTimeout)
 	defer cancel()
 	se := filterContext.ServiceEntry.Spec
 	for _, port := range se.Ports {
@@ -141,6 +141,12 @@ func ReplaceClusterPatches(cluster *clusterv3.Cluster) []*networking.EnvoyFilter
 		Operation: networking.EnvoyFilter_Patch_REMOVE,
 	}
 	return []*networking.EnvoyFilter_EnvoyConfigObjectPatch{removeCluster, addCluster}
+}
+
+func buildPatchStruct(config string) *structpb.Struct {
+	val := &structpb.Struct{}
+	_ = jsonpb.Unmarshal(strings.NewReader(config), val)
+	return val
 }
 
 func clusterPatch(name string) *networking.EnvoyFilter_EnvoyConfigObjectPatch {
