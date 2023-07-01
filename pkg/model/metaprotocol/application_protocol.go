@@ -20,28 +20,26 @@ import (
 	"sync"
 )
 
-var lock sync.Mutex
-var applicationProtocols = map[string]string{
-	"dubbo":  "aeraki.meta_protocol.codec.dubbo",
-	"thrift": "aeraki.meta_protocol.codec.thrift",
+var applicationProtocols sync.Map
+
+// nolint: gochecknoinits
+func init() {
+	applicationProtocols.Store("dubbo", "aeraki.meta_protocol.codec.dubbo")
+	applicationProtocols.Store("thrift", "aeraki.meta_protocol.codec.thrift")
 }
 
 // SetApplicationProtocolCodec sets the codec for a specific protocol
 func SetApplicationProtocolCodec(protocol, codec string) {
-	lock.Lock()
-	defer lock.Unlock()
-	applicationProtocols[protocol] = codec
+	applicationProtocols.Store(protocol, codec)
 }
 
 // GetApplicationProtocolCodec get the codec for a specific protocol
 func GetApplicationProtocolCodec(protocol string) (string, error) {
-	lock.Lock()
-	defer lock.Unlock()
-	codec := applicationProtocols[protocol]
-	if codec != "" {
-		return codec, nil
+	codec, ok := applicationProtocols.Load(protocol)
+	if !ok {
+		return "", fmt.Errorf("can't find codec for protocol: %s", protocol)
 	}
-	return "", fmt.Errorf("can't find codec for protocol: %s", protocol)
+	return fmt.Sprintf("%s", codec), nil
 }
 
 // GetApplicationProtocolFromPortName extracts the application protocol name from metaprotocol port name
