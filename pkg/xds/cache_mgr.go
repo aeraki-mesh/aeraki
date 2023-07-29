@@ -30,8 +30,8 @@ import (
 	istioconfig "istio.io/istio/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	metaprotocolapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	metaprotocolapi "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 
@@ -378,7 +378,7 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 		for _, host := range metaRouterList.Items[i].Spec.Hosts {
 			if host == service.Hosts[0] {
 				if len(metaRouterList.Items[i].Spec.Routes) > 0 {
-					return &metaRouterList.Items[i], nil
+					return metaRouterList.Items[i], nil
 				}
 				xdsLog.Warnf("no route in metaRouter: %v", metaRouterList.Items[i])
 				return nil, nil

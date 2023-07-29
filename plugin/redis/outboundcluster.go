@@ -28,11 +28,10 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"google.golang.org/protobuf/types/known/anypb"
 	"istio.io/istio/pilot/pkg/xds/filters"
-	"istio.io/istio/pkg/util/gogo"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
 
 	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
@@ -155,7 +154,7 @@ L:
 		threshold := getDefaultCircuitBreakerThresholds()
 		timeout := connPool.Tcp.ConnectTimeout
 		if timeout != nil {
-			cl.ConnectTimeout = gogo.DurationToProtoDuration(timeout)
+			cl.ConnectTimeout = timeout
 		}
 		if connPool.Tcp.MaxConnections > 0 {
 			threshold.MaxConnections = &wrappers.UInt32Value{Value: uint32(connPool.Tcp.MaxConnections)}

@@ -19,18 +19,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gogo/protobuf/types"
-	"istio.io/istio/pkg/util/gogo"
+	"google.golang.org/protobuf/types/known/durationpb"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
 
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pkg/config/schema/collections"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/redis/v1alpha1"
+	"github.com/aeraki-mesh/client-go/pkg/apis/redis/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 
 	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
@@ -43,8 +44,8 @@ const (
 )
 
 var (
-	defaultOpTimeout        = gogo.DurationToProtoDuration(types.DurationProto(time.Minute))
-	defaultInboundOpTimeout = gogo.DurationToProtoDuration(types.DurationProto(time.Hour))
+	defaultOpTimeout        = durationpb.New(time.Minute)
+	defaultInboundOpTimeout = durationpb.New(time.Hour)
 )
 
 func (g *Generator) buildOutboundProxyWithFallback(ctx context.Context, c *model.EnvoyFilterContext, listenPort uint32,
@@ -188,7 +189,7 @@ func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string
 		service := redisServices.Items[i]
 		for _, svcHost := range service.Spec.Host {
 			generatorLog.Debugf("related host: %s => %s", svcHost, service.Name)
-			svcs[svcHost] = &service
+			svcs[svcHost] = service
 		}
 	}
 	for _, host := range hosts {
@@ -268,7 +269,7 @@ func (g *Generator) buildSettings(proxy *redis.RedisProxy, rs *v1alpha1.RedisSer
 		}
 	}
 	if rs.Spec.Settings.OpTimeout != nil {
-		proxy.Settings.OpTimeout = gogo.DurationToProtoDuration(rs.Spec.Settings.OpTimeout)
+		proxy.Settings.OpTimeout = rs.Spec.Settings.OpTimeout
 	}
 
 	proxy.Settings.EnableCommandStats = rs.Spec.Settings.EnableCommandStats
@@ -276,7 +277,7 @@ func (g *Generator) buildSettings(proxy *redis.RedisProxy, rs *v1alpha1.RedisSer
 	proxy.Settings.EnableRedirection = rs.Spec.Settings.EnableRedirection
 
 	if rs.Spec.Settings.BufferFlushTimeout != nil {
-		proxy.Settings.BufferFlushTimeout = gogo.DurationToProtoDuration(rs.Spec.Settings.BufferFlushTimeout)
+		proxy.Settings.BufferFlushTimeout = rs.Spec.Settings.BufferFlushTimeout
 	}
 
 	proxy.Settings.MaxBufferSizeBeforeFlush = rs.Spec.Settings.MaxBufferSizeBeforeFlush
@@ -287,7 +288,7 @@ func (g *Generator) buildSettings(proxy *redis.RedisProxy, rs *v1alpha1.RedisSer
 
 func (g *Generator) convertFault(fault *spec.Fault) *redis.RedisProxy_RedisFault {
 	envoyFault := &redis.RedisProxy_RedisFault{Commands: fault.Commands}
-	envoyFault.Delay = gogo.DurationToProtoDuration(fault.Delay)
+	envoyFault.Delay = fault.Delay
 	envoyFault.FaultEnabled = &envoycore.RuntimeFractionalPercent{
 		DefaultValue: translatePercentToFractionalPercent(fault.Percentage),
 	}

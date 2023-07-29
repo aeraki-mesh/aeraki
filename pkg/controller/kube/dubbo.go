@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
+	"github.com/aeraki-mesh/client-go/pkg/apis/dubbo/v1alpha1"
 )
 
 var dubboLog = log.RegisterScope("dubbo-controller", "dubbo-controller debugging", 0)

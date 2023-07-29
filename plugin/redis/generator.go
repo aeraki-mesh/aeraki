@@ -21,13 +21,14 @@ import (
 	"strings"
 	"time"
 
+	_struct "github.com/golang/protobuf/ptypes/struct"
+
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
-	"github.com/gogo/protobuf/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned"
-	redisv1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
+	"github.com/aeraki-mesh/client-go/pkg/clientset/versioned"
+	redisv1alpha1 "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -155,14 +156,14 @@ func clusterPatch(name string) *networking.EnvoyFilter_EnvoyConfigObjectPatch {
 	}
 }
 
-func valueOf(message proto.Message) (out *types.Struct, err error) {
+func valueOf(message proto.Message) (out *_struct.Struct, err error) {
 	var buf []byte
 
 	if buf, err = protojson.Marshal(message); err != nil {
 		return nil, err
 	}
 
-	out = &types.Struct{}
+	out = &_struct.Struct{}
 	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
 		return nil, err
 	}

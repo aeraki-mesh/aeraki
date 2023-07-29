@@ -25,7 +25,7 @@ import (
 
 	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 
-	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	userapi "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
@@ -140,7 +140,7 @@ func httpRouteMatch(route *metaroute.Route) *httproute.RouteMatch {
 	return routeMatch
 }
 
-func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) (cache.Snapshot, error) {
+func generateSnapshot(metaRoutes []*metaroute.RouteConfiguration) (*cache.Snapshot, error) {
 	var httpRoutes []types.Resource
 	for _, route := range metaRoutes {
 		httpRoutes = append(httpRoutes, metaProtocolRoute2HttpRoute(route))

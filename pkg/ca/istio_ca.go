@@ -110,6 +110,12 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 		// In Istiod, it is possible to provide one via "cacerts" secret in both cases, for consistency.
 		rootCertFile = ""
 	}
+	fileBundle := ca.SigningCAFileBundle{
+		RootCertFile:    rootCertFile,
+		CertChainFiles:  []string{path.Join(localCertDir.Get(), ca.CertChainFile)},
+		SigningCertFile: path.Join(localCertDir.Get(), ca.CACertFile),
+		SigningKeyFile:  signingKeyFile,
+	}
 	if _, err := os.Stat(signingKeyFile); err != nil {
 		// The user-provided certs are missing - create a self-signed cert.
 		if client != nil {
@@ -140,13 +146,8 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 		}
 	} else {
 		log.Info("Use local CA certificate")
+		caOpts, err = ca.NewPluggedCertIstioCAOptions(fileBundle, workloadCertTTL.Get(), maxWorkloadCertTTL.Get(), caRSAKeySize.Get())
 
-		// The cert corresponding to the key, self-signed or chain.
-		// rootCertFile will be added at the end, if present, to form 'rootCerts'.
-		signingCertFile := path.Join(localCertDir.Get(), ca.CACertFile)
-		certChainFile := path.Join(localCertDir.Get(), ca.CertChainFile)
-		caOpts, err = ca.NewPluggedCertIstioCAOptions(certChainFile, signingCertFile, signingKeyFile,
-			rootCertFile, workloadCertTTL.Get(), maxWorkloadCertTTL.Get(), caRSAKeySize.Get())
 		if err != nil {
 			return nil, fmt.Errorf("failed to create an istiod CA: %v", err)
 		}

@@ -19,7 +19,7 @@ import (
 
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 
-	dubbopb "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
+	dubbopb "github.com/aeraki-mesh/api/dubbo/v1alpha1"
 
 	"istio.io/istio/pilot/pkg/security/trustdomain"
 )

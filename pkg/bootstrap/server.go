@@ -44,7 +44,8 @@ import (
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	aerakischeme "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/scheme"
+	aerakischeme "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/scheme"
+
 	"github.com/aeraki-mesh/aeraki/pkg/controller/istio"
 	"github.com/aeraki-mesh/aeraki/pkg/controller/kube"
 	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
@@ -315,7 +316,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 		go func() {
 			leaderelection.
 				NewLeaderElection(s.args.RootNamespace, s.args.ServerID, leaderelection.EnvoyFilterController,
-					s.kubeClient).
+					s.kubeClient.Kube()).
 				AddRunFunction(func(leaderStop <-chan struct{}) {
 					aerakiLog.Infof("starting EnvoyFilter creation controller")
 					s.envoyFilterController.Run(stop)

@@ -20,9 +20,10 @@ import (
 	"strconv"
 	"strings"
 
+	_struct "github.com/golang/protobuf/ptypes/struct"
+
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	gogojsonpb "github.com/gogo/protobuf/jsonpb"
-	"github.com/gogo/protobuf/types"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
@@ -195,7 +196,7 @@ func inboundEnvoyFilterName(host string, port int) string {
 	return fmt.Sprintf("aeraki-inbound-%s-%d", host, port)
 }
 
-func generateValue(proxy proto.Message, filterName, filterType string) (*types.Struct, error) {
+func generateValue(proxy proto.Message, filterName, filterType string) (*_struct.Struct, error) {
 	var buf []byte
 	var err error
 
@@ -203,32 +204,32 @@ func generateValue(proxy proto.Message, filterName, filterType string) (*types.S
 		return nil, err
 	}
 
-	var value = &types.Struct{}
+	var value = &_struct.Struct{}
 	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), value); err != nil {
 		return nil, err
 	}
 
-	var out = &types.Struct{}
-	out.Fields = map[string]*types.Value{}
-	out.Fields["@type"] = &types.Value{Kind: &types.Value_StringValue{
+	var out = &_struct.Struct{}
+	out.Fields = map[string]*_struct.Value{}
+	out.Fields["@type"] = &_struct.Value{Kind: &_struct.Value_StringValue{
 		StringValue: "type.googleapis.com/udpa.type.v1.TypedStruct",
 	}}
-	out.Fields["type_url"] = &types.Value{Kind: &types.Value_StringValue{
+	out.Fields["type_url"] = &_struct.Value{Kind: &_struct.Value_StringValue{
 		StringValue: filterType,
 	}}
-	out.Fields["value"] = &types.Value{Kind: &types.Value_StructValue{
+	out.Fields["value"] = &_struct.Value{Kind: &_struct.Value_StructValue{
 		StructValue: value,
 	}}
 
-	return &types.Struct{
-		Fields: map[string]*types.Value{
+	return &_struct.Struct{
+		Fields: map[string]*_struct.Value{
 			"name": {
-				Kind: &types.Value_StringValue{
+				Kind: &_struct.Value_StringValue{
 					StringValue: filterName,
 				},
 			},
 			"typed_config": {
-				Kind: &types.Value_StructValue{StructValue: out},
+				Kind: &_struct.Value_StructValue{StructValue: out},
 			},
 		},
 	}, nil

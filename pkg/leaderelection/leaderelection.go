@@ -18,13 +18,13 @@ import (
 	"context"
 	"time"
 
+	"istio.io/istio/pilot/pkg/leaderelection/k8sleaderelection"
+	"istio.io/istio/pilot/pkg/leaderelection/k8sleaderelection/k8sresourcelock"
+
 	"go.uber.org/atomic"
+	"istio.io/pkg/log"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/leaderelection"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
-
-	"istio.io/pkg/log"
 )
 
 // Various locks used throughout the code
@@ -76,8 +76,8 @@ func (l *LeaderElection) Run(stop <-chan struct{}) {
 	}
 }
 
-func (l *LeaderElection) create() (*leaderelection.LeaderElector, error) {
-	callbacks := leaderelection.LeaderCallbacks{
+func (l *LeaderElection) create() (*k8sleaderelection.LeaderElector, error) {
+	callbacks := k8sleaderelection.LeaderCallbacks{
 		OnStartedLeading: func(ctx context.Context) {
 			log.Infof("leader election lock acquired: %v", l.electionID)
 			for _, f := range l.runFns {
@@ -88,14 +88,14 @@ func (l *LeaderElection) create() (*leaderelection.LeaderElector, error) {
 			log.Infof("leader election lock lost: %v", l.electionID)
 		},
 	}
-	lock := resourcelock.ConfigMapLock{
+	lock := k8sresourcelock.ConfigMapLock{
 		ConfigMapMeta: metaV1.ObjectMeta{Namespace: l.namespace, Name: l.electionID},
 		Client:        l.client.CoreV1(),
-		LockConfig: resourcelock.ResourceLockConfig{
+		LockConfig: k8sresourcelock.ResourceLockConfig{
 			Identity: l.name,
 		},
 	}
-	return leaderelection.NewLeaderElector(leaderelection.LeaderElectionConfig{
+	return k8sleaderelection.NewLeaderElector(k8sleaderelection.LeaderElectionConfig{
 		Lock:          &lock,
 		LeaseDuration: l.ttl,
 		RenewDeadline: l.ttl / 2,

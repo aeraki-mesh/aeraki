@@ -19,7 +19,8 @@ import (
 	"istio.io/istio/pilot/pkg/security/trustdomain"
 	"istio.io/istio/pkg/spiffe"
 
-	dubbov1alpha1 "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	dubbov1alpha1 "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/plugin/dubbo/authz/builder"
 )

@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	metaprotocol "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 
 	"github.com/hashicorp/go-multierror"
 	networking "istio.io/api/networking/v1alpha3"

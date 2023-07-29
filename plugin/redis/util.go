@@ -26,7 +26,8 @@ import (
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/networking/util"
 
-	spec "github.com/aeraki-mesh/aeraki/api/redis/v1alpha1"
+	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 )
 

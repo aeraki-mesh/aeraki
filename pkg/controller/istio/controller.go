@@ -15,7 +15,6 @@
 package istio
 
 import (
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -26,7 +25,6 @@ import (
 
 	"istio.io/istio/security/pkg/nodeagent/cache"
 
-	"github.com/cenkalti/backoff"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/config/memory"
@@ -72,7 +70,7 @@ type Controller struct {
 	options     *Options
 	xdsMCP      *adsc.ADSC
 	Store       istiomodel.ConfigStore
-	configCache istiomodel.ConfigStoreCache
+	configCache *memory.Controller
 }
 
 // NewController creates a new Controller instance based on the provided arguments.
@@ -123,7 +121,6 @@ func (c *Controller) connectIstio() {
 		}.ToStruct(),
 		Workload:                 c.options.PodName,
 		InitialDiscoveryRequests: c.configInitialRequests(),
-		BackoffPolicy:            backoff.NewConstantBackOff(time.Second),
 	}
 
 	for {
@@ -142,7 +139,8 @@ func (c *Controller) connectIstio() {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-		c.xdsMCP.Store = istiomodel.MakeIstioStore(c.configCache)
+		configController := memory.NewController(c.Store)
+		c.xdsMCP.Store = configController
 		if err = c.xdsMCP.Run(); err != nil {
 			controllerLog.Errorf("adsc: failed running %v", err)
 			time.Sleep(5 * time.Second)
@@ -331,26 +329,20 @@ func (c *Controller) shouldHandleGateway(gwConfig *istioconfig.Config) bool {
 }
 
 func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {
-	var rootCert []byte
-	var err error
-
-	if rootCert, err = os.ReadFile(istiodCACertPath); err != nil {
-		log.Fatalf("invalid config -  missing a root certificate %s", istiodCACertPath)
-	}
-
 	// Will use TLS unless the reserved 15010 port is used ( istiod on an ipsec/secure VPC)
 	// rootCert may be nil - in which case the system roots are used, and the CA is expected to have public key
 	// Otherwise assume the injection has mounted /etc/certs/root-cert.pem
 	o := &security.Options{
 		CAEndpoint:        c.options.IstiodAddr,
 		ClusterID:         c.options.ClusterID,
-		JWTPath:           K8sSAJwtFileName,
 		WorkloadNamespace: c.options.NameSpace,
 		TrustDomain:       "cluster.local",
 		ServiceAccount:    "aeraki",
 	}
+	tlsOpts := &citadel.TLSOptions{}
+	tlsOpts.RootCert = istiodCACertPath
 
-	caClient, err := citadel.NewCitadelClient(o, true, rootCert)
+	caClient, err := citadel.NewCitadelClient(o, tlsOpts)
 	if err != nil {
 		return nil, err
 	}

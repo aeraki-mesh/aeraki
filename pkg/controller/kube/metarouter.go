@@ -29,7 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	"github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 )
 
 var metaRouterLog = log.RegisterScope("meta-router-controller", "meta-routerl-controller debugging", 0)

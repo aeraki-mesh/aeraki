@@ -36,7 +36,7 @@ type KeyCertBundle struct {
 
 // GenerateKeyCertBundle generates root ca and server certificate
 func GenerateKeyCertBundle(client kubelib.Client, namespace string) (*KeyCertBundle, error) {
-	caKeyCertBundle, err := getIstioCA(client.CoreV1(), namespace)
+	caKeyCertBundle, err := getIstioCA(client.Kube().CoreV1(), namespace)
 	if err != nil {
 		return nil, err
 	}

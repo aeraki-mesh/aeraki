@@ -17,7 +17,7 @@ package scheme
 import (
 	"reflect"
 
-	githubcomaerakimeshaerakiapimetaprotocolv1alpha1 "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
+	githubcomaerakimeshaerakiapimetaprotocolv1alpha1 "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 
 	istioioapimetav1alpha1 "istio.io/api/meta/v1alpha1"
 	"istio.io/istio/pkg/config/schema/collection"
@@ -31,7 +31,6 @@ var (
 	AerakiMetaprotocolV1Alpha1Applicationprotocols = collection.Builder{
 		Name:         "aeraki/metaprotocol/v1alpha1/applicationprotocols",
 		VariableName: "AerakiMetaprotocolV1Alpha1Applicationprotocols",
-		Disabled:     false,
 		Resource: resource.Builder{
 			Group:   "metaprotocol.aeraki.io",
 			Kind:    "ApplicationProtocol",
@@ -41,7 +40,7 @@ var (
 			//StatusProto: "istio.meta.v1alpha1.IstioStatus",
 			ReflectType:  reflect.TypeOf(&githubcomaerakimeshaerakiapimetaprotocolv1alpha1.ApplicationProtocol{}).Elem(),
 			StatusType:   reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
-			ProtoPackage: "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1",
+			ProtoPackage: "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",
 			//StatusPackage: "istio.io/api/meta/v1alpha1",
 			ClusterScoped: false,
 			ValidateProto: ValidateApplicationProtocol,
@@ -53,7 +52,6 @@ var (
 	AerakiMetaprotocolV1Alpha1Metarouters = collection.Builder{
 		Name:         "aeraki/metaprotocol/v1alpha1/metarouters",
 		VariableName: "AerakiMetaprotocolV1Alpha1Metarouters",
-		Disabled:     false,
 		Resource: resource.Builder{
 			Group:   "metaprotocol.aeraki.io",
 			Kind:    "MetaRouter",
@@ -63,7 +61,7 @@ var (
 			//StatusProto: "istio.meta.v1alpha1.IstioStatus",
 			ReflectType: reflect.TypeOf(&githubcomaerakimeshaerakiapimetaprotocolv1alpha1.MetaRouter{}).Elem(),
 			//StatusType: reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
-			ProtoPackage: "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1",
+			ProtoPackage: "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",
 			//StatusPackage: "istio.io/api/meta/v1alpha1",
 			ClusterScoped: false,
 			ValidateProto: ValidateMetaRouter,

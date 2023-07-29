@@ -34,8 +34,9 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	"github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
 	"github.com/aeraki-mesh/aeraki/pkg/model"
 	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
@@ -137,7 +138,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 
 	// Deleted envoyFilters
 	for i := range existingEnvoyFilters.Items {
-		oldEnvoyFilter := &existingEnvoyFilters.Items[i]
+		oldEnvoyFilter := existingEnvoyFilters.Items[i]
 		if _, ok := generatedEnvoyFilters[envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)]; !ok {
 			controllerLog.Infof("deleting EnvoyFilter: namespace: %s name: %s %v", oldEnvoyFilter.Namespace,
 				oldEnvoyFilter.Name, model.Struct2JSON(oldEnvoyFilter))
@@ -149,7 +150,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 
 	// Changed envoyFilters
 	for i := range existingEnvoyFilters.Items {
-		oldEnvoyFilter := &existingEnvoyFilters.Items[i]
+		oldEnvoyFilter := existingEnvoyFilters.Items[i]
 		mapKey := envoyFilterMapKey(oldEnvoyFilter.Name, oldEnvoyFilter.Namespace)
 		if newEnvoyFilter, ok := generatedEnvoyFilters[mapKey]; ok {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
@@ -367,8 +368,8 @@ func (c *Controller) envoyFilterContext(service *networking.ServiceEntry,
 func (c *Controller) gatewayEnvoyFilterContexts(gatewaySpec *networking.Gateway, gateway *config.Config,
 	portNumber uint32) ([]*model.EnvoyFilterContext, error) {
 	var ctxs []*model.EnvoyFilterContext
-	metaRouterList := metaprotocol.MetaRouterList{}
-	err := c.MetaRouterControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})
+	metaRouterList := &metaprotocol.MetaRouterList{}
+	err := c.MetaRouterControllerClient.List(context.TODO(), metaRouterList, &client.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -397,7 +398,7 @@ func (c *Controller) gatewayEnvoyFilterContexts(gatewaySpec *networking.Gateway,
 						Addresses: []string{"0.0.0.0"},
 					},
 				},
-				MetaRouter: &metaRouterList.Items[i],
+				MetaRouter: metaRouterList.Items[i],
 				VirtualService: buildVirtualServiceWrapper(portNumber, gateway.Name, gateway.Namespace,
 					metaRouterList.Items[i].Spec.Hosts[0]),
 			})
@@ -499,8 +500,8 @@ func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry)
 }
 
 func (c *Controller) findRelatedMetaRouter(service *networking.ServiceEntry) (*metaprotocol.MetaRouter, error) {
-	metaRouterList := metaprotocol.MetaRouterList{}
-	err := c.MetaRouterControllerClient.List(context.TODO(), &metaRouterList, &client.ListOptions{})
+	metaRouterList := &metaprotocol.MetaRouterList{}
+	err := c.MetaRouterControllerClient.List(context.TODO(), metaRouterList, &client.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -509,7 +510,7 @@ func (c *Controller) findRelatedMetaRouter(service *networking.ServiceEntry) (*m
 		for _, host := range metaRouterList.Items[i].Spec.Hosts {
 			// Aeraki now only supports one host in the MetaRouter
 			if host == service.Hosts[0] {
-				return &metaRouterList.Items[i], nil
+				return metaRouterList.Items[i], nil
 			}
 		}
 	}
@@ -551,7 +552,7 @@ func (c *Controller) generateListenerForGateway(ctxs []*model.EnvoyFilterContext
 	// Deleted virtualServices
 	var err error
 	for i := range existingVirtualService.Items {
-		oldVirtualService := &existingVirtualService.Items[i]
+		oldVirtualService := existingVirtualService.Items[i]
 		if _, ok := generatedVirtualService[virtualServiceMapKey(oldVirtualService.Name, oldVirtualService.Namespace)]; !ok {
 			controllerLog.Infof("deleting VirtualService: namespace: %s name: %s %v", oldVirtualService.Namespace,
 				oldVirtualService.Name, model.Struct2JSON(oldVirtualService))
@@ -563,7 +564,7 @@ func (c *Controller) generateListenerForGateway(ctxs []*model.EnvoyFilterContext
 
 	// Changed virtualServices
 	for i := range existingVirtualService.Items {
-		oldVirtualService := &existingVirtualService.Items[i]
+		oldVirtualService := existingVirtualService.Items[i]
 		mapKey := virtualServiceMapKey(oldVirtualService.Name, oldVirtualService.Namespace)
 		if newVirtualService, ok := generatedVirtualService[mapKey]; ok {
 			if !proto.Equal(&newVirtualService.Spec, &oldVirtualService.Spec) {

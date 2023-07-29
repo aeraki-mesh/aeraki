@@ -16,6 +16,7 @@ package xds
 
 import (
 	"context"
+	core "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	serverv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
@@ -44,15 +45,16 @@ func (cb *callbacks) OnStreamOpen(_ context.Context, id int64, typ string) error
 	xdsLog.Infof("stream %d open for %s\n", id, typ)
 	return nil
 }
-func (cb *callbacks) OnStreamClosed(id int64) {
-	xdsLog.Infof("stream %d closed\n", id)
+func (cb *callbacks) OnStreamClosed(id int64, node *core.Node) {
+	xdsLog.Infof("node %s stream %d closed\n", node.Id, id)
 }
+
 func (cb *callbacks) OnDeltaStreamOpen(_ context.Context, id int64, typ string) error {
 	xdsLog.Infof("delta stream %d open for %s\n", id, typ)
 	return nil
 }
-func (cb *callbacks) OnDeltaStreamClosed(id int64) {
-	xdsLog.Infof("delta stream %d closed\n", id)
+func (cb *callbacks) OnDeltaStreamClosed(id int64, node *core.Node) {
+	xdsLog.Infof("node %s delta stream %d closed\n", node.Id, id)
 }
 
 func (cb *callbacks) OnStreamResponse(_ context.Context, _ int64, request *discovery.DiscoveryRequest,

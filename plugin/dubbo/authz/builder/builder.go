@@ -22,9 +22,9 @@ import (
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	dubborulepb "github.com/aeraki-mesh/aeraki/api/dubbo/v1alpha1"
-	dubboapi "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/dubbo/v1alpha1"
-	dubboclient "github.com/aeraki-mesh/aeraki/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
+	dubborulepb "github.com/aeraki-mesh/api/dubbo/v1alpha1"
+	dubboapi "github.com/aeraki-mesh/client-go/pkg/apis/dubbo/v1alpha1"
+	dubboclient "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 
 	rbacpb "github.com/envoyproxy/go-control-plane/envoy/config/rbac/v3"
 	dubbopb "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
@@ -42,16 +42,16 @@ var (
 // Builder builds Istio authorization policy to Envoy RBAC filter.
 type Builder struct {
 	trustDomainBundle trustdomain.Bundle
-	denyPolicies      []dubboapi.DubboAuthorizationPolicy
-	allowPolicies     []dubboapi.DubboAuthorizationPolicy
+	denyPolicies      []*dubboapi.DubboAuthorizationPolicy
+	allowPolicies     []*dubboapi.DubboAuthorizationPolicy
 }
 
 // New returns a new builder for the given workload with the authorization policy.
 // Returns nil if none of the authorization policies are enabled for the workload.
 func New(trustDomainBundle trustdomain.Bundle, namespace string,
 	client dubboclient.DubboV1alpha1Interface) *Builder {
-	allowPolicies := make([]dubboapi.DubboAuthorizationPolicy, 0)
-	denyPolicies := make([]dubboapi.DubboAuthorizationPolicy, 0)
+	allowPolicies := make([]*dubboapi.DubboAuthorizationPolicy, 0)
+	denyPolicies := make([]*dubboapi.DubboAuthorizationPolicy, 0)
 
 	dubboAuthorizationPolicyList, err := client.DubboAuthorizationPolicies(namespace).List(context.TODO(),
 		v1.ListOptions{})
@@ -93,7 +93,7 @@ func (b Builder) BuildDubboFilter() []*dubbopb.DubboFilter {
 	return filters
 }
 
-func build(policies []dubboapi.DubboAuthorizationPolicy, tdBundle trustdomain.Bundle,
+func build(policies []*dubboapi.DubboAuthorizationPolicy, tdBundle trustdomain.Bundle,
 	action rbacpb.RBAC_Action) *rbacpb.RBAC {
 	if len(policies) == 0 {
 		return nil

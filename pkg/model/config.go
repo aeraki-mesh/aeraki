@@ -19,7 +19,7 @@ import (
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/mesh"
 
-	metaprotocol "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 )
 
 // ServiceEntryWrapper wraps an Istio ServiceEntry and its metadata, including name, annotations and labels.

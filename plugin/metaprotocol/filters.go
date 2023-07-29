@@ -33,8 +33,9 @@ import (
 	lrldpl "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/filters/local_ratelimit/v1alpha"
 	mpdataplane "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/v1alpha"
 
-	userapi "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1"
-	mpclient "github.com/aeraki-mesh/aeraki/client-go/pkg/apis/metaprotocol/v1alpha1"
+	userapi "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
+	mpclient "github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
+
 	"github.com/aeraki-mesh/aeraki/pkg/xds"
 )
 
