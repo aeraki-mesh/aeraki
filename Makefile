@@ -56,7 +56,7 @@ uninstall-demo-brpc:
 	bash demo/uninstall-demo.sh brpc
 test: style-check
 	$(GOMOD) tidy
-	$(GOTEST) -race  `go list ./... | grep -v e2e`
+	$(GOTEST) -race  `go list ./pkg/... ./plugin/... | grep -v e2e`
 build: test
 	CGO_ENABLED=0 GOOS=$(IMAGE_OS) GOARCH=$(IMAGE_ARCH) $(GOBUILD) -o $(OUT)/$(IMAGE_ARCH)/$(IMAGE_OS)/$(IMAGE_NAME) $(MAIN_PATH)
 docker-build: build
@@ -72,10 +72,10 @@ cross_build_images:
 clean:
 	rm -rf $(OUT)
 style-check:
-	gofmt -l -d ./
-	goimports -l -d ./
+	gofmt -l -d ./pkg ./plugin
+	goimports -l -d ./pkg ./plugin
 lint:
-	golint ./...
+	golint ./pkg/... ./plugin/...
 	golangci-lint run --tests="false"
 e2e-dubbo:
 	go test -v github.com/aeraki-mesh/aeraki/test/e2e/dubbo/...

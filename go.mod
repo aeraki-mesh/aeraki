@@ -42,6 +42,7 @@ require (
 	github.com/aeraki-mesh/client-go v1.3.0
 	github.com/aeraki-mesh/meta-protocol-control-plane-api v0.0.0-20230205134842-bc2993738de0
 	github.com/apache/thrift v0.18.1
+	github.com/cncf/xds/go v0.0.0-20230105202645-06c439db220b
 	github.com/envoyproxy/go-control-plane v0.10.3
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.3
@@ -58,6 +59,7 @@ require (
 	google.golang.org/protobuf v1.30.0
 	istio.io/api v1.19.0-alpha.1
 	istio.io/client-go v1.18.1
+	istio.io/gogo-genproto v0.0.0-20230705213215-8f59b5a7ddde
 	istio.io/istio v0.0.0-00010101000000-000000000000
 	istio.io/pkg v0.0.0-20221107183613-574f8d141535
 	k8s.io/api v0.28.0-beta.0
@@ -93,7 +95,6 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
-	github.com/cncf/xds/go v0.0.0-20230105202645-06c439db220b // indirect
 	github.com/coreos/go-oidc/v3 v3.4.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
