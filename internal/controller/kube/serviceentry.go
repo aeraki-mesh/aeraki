@@ -40,6 +40,7 @@ import (
 
 var serviceEntryLog = log.RegisterScope("service-entry-controller", "service-entry-controller debugging", 0)
 
+// nolint: dupl
 var (
 	serviceEntryPredicates = predicate.Funcs{
 		CreateFunc: func(e event.CreateEvent) bool {

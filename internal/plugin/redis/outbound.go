@@ -107,7 +107,7 @@ func (g *Generator) buildOutboundProxy(ctx context.Context, c *model.EnvoyFilter
 		}
 		return proxy, nil
 	}
-	generatorLog.Debugf("redis service: %s", rs.Spec)
+	generatorLog.Debugf("redis service: %s", &rs.Spec)
 	for _, r := range rs.Spec.Redis {
 		route, all := g.buildPrefixRoute(r, hostServices, listenPort, listenPortName)
 		if all {

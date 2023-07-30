@@ -146,7 +146,8 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 		}
 	} else {
 		log.Info("Use local CA certificate")
-		caOpts, err = ca.NewPluggedCertIstioCAOptions(fileBundle, workloadCertTTL.Get(), maxWorkloadCertTTL.Get(), caRSAKeySize.Get())
+		caOpts, err = ca.NewPluggedCertIstioCAOptions(fileBundle, workloadCertTTL.Get(),
+			maxWorkloadCertTTL.Get(), caRSAKeySize.Get())
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to create an istiod CA: %v", err)

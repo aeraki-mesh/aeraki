@@ -189,7 +189,7 @@ func (c *Controller) toEnvoyFilterCRD(newEf *model.EnvoyFilterWrapper,
 				"manager": constants.AerakiFieldManager,
 			},
 		},
-		Spec: *newEf.Envoyfilter,
+		Spec: *newEf.Envoyfilter.DeepCopy(),
 	}
 	if oldEf != nil {
 		envoyFilter.ResourceVersion = oldEf.ResourceVersion

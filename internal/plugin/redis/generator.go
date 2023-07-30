@@ -96,7 +96,7 @@ func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilt
 	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace,
 		filterContext.ServiceEntry.Name, portName)
 	// copy and replace ports
-	spec := *filterContext.ServiceEntry.Spec
+	spec := *filterContext.ServiceEntry.Spec.DeepCopy()
 	spec.Ports = []*networking.Port{targetPort}
 	filters := envoyfilter.GenerateReplaceNetworkFilter(
 		filterContext.ServiceEntry,
