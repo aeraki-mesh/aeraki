@@ -10,7 +10,7 @@ env:
   COMMON_DIR: test/e2e/common
   AERAKI_IMG_PULL_POLICY: Never
 jobs:
-  TestVersionRouting:
+  TestGatewayVersionRouting:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
