@@ -175,7 +175,7 @@ func sh(ctx context.Context, format string, logCommand, logOutput, logError bool
 // RunBackground starts a background process and return the Process if succeed
 func RunBackground(format string, args ...interface{}) (*os.Process, error) {
 	command := fmt.Sprintf(format, args...)
-	log.Infoa("RunBackground: ", command)
+	log.Infof("RunBackground: ", command)
 	parts := strings.Split(command, " ")
 	c := exec.Command(parts[0], parts[1:]...) // #nosec
 	err := c.Start()

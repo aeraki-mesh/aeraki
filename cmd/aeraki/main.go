@@ -23,14 +23,14 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/aeraki-mesh/aeraki/pkg/bootstrap"
-	"github.com/aeraki-mesh/aeraki/pkg/config/constants"
-	"github.com/aeraki-mesh/aeraki/pkg/envoyfilter"
-	"github.com/aeraki-mesh/aeraki/pkg/model/protocol"
-	"github.com/aeraki-mesh/aeraki/plugin/kafka"
-	"github.com/aeraki-mesh/aeraki/plugin/metaprotocol"
-	"github.com/aeraki-mesh/aeraki/plugin/thrift"
-	"github.com/aeraki-mesh/aeraki/plugin/zookeeper"
+	"github.com/aeraki-mesh/aeraki/internal/bootstrap"
+	"github.com/aeraki-mesh/aeraki/internal/config/constants"
+	"github.com/aeraki-mesh/aeraki/internal/envoyfilter"
+	"github.com/aeraki-mesh/aeraki/internal/model/protocol"
+	"github.com/aeraki-mesh/aeraki/internal/plugin/kafka"
+	"github.com/aeraki-mesh/aeraki/internal/plugin/metaprotocol"
+	"github.com/aeraki-mesh/aeraki/internal/plugin/thrift"
+	"github.com/aeraki-mesh/aeraki/internal/plugin/zookeeper"
 
 	"istio.io/pkg/log"
 )
