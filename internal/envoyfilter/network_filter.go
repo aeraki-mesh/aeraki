@@ -15,7 +15,6 @@
 package envoyfilter
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -23,7 +22,6 @@ import (
 	_struct "github.com/golang/protobuf/ptypes/struct"
 
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
-	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
@@ -205,7 +203,7 @@ func generateValue(proxy proto.Message, filterName, filterType string) (*_struct
 	}
 
 	var value = &_struct.Struct{}
-	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), value); err != nil {
+	if err := protojson.Unmarshal(buf, value); err != nil {
 		return nil, err
 	}
 
