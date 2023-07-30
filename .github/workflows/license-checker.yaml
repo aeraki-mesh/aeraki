@@ -20,8 +20,21 @@
 ---
 name: License checker
 
-on: [pull_request, push]
-
+on:
+  push:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
+  pull_request:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
 
 jobs:
   check-license:
