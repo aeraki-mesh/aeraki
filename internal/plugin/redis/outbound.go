@@ -167,6 +167,7 @@ func (g *Generator) buildAuth(proxy *redis.RedisProxy, rs *v1alpha1.RedisService
 		return err
 	}
 	if password != "" {
+		// nolint: staticcheck
 		proxy.DownstreamAuthPassword = inlineString(password)
 	}
 	if username != "" {
