@@ -1,7 +1,21 @@
 ---
 name: e2e-redis
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
+  pull_request:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
 
 env:
   ISTIO_VERSION: 1.16.5
