@@ -8,6 +8,7 @@
 // - "metadata/namespace" tells which namespace the policy applies. If set to root
 // namespace, the policy applies to all namespaces in a mesh.
 
+// deprecated
 package v1alpha1
 
 import (

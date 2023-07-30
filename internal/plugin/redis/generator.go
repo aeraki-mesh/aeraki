@@ -15,7 +15,6 @@
 package redis
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"strings"
@@ -30,7 +29,6 @@ import (
 	"github.com/aeraki-mesh/client-go/pkg/clientset/versioned"
 	redisv1alpha1 "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
 
-	gogojsonpb "github.com/gogo/protobuf/jsonpb"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
@@ -164,7 +162,7 @@ func valueOf(message proto.Message) (out *_struct.Struct, err error) {
 	}
 
 	out = &_struct.Struct{}
-	if err := (&gogojsonpb.Unmarshaler{AllowUnknownFields: false}).Unmarshal(bytes.NewBuffer(buf), out); err != nil {
+	if err := protojson.Unmarshal(buf, out); err != nil {
 		return nil, err
 	}
 	return out, nil

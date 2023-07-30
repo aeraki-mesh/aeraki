@@ -23,8 +23,8 @@ import (
 	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pkg/config"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/zhaohuabing/debounce"
+	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	istiomodel "istio.io/istio/pilot/pkg/model"
