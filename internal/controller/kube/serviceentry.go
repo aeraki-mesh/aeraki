@@ -55,7 +55,8 @@ var (
 				if !ok {
 					return false
 				}
-				if !reflect.DeepEqual(old.Spec, new.Spec) {
+				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+					old.GetGeneration() != new.GetGeneration() {
 					return true
 				}
 			default:

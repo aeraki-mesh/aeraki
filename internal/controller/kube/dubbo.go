@@ -16,8 +16,6 @@ package kube
 
 import (
 	"context"
-	"reflect"
-
 	"istio.io/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -83,8 +81,7 @@ var (
 				if !ok {
 					return false
 				}
-				if !reflect.DeepEqual(old.Spec, new.Spec) ||
-					old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
+				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
 					old.GetGeneration() != new.GetGeneration() {
 					return true
 				}
