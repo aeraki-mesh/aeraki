@@ -155,7 +155,7 @@ func (c *Controller) pushEnvoyFilters2APIServer() error {
 		if newEnvoyFilter, ok := generatedEnvoyFilters[mapKey]; ok {
 			if !proto.Equal(newEnvoyFilter.Envoyfilter, &oldEnvoyFilter.Spec) {
 				controllerLog.Infof("updating EnvoyFilter: namespace: %s name: %s %v", newEnvoyFilter.Namespace,
-					newEnvoyFilter.Name, model.Struct2JSON(*newEnvoyFilter.Envoyfilter))
+					newEnvoyFilter.Name, model.Struct2JSON(newEnvoyFilter.Envoyfilter))
 				_, err = c.istioClientset.NetworkingV1alpha3().EnvoyFilters(newEnvoyFilter.Namespace).Update(context.TODO(),
 					c.toEnvoyFilterCRD(newEnvoyFilter, oldEnvoyFilter),
 					v1.UpdateOptions{FieldManager: constants.AerakiFieldManager})
