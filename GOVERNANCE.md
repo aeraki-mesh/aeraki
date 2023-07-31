@@ -30,6 +30,27 @@ The Aeraki Mesh and its leadership embrace the following values:
   participation, and there is a clear path up the contributor ladder into leadership
   positions.
 
+## Steering Committee
+
+The steering committee is a governing body that makes directional and strategic decisions for 
+the Aeraki Mesh project. It will also decide on any changes on its governance, marketing and 
+future direction. Seats will be tied to organizations and not individuals and will be valid for 
+1 year from the start date.
+
+&nbsp; | Name                                                   | Company
+---|--------------------------------------------------------|---
+<img width="30px" src="https://avatars.githubusercontent.com/u/1321762"> | [Huabing Zhao](https://github.com/zhaohuabing) | Aeraki Mesh Founder
+<img width="30px" src="https://avatars.githubusercontent.com/u/19339970">  | [Tanjun Chen](https://github.com/tanjunchen)  | Baidu
+
+Steering seats will be evaluated once per year and new people/organizations can be nominated
+for being added to the steering committee based on contribution to the project or being a
+valuable end user. The existing steering committee will decide on any changes to the steering 
+committee based on what is best for the project and community.
+
+Organizations can also be removed from the steering committee due to lack of project commitment
+on the same yearly basis. This will be determined by a majority vote of the existing committee.
+The exception to this is the Aeraki Mesh founder seat which is a permanent seat.
+
 ## Maintainers
 
 Aeraki Mesh Maintainers have write access to the corresponding project GitHub repository.
