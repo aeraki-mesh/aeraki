@@ -20,11 +20,12 @@ Aeraki Mesh Maintainers are given in the list below, in no particular order.
 
 ## Maintainers
 
-| Maintainer Name |           Repos             |                 Github Name                         |      Company      |
-| :-------------: | :-------------------------: | :-------------------------------------------------: | :---------------: |
-|   Huabing Zhao  | Aeraki, meta-protocol-proxy | [zhaohuabing](https://github.com/zhaohuabing)       |      Tencent      |
-|   huanghuangzym | meta-protocol-proxy         | [huanghuangzym](https://github.com/huanghuangzym)   |      Alauda       |
-|   smwyzi        | meta-protocol-proxy         | [smwyzi](https://github.com/smwyzi)                 |      Baidu        |
-|   whitefirer    | Aeraki                      | [whitefirer](https://github.com/whitefirer)         |   Tencent Music   |
-|  Sad-polar-bear | Aeraki                      | [Sad-polar-bear](https://github.com/Sad-polar-bear) |   BOSS Zhipin     |
-|   Xunzhuo Liu       | Aeraki                      | [Xunzhuo](https://github.com/Xunzhuo)               |      Tencent      |
+|                                                                           |                        Name                         |    Company    |            Repos            |
+|:-------------------------------------------------------------------------:|:---------------------------------------------------:|:-------------:|:---------------------------:|
+| <img width="30px" src="https://avatars.githubusercontent.com/u/1321762">  |    [zhaohuabing](https://github.com/zhaohuabing)    |  Tetrate.io   | aeraki, meta-protocol-proxy |
+| <img width="30px" src="https://avatars.githubusercontent.com/u/15240576"> |  [huanghuangzym](https://github.com/huanghuangzym)  |    Alauda     |     meta-protocol-proxy     | 
+| <img width="30px" src="https://avatars.githubusercontent.com/u/3876735">  |         [smwyzi](https://github.com/smwyzi)         |     Baidu     |     meta-protocol-proxy     |
+| <img width="30px" src="https://avatars.githubusercontent.com/u/12084604"> |     [whitefirer](https://github.com/whitefirer)     | Tencent Music |           aeraki            |
+| <img width="30px" src="https://avatars.githubusercontent.com/u/28644213"> | [Sad-polar-bear](https://github.com/Sad-polar-bear) |  BOSS Zhipin  |           aeraki            |
+| <img width="30px" src="https://avatars.githubusercontent.com/u/48784001"> |        [Xunzhuo](https://github.com/Xunzhuo)        |    Tencent    |           aeraki            |
+| <img width="30px" src="https://avatars.githubusercontent.com/u/19339970"> |     [tanjunchen](https://github.com/tanjunchen)     |     Bdidu     |           aeraki            |
