@@ -41,6 +41,7 @@ future direction. Seats will be tied to organizations and not individuals and wi
 ---|--------------------------------------------------------|---
 <img width="30px" src="https://avatars.githubusercontent.com/u/1321762"> | [Huabing Zhao](https://github.com/zhaohuabing) | Aeraki Mesh Founder
 <img width="30px" src="https://avatars.githubusercontent.com/u/19339970">  | [Tanjun Chen](https://github.com/tanjunchen)  | Baidu
+<img width="30px" src="https://avatars.githubusercontent.com/u/15240576">  | [huanghuangzym](https://github.com/huanghuangzym)  | Alauda
 
 Steering seats will be evaluated once per year and new people/organizations can be nominated
 for being added to the steering committee based on contribution to the project or being a
