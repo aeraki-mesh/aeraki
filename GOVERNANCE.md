@@ -1,6 +1,7 @@
 # Project Governance
 
 - [Values](#values)
+- [Steering Committee](#steering-committee)
 - [Maintainers](#maintainers)
 - [Becoming a Maintainer](#becoming-a-maintainer)
 - [Meetings](#meetings)
@@ -37,11 +38,11 @@ the Aeraki Mesh project. It will also decide on any changes on its governance, m
 future direction. Seats will be tied to organizations and not individuals and will be valid for 
 1 year from the start date.
 
-&nbsp; | Name                                                   | Company
----|--------------------------------------------------------|---
+&nbsp; | Name                                                   | Company | End Date
+-------|--------------------------------------------------------|---------|---------
 <img width="30px" src="https://avatars.githubusercontent.com/u/1321762"> | [Huabing Zhao](https://github.com/zhaohuabing) | Aeraki Mesh Founder
-<img width="30px" src="https://avatars.githubusercontent.com/u/19339970">  | [Tanjun Chen](https://github.com/tanjunchen)  | Baidu
-<img width="30px" src="https://avatars.githubusercontent.com/u/15240576">  | [huanghuangzym](https://github.com/huanghuangzym)  | Alauda
+<img width="30px" src="https://avatars.githubusercontent.com/u/19339970">  | [Tanjun Chen](https://github.com/tanjunchen)  | Baidu | 7/31/2024
+<img width="30px" src="https://avatars.githubusercontent.com/u/15240576">  | [huanghuangzym](https://github.com/huanghuangzym)  | Alauda | 7/31/2024
 
 Steering seats will be evaluated once per year and new people/organizations can be nominated
 for being added to the steering committee based on contribution to the project or being a
