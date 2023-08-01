@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +15,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
 
 kubectl create ns meta-thrift
-kubectl label namespace meta-thrift istio-injection=enabled --overwrite=true
-kubectl apply -f $BASEDIR/../../k8s/aeraki-bootstrap-config.yaml -n meta-thrift
+LabelIstioInjectLabel meta-thrift
+
 kubectl apply -f $BASEDIR/thrift-sample.yaml -n meta-thrift
 kubectl apply -f $BASEDIR/destinationrule.yaml -n meta-thrift
 kubectl create cm rate-limit-config -n meta-thrift --from-file $BASEDIR/rate-limit-server/config.yaml

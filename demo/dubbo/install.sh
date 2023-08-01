@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +15,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
 
 kubectl create ns dubbo
-kubectl label namespace dubbo istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel dubbo
+
 kubectl apply -f $BASEDIR/dubbo-sample.yaml -n dubbo
 kubectl apply -f $BASEDIR/serviceentry.yaml -n dubbo
 kubectl apply -f $BASEDIR/destinationrule.yaml -n dubbo

@@ -31,3 +31,24 @@ spec:
   selector:
     app: aeraki
 {{- end }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: aeraki
+  name: aeraki
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - name: grpc-xds
+      port: 15010
+      protocol: TCP
+      targetPort: 15010
+    - name: https-validation
+      port: 443
+      protocol: TCP
+      targetPort: 15017
+  selector:
+    app: aeraki

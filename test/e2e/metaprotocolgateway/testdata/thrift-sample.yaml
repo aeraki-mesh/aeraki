@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrift-sample-server-v1
+  labels:
+    app: thrift-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: thrift-sample-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: thrift-sample-server
+        version: v1
+    spec:
+      containers:
+        - name: thrift-sample-server
+          image: aeraki/thrift-sample-server
+          ports:
+            - containerPort: 9090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thrift-sample-server-v2
+  labels:
+    app: thrift-sample-server
+spec:
+  selector:
+    matchLabels:
+      app: thrift-sample-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: thrift-sample-server
+        version: v2
+    spec:
+      containers:
+        - name: thrift-sample-server
+          image: aeraki/thrift-sample-server
+          ports:
+            - containerPort: 9090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: thrift-sample-server
+spec:
+  selector:
+    app: thrift-sample-server
+  ports:
+    - name: tcp-metaprotocol-thrift-9090
+      protocol: TCP
+      port: 9090
+      targetPort: 9090

@@ -22,6 +22,12 @@ import "google/protobuf/wrappers.proto";
 // $description: MetaRouter defines route policies for MetaProtocol proxy.
 //
 // MetaRouter defines route policies for MetaProtocol proxy.
+// *Note*: Only one MetaRouter should be defined for a MetaProtocol service.
+// If more than one MetaRouters are found for a service, Aeraki will choose
+// a random one to apply to that service.
+//
+// *Note *: MetaRouter is a mesh-scoped resource, so no matter which namespace
+// the MetaRouter is in, it will take effect on the services specified in the hosts.
 //
 // ```yaml
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
@@ -32,6 +38,8 @@ import "google/protobuf/wrappers.proto";
 // spec:
 //   hosts:
 //   - org.apache.dubbo.samples.basic.api.demoservice
+//   gateways:
+//   - istio-system/ingress-gateway
 //   routes:
 //   - name: v1
 //     match:
@@ -91,10 +99,37 @@ option go_package = "github.com/aeraki-mesh/aeraki/api/metaprotocol/v1alpha1";
 // +k8s:deepcopy-gen=true
 // -->
 message MetaRouter {
+  // The destination service to which traffic is being sent.
+  // *Note for Kubernetes users*: It must be a fully qualified domain name
+  // (FQDN), (e.g. "thrift-sample-server.meta-thrift.svc.cluster.local" )
+  // instead of a short name (e.g. "thrift-sample-server").
+  // *Note*: Only one host is supported now. If multiple hosts are specified,
+  // Only the first one takes effect.
   repeated string hosts = 1;
-  repeated MetaRoute routes = 2;
-  LocalRateLimit local_rate_limit= 3;
-  GlobalRateLimit global_rate_limit= 4;
+  // The names of gateways and sidecars that should apply these routes. The usage of
+  //  this field is the same as istio.io/VirtualService
+  repeated string gateways = 2;
+  // An ordered list of route rules for MetaProtocol traffic. The route rules
+  // will be applied to service ports named "tcp-metaprotocol-${applicationProtocol}-*",
+  // (e.g. "tcp-metaprotocol-thrift-hello-server"). Order maters in the routes,
+  // The first rule matching an incoming request is used.
+  repeated MetaRoute routes = 3;
+  // Loacal rate limit policy.
+  LocalRateLimit local_rate_limit= 4;
+  // Global rate limit policy.
+  GlobalRateLimit global_rate_limit= 5;
+  // A list of namespaces to which this MetaRouter is exported. Exporting a
+  // MetaRouter allows it to be used by sidecars defined in other namespaces.
+  // This feature provides a mechanism for service owners and mesh administrators
+  // to control the visibility of MetaRouter across namespace boundaries.
+  //
+  // If no namespaces are specified then the MetaRouter is exported to all namespaces
+  // by default.
+  //
+  // The value "." is reserved and defines an export to the same namespace that
+  // the MetaRouter is declared in. Similarly the value "*" is reserved and
+  // defines an export to all namespaces.
+  repeated string export_to = 20;
 }
 
 // Describes match conditions and actions for routing MetaProtocol.
@@ -114,12 +149,12 @@ message MetaRoute {
 
   //MetaFaultInjection fault = 4;
 
-  //MetaDestination mirror = 5;
+  Destination mirror = 5;
 
   // Percentage of the traffic to be mirrored by the `mirror` field.
   // If this field is absent, all the traffic (100%) will be mirrored.
   // Max value is 100.
-  // Percent mirror_percentage = 6;
+  Percent mirror_percentage = 6;
 
   // Specifies a list of key-value pairs that should be mutated for each request. How to interpret the key-value pairs
   // depends on the codec implementation
@@ -221,10 +256,10 @@ message LocalRateLimit {
   // Configures a token bucket which is used for rate limiting.
   message TokenBucket {
     // The maximum tokens that the bucket can hold. This is also the number of tokens that the bucket
-    // initially contains. The value must be greater than 1.
+    // initially contains. The value must be greater than 0.
     uint32 max_tokens = 1;
 
-    // The number of tokens added to the bucket during each fill interval. The value must be greater than 1.
+    // The number of tokens added to the bucket during each fill interval. The value must be greater than 0.
     //If not specified, defaults to a single token.
     google.protobuf.UInt32Value tokens_per_fill = 2;
 
@@ -295,4 +330,9 @@ message GlobalRateLimit {
 
   // Defines what properties in the requests should be sent to the rate limit service
   repeated GlobalRateLimit.Descriptor descriptors = 6 [(google.api.field_behavior) = REQUIRED];
+}
+
+// Percent specifies a percentage in the range of [0.0, 100.0].
+message Percent {
+  double value = 1;
 }

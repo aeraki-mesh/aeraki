@@ -20,7 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/lazyxds/pkg/utils/log"
+	"istio.io/pkg/log"
+
 	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 )
 

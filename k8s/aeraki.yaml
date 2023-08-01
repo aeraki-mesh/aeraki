@@ -17,7 +17,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
   labels:
     app: aeraki
 spec:
@@ -35,7 +35,37 @@ spec:
       serviceAccountName: aeraki
       containers:
         - name: aeraki
-          image: aeraki/aeraki:${AERAKI_TAG}
+          image: ${AERAKI_IMAGE}:${AERAKI_TAG}
+          args:
+            - /usr/local/bin/aeraki
+            - --master=true
+            - --enable-envoy-filter-namespace-scope=false
+          # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
+          imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 15010
+            protocol: TCP
+          - containerPort: 15017
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 5
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "250m"
+            limits:
+              memory: "4Gi"
+              cpu: "1000m"
           env:
             - name: AERAKI_IS_MASTER
               value: "${AERAKI_IS_MASTER}"
@@ -46,10 +76,20 @@ spec:
             # In case of TCM, Istio config store can be a different k8s API server from the one Aeraki is running with
             - name: AERAKI_ISTIO_CONFIG_STORE_SECRET
               value: ${AERAKI_ISTIO_CONFIG_STORE_SECRET}
-            - name: AERAKI_XDS_LISTEN_ADDR
-              value: ":15010"
+            - name: AERAKI_XDS_ADDR
+              value: ${AERAKI_XDS_ADDR}
+            - name: AERAKI_XDS_PORT
+              value: ${AERAKI_XDS_PORT}
+            - name: AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE
+              # False(Default): The generated envoyFilters will be placed under Istio root namespace
+              # True: The generated envoyFilters will be placed under the service namespace
+              value: "${AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE}"
             - name: AERAKI_LOG_LEVEL
               value: "all:debug"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: AERAKI_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -72,15 +112,19 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: aeraki-xds
-  name: aeraki-xds
-  namespace: istio-system
+    app: aeraki
+  name: aeraki
+  namespace: ${AERAKI_NAMESPACE}
 spec:
   ports:
     - name: grpc-xds
       port: 15010
       protocol: TCP
       targetPort: 15010
+    - name: https-validation
+      port: 443
+      protocol: TCP
+      targetPort: 15017
   selector:
     app: aeraki
 ---
@@ -88,7 +132,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -96,7 +140,7 @@ metadata:
   labels:
     app: aeraki
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 rules:
   - apiGroups:
       - ""
@@ -105,11 +149,11 @@ rules:
       - events
     verbs:
       - '*'
-  - verbs:
-      - '*'
-    apiGroups:
+  - apiGroups:
       - coordination.k8s.io
     resources:
+      - '*'
+    verbs:
       - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -118,7 +162,7 @@ metadata:
   labels:
     app: aeraki
   name: aeraki
-  namespace: istio-system
+  namespace: ${AERAKI_NAMESPACE}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -138,16 +182,16 @@ rules:
       - ""
     resources:
       - secrets
+      - namespaces
+      - configmaps
     verbs:
-      - get
+      - '*'
   - apiGroups:
       - networking.istio.io
     resources:
       - '*'
     verbs:
-      - get
-      - watch
-      - list
+      - '*'
   - apiGroups:
       - redis.aeraki.io
       - dubbo.aeraki.io
@@ -155,13 +199,7 @@ rules:
     resources:
       - '*'
     verbs:
-      - get
-      - watch
-      - list
-      - update
-      - patch
-      - create
-      - delete
+      - '*'
   - apiGroups:
       - networking.istio.io
     resources:
@@ -170,13 +208,13 @@ rules:
       - envoyfilters
       - serviceentries
     verbs:
-      - get
-      - watch
-      - list
-      - update
-      - patch
-      - create
-      - delete
+      - '*'
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -191,13 +229,12 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: aeraki
-    namespace: istio-system
+    namespace: ${AERAKI_NAMESPACE}
 ---
 apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: dubbo
-  namespace: istio-system
 spec:
   protocol: dubbo
   codec: aeraki.meta_protocol.codec.dubbo
@@ -206,7 +243,6 @@ apiVersion: metaprotocol.aeraki.io/v1alpha1
 kind: ApplicationProtocol
 metadata:
   name: thrift
-  namespace: istio-system
 spec:
   protocol: thrift
   codec: aeraki.meta_protocol.codec.thrift

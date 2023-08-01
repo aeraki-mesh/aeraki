@@ -54,20 +54,20 @@ spec:
     - port: 20001
     route:
     - destination:
-        host: kiali.istio-system.svc.cluster.local
+        host: kiali.${ISTIO_NAMESPACE}.svc.cluster.local
         port:
           number: 20001
   - match:
     - port: 3000
     route:
     - destination:
-        host: grafana.istio-system.svc.cluster.local
+        host: grafana.${ISTIO_NAMESPACE}.svc.cluster.local
         port:
           number: 3000
   - match:
     - port: 9090
     route:
     - destination:
-        host: prometheus.istio-system.svc.cluster.local
+        host: prometheus.${ISTIO_NAMESPACE}.svc.cluster.local
         port:
           number: 9090

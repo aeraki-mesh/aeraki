@@ -1,6 +1,20 @@
 ---
 name: ci
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
+  pull_request:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
 jobs:
   yamllint:
     name: yamllint
@@ -14,7 +28,7 @@ jobs:
           config_file: .ci/yamllint.yml
           strict: true
   build-and-test:
-    name: build and test
+    name: build-and-test
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -22,11 +36,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.19
       - name: Build
-        run: go build -race  ./...
+        run: go build -race  ./internal/...
       - name: Test
-        run: go test -race  `go list ./... | grep -v e2e`
+        run: go test -race  `go list ./internal/... | grep -v e2e`
   go-lint:
     name: go-lint
     runs-on: ubuntu-latest
@@ -36,17 +50,18 @@ jobs:
       - name: golint
         uses: Jerome1337/golint-action@v1.0.2
         with:
-          golint-path: './...'
+          golint-path: './internal/...'
       - name: Setup Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.19
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3.1.0
         with:
           args: --timeout=10m --tests="false"
+          version: v1.47.0
   style-check:
-    name: gofmt and goimports
+    name: style-check
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -54,21 +69,21 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.16
+          go-version: 1.19
       - name: Install dependencies
         run: |
           go version
-          go get golang.org/x/tools/cmd/goimports
+          go install golang.org/x/tools/cmd/goimports@latest
       - name: gofmt and goimports
         run: make style-check
   checkgomod:
-    name: check go.mod and go.sum
+    name: go-mod-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v1
         with:
-          go-version: 1.16
+          go-version: 1.19
       - run: go mod tidy
       - name: Check for changes in go.mod or go.sum
         run: |

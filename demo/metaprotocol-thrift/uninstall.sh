@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,4 +20,4 @@ kubectl delete -f $BASEDIR/thrift-sample.yaml -n meta-thrift
 kubectl delete -f $BASEDIR/destinationrule.yaml -n meta-thrift
 kubectl delete cm rate-limit-config -n meta-thrift
 kubectl delete -f $BASEDIR/rate-limit-server/rate-limit-server.yaml -n meta-thrift
-kubectl delete ns meta-thrift
+kubectl delete ns meta-thrift || true

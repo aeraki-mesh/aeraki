@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.3.1
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
         - name: thrift-sample-server
-          image: aeraki/thrift-sample-server
+          image: ghcr.io/aeraki-mesh/thrift-sample-server
           ports:
             - containerPort: 9090
 ---
@@ -55,7 +55,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.3.1
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
         - name: thrift-sample-server
-          image: aeraki/thrift-sample-server
+          image: ghcr.io/aeraki-mesh/thrift-sample-server
           ports:
             - containerPort: 9090
 ---
@@ -82,14 +82,14 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy:1.0.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.3.1
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-client
     spec:
       containers:
         - name: thrift-sample-client
-          image: aeraki/thrift-sample-client
+          image: ghcr.io/aeraki-mesh/thrift-sample-client
           env:
             - name: helloServer
               value: "thrift-sample-server"

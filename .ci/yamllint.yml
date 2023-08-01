@@ -6,6 +6,7 @@ ignore: |
   manifests/charts/aeraki/templates/deployment.yaml
   manifests/charts/aeraki/templates/service.yaml
   manifests/charts/aeraki/templates/serviceaccount.yaml
+  manifests/charts/aeraki/templates/tcmapiservice.yaml
   k8s/crd.yaml
 
 yaml-files:

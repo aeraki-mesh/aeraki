@@ -40,17 +40,7 @@ jobs:
         run: |
           make docker-build tag=${{ steps.tag_env.outputs.version }}
 
-      - name: Build LazyXDS Docker Image
-        if: ${{ startsWith(steps.tag_type.outputs.version, 'lazyxds/') }}
-        run: |
-          make docker-build.lazyxds tag=${{ steps.tag_env.outputs.version }}
-
       - name: Push Aeraki Docker image
         if: ${{ startsWith(steps.tag_type.outputs.version, 'aeraki/') }}
         run: |
-          docker push aeraki/aeraki:${{ steps.tag_env.outputs.version }}
-
-      - name: Push LazyXDS Docker image
-        if: ${{ startsWith(steps.tag_type.outputs.version, 'lazyxds/') }}
-        run: |
-          docker push aeraki/lazyxds:${{ steps.tag_env.outputs.version }}
+          docker push ghcr.io/aeraki-mesh/aeraki:${{ steps.tag_env.outputs.version }}

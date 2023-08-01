@@ -16,3 +16,21 @@ spec:
     labels:
       app: dubbo-sample-provider
   resolution: STATIC
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: dubbo-secondservice
+  annotations:
+    interface: org.apache.dubbo.samples.basic.api.SecondService
+spec:
+  hosts:
+    - org.apache.dubbo.samples.basic.api.secondservice
+  ports:
+    - number: 20880
+      name: tcp-metaprotocol-dubbo
+      protocol: TCP
+  workloadSelector:
+    labels:
+      app: dubbo-sample-second-provider
+  resolution: STATIC

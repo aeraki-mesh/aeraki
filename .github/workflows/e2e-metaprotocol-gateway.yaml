@@ -1,0 +1,55 @@
+---
+name: e2e-metaprotocolgateway
+
+on:
+  push:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
+  pull_request:
+    branches:
+    - "master"
+    - "release/v*"
+    paths-ignore:
+    - "**/*.png"
+    - "**/*.md"
+
+env:
+  ISTIO_VERSION: 1.16.5
+  ISTIO_NAMESPACE: istio-system
+  SCRIPTS_DIR: test/e2e/scripts
+  COMMON_DIR: test/e2e/common
+  AERAKI_IMG_PULL_POLICY: Never
+jobs:
+  TestGatewayVersionRouting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: true
+    name: TestGatewayVersionRouting
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+      - name: Install dependencies
+        run: |
+          go version
+          go install golang.org/x/tools/cmd/goimports@latest
+      - name: build docker
+        run: make docker-build-e2e
+      - name: Prepare envrionment
+        run: bash ${SCRIPTS_DIR}/pre.sh
+      - name: Install Minikube
+        run: bash ${SCRIPTS_DIR}/minikube.sh start
+      - name: Install Istio
+        run: bash ${SCRIPTS_DIR}/istio.sh
+      - name: Install aeraki
+        run: bash ${SCRIPTS_DIR}/aeraki.sh
+      - name: test
+        run: go test -v github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/ -run TestThriftRouter

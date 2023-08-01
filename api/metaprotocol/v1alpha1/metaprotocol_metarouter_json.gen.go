@@ -6,6 +6,12 @@
 // $description: MetaRouter defines route policies for MetaProtocol proxy.
 //
 // MetaRouter defines route policies for MetaProtocol proxy.
+// *Note*: Only one MetaRouter should be defined for a MetaProtocol service.
+// If more than one MetaRouters are found for a service, Aeraki will choose
+// a random one to apply to that service.
+//
+// *Note *: MetaRouter is a mesh-scoped resource, so no matter which namespace
+// the MetaRouter is in, it will take effect on the services specified in the hosts.
 //
 // ```yaml
 // apiVersion: metaprotocol.aeraki.io/v1alpha1
@@ -16,6 +22,8 @@
 // spec:
 //   hosts:
 //   - org.apache.dubbo.samples.basic.api.demoservice
+//   gateways:
+//   - istio-system/ingress-gateway
 //   routes:
 //   - name: v1
 //     match:
@@ -208,6 +216,17 @@ func (this *GlobalRateLimit_Descriptor) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is a custom unmarshaler for GlobalRateLimit_Descriptor
 func (this *GlobalRateLimit_Descriptor) UnmarshalJSON(b []byte) error {
+	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
+}
+
+// MarshalJSON is a custom marshaler for Percent
+func (this *Percent) MarshalJSON() ([]byte, error) {
+	str, err := MetaprotocolMetarouterMarshaler.MarshalToString(this)
+	return []byte(str), err
+}
+
+// UnmarshalJSON is a custom unmarshaler for Percent
+func (this *Percent) UnmarshalJSON(b []byte) error {
 	return MetaprotocolMetarouterUnmarshaler.Unmarshal(bytes.NewReader(b), this)
 }
 

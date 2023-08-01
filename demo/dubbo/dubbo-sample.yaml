@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: dubbo-sample-provider
-          image: aeraki/dubbo-sample-provider
+          image: ghcr.io/aeraki-mesh/dubbo-sample-provider
           ports:
             - containerPort: 20880
 ---
@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
         - name: dubbo-sample-provider
-          image: aeraki/dubbo-sample-provider
+          image: ghcr.io/aeraki-mesh/dubbo-sample-provider
           ports:
             - containerPort: 20880
 ---
@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
         - name: dubbo-sample-consumer
-          image: aeraki/dubbo-sample-consumer
+          image: ghcr.io/aeraki-mesh/dubbo-sample-consumer
           env:
             - name: mode
               value: demo

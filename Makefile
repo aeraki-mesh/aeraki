@@ -22,59 +22,60 @@ GOGET?=$(GOCMD) get
 GOBIN?=$(GOPATH)/bin
 GOMOD?=$(GOCMD) mod
 
-# Build parameters
-IMAGE_TAG := $(tag)
-
-ifeq ($(IMAGE_TAG),)
-IMAGE_TAG := latest
-endif
-
 OUT?=./out
-DOCKER_TMP?=$(OUT)/docker_temp/
-DOCKER_TAG_E2E?=aeraki/aeraki:`git log --format="%H" -n 1`
-DOCKER_TAG?=aeraki/aeraki:$(IMAGE_TAG)
-BINARY_NAME?=$(OUT)/aeraki
-BINARY_NAME_DARWIN?=$(BINARY_NAME)-darwin
-MAIN_PATH_CONSUL_MCP=./cmd/aeraki/main.go
+IMAGE_REPO?=ghcr.io/aeraki-mesh
+IMAGE_NAME?=aeraki
+IMAGE_TAG?=latest
+IMAGE?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_TAG)
+IMAGE_E2E_TAG?=`git log --format="%H" -n 1`
+IMAGE_E2E?=$(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_E2E_TAG)
+MAIN_PATH=./cmd/aeraki/main.go
+IMAGE_OS?=linux
+IMAGE_ARCH?=amd64
+IMAGE_DOCKERFILE_PATH?=docker/Dockerfile
+
+.DEFAULT_GOAL := build
 
 install:
 	bash demo/install-aeraki.sh
 install-for-tcm:
 	bash demo/install-aeraki.sh mode=tcm
 demo:
-	bash demo/install-demo.sh
+	bash demo/install-demo.sh default
+uninstall-aeraki:
+	bash demo/uninstall-aeraki.sh
 uninstall-demo:
-	bash demo/uninstall-demo.sh
+	bash demo/uninstall-demo.sh default
+demo-kafka:
+	bash demo/install-demo.sh kafka
+uninstall-demo-kafka:
+	bash demo/uninstall-demo.sh kafka
+demo-brpc:
+	bash demo/install-demo.sh brpc
+uninstall-demo-brpc:
+	bash demo/uninstall-demo.sh brpc
 test: style-check
 	$(GOMOD) tidy
-	$(GOTEST) -race  `go list ./... | grep -v e2e`
+	$(GOTEST) -race  `go list ./internal/... | grep -v e2e`
 build: test
-	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(BINARY_NAME) $(MAIN_PATH_CONSUL_MCP)
-build-mac: test
-	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(BINARY_NAME_DARWIN) $(MAIN_PATH_CONSUL_MCP)
+	CGO_ENABLED=0 GOOS=$(IMAGE_OS) GOARCH=$(IMAGE_ARCH) $(GOBUILD) -o $(OUT)/$(IMAGE_ARCH)/$(IMAGE_OS)/$(IMAGE_NAME) $(MAIN_PATH)
 docker-build: build
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
-	cp $(BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(DOCKER_TAG) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
+	docker build --build-arg AERAKI_ROOT_BIN_DIR=${OUT} --build-arg ARCH=${IMAGE_ARCH} --build-arg OS=${IMAGE_OS} \
+	--no-cache --platform=${IMAGE_OS}/${IMAGE_ARCH} -t ${IMAGE} -f ${IMAGE_DOCKERFILE_PATH} .
 docker-push: docker-build
-	docker push $(DOCKER_TAG)
+	docker push $(IMAGE)
 docker-build-e2e: build
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./docker/Dockerfile $(DOCKER_TMP)
-	cp $(BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(DOCKER_TAG_E2E) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
+	docker build --build-arg AERAKI_ROOT_BIN_DIR=${OUT} --build-arg ARCH=${IMAGE_ARCH} --build-arg OS=${IMAGE_OS} \
+  	--no-cache --platform=${IMAGE_OS}/${IMAGE_ARCH} -t ${IMAGE_E2E} -f ${IMAGE_DOCKERFILE_PATH} .
+cross_build_images:
+	bash hack/make-rules/cross_build_images.sh
 clean:
 	rm -rf $(OUT)
 style-check:
-	gofmt -l -d ./
-	goimports -l -d ./
+	gofmt -l -d ./internal
+	goimports -l -d ./internal
 lint:
-	golint ./...
+	golint ./internal/...
 	golangci-lint run --tests="false"
 e2e-dubbo:
 	go test -v github.com/aeraki-mesh/aeraki/test/e2e/dubbo/...
@@ -88,34 +89,3 @@ e2e-metaprotocol:
 	go test -v github.com/aeraki-mesh/aeraki/test/e2e/metaprotocol/...
 e2e: e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e-redis e2e-metaprotocol
 .PHONY: build docker-build docker-push clean style-check lint e2e-dubbo e2e-thrift e2e-kafka-zookeeper e2e install demo uninstall-demo
-
-# lazyxds
-LAZYXDS_DOCKER_TAG?=aeraki/lazyxds:$(IMAGE_TAG)
-LAZYXDS_DOCKER_TAG_E2E?=aeraki/lazyxds:`git log --format="%H" -n 1`
-LAZYXDS_BINARY_NAME?=$(OUT)/lazyxds
-LAZYXDS_BINARY_NAME_DARWIN?=$(LAZYXDS_BINARY_NAME)-darwin
-LAZYXDS_MAIN?=./lazyxds/cmd/lazyxds/main.go
-
-build.lazyxds: test
-	CGO_ENABLED=0 GOOS=linux  $(GOBUILD) -o $(LAZYXDS_BINARY_NAME) $(LAZYXDS_MAIN)
-build-mac.lazyxds: test
-	CGO_ENABLED=0 GOOS=darwin  $(GOBUILD) -o $(LAZYXDS_BINARY_NAME_DARWIN) $(LAZYXDS_MAIN)
-docker-build.lazyxds: build.lazyxds
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./lazyxds/docker/Dockerfile $(DOCKER_TMP)
-	cp $(LAZYXDS_BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(LAZYXDS_DOCKER_TAG) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
-docker-push.lazyxds: docker-build.lazyxds
-	docker push $(LAZYXDS_DOCKER_TAG)
-docker-build-e2e.lazyxds: build.lazyxds
-	rm -rf $(DOCKER_TMP)
-	mkdir $(DOCKER_TMP)
-	cp ./lazyxds/docker/Dockerfile $(DOCKER_TMP)
-	cp $(LAZYXDS_BINARY_NAME) $(DOCKER_TMP)
-	docker build -t $(LAZYXDS_DOCKER_TAG_E2E) $(DOCKER_TMP)
-	rm -rf $(DOCKER_TMP)
-e2e-lazyxds:
-	ginkgo -v ./test/e2e/lazyxds/lazyxds/
-.DEFAULT_GOAL := docker-build

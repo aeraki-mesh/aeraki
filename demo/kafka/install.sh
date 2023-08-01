@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright Aeraki Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +15,11 @@
 # limitations under the License.
 
 BASEDIR=$(dirname "$0")
+source $BASEDIR/../common_func.sh
+
 
 kubectl create ns kafka
-kubectl label namespace kafka istio-injection=enabled --overwrite=true
+LabelIstioInjectLabel kafka
 helm repo add zhaohuabing https://zhaohuabing.github.io/helm-repo
 helm repo update
 helm install my-release --set persistence.enabled=false --set zookeeper.persistence.enabled=false zhaohuabing/kafka -n kafka

@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -58,7 +57,7 @@ func WriteTextFile(filePath, content string) error {
 	if len(content) > 0 && content[len(content)-1] != '\n' {
 		content += "\n"
 	}
-	return ioutil.WriteFile(filePath, []byte(content), 0600)
+	return os.WriteFile(filePath, []byte(content), 0600)
 }
 
 // GitRootDir returns the absolute path to the root directory of the git repo
@@ -91,18 +90,19 @@ func Poll(interval time.Duration, numTrials int, do func() (bool, error)) error 
 
 // CreateTempfile creates a tempfile string.
 func CreateTempfile(tmpDir, prefix, suffix string) (string, error) {
-	f, err := ioutil.TempFile(tmpDir, prefix)
+	f, err := os.CreateTemp(tmpDir, prefix)
 	if err != nil {
 		return "", err
 	}
 	var tmpName string
-	if tmpName, err = filepath.Abs(f.Name()); err != nil {
+	name := f.Name()
+	if tmpName, err = filepath.Abs(name); err != nil {
 		return "", err
 	}
 	if err = f.Close(); err != nil {
 		return "", err
 	}
-	if err = os.Remove(tmpName); err != nil {
+	if err = os.RemoveAll(tmpName); err != nil {
 		log.Errorf("CreateTempfile unable to remove %s", tmpName)
 		return "", err
 	}
@@ -116,7 +116,7 @@ func WriteTempfile(tmpDir, prefix, suffix, contents string) (string, error) {
 		return "", err
 	}
 
-	if err := ioutil.WriteFile(fname, []byte(contents), 0644); err != nil {
+	if err := os.WriteFile(fname, []byte(contents), 0644); err != nil {
 		return "", err
 	}
 	return fname, nil
@@ -175,7 +175,7 @@ func sh(ctx context.Context, format string, logCommand, logOutput, logError bool
 // RunBackground starts a background process and return the Process if succeed
 func RunBackground(format string, args ...interface{}) (*os.Process, error) {
 	command := fmt.Sprintf(format, args...)
-	log.Infoa("RunBackground: ", command)
+	log.Infof("RunBackground: ", command)
 	parts := strings.Split(command, " ")
 	c := exec.Command(parts[0], parts[1:]...) // #nosec
 	err := c.Start()
@@ -192,7 +192,7 @@ func Record(command, record string) error {
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(record, []byte(resp), 0600)
+	err = os.WriteFile(record, []byte(resp), 0600)
 	return err
 }
 

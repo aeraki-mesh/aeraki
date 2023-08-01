@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.0.0
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: videopacket-sample-server
@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
         - name: videopacket-sample-server
-          image: aeraki/videopacket-sample-server
+          image: ghcr.io/aeraki-mesh/videopacket-sample-server
           env:
             - name: version
               value: add
@@ -58,7 +58,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.0.0
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: videopacket-sample-server
@@ -66,7 +66,7 @@ spec:
     spec:
       containers:
         - name: videopacket-sample-server
-          image: aeraki/videopacket-sample-server
+          image: ghcr.io/aeraki-mesh/videopacket-sample-server
           env:
             - name: version
               value: multication
@@ -88,14 +88,14 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: aeraki/meta-protocol-proxy-tcm:1.0.0
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: videopacket-sample-client
     spec:
       containers:
         - name: videopacket-sample-client
-          image: aeraki/videopacket-sample-client
+          image: ghcr.io/aeraki-mesh/videopacket-sample-client
           env:
             - name: server_addr
               value: "videopacket-sample-server:8000"
