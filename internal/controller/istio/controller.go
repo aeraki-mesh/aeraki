@@ -19,12 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/internal/model"
-
-	"istio.io/istio/pkg/security"
-
-	"istio.io/istio/security/pkg/nodeagent/cache"
-
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/config/memory"
@@ -33,18 +27,18 @@ import (
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
+	"istio.io/istio/pkg/security"
+	"istio.io/istio/security/pkg/nodeagent/cache"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
 	"istio.io/pkg/log"
 
+	"github.com/aeraki-mesh/aeraki/internal/model"
 	"github.com/aeraki-mesh/aeraki/internal/model/protocol"
 )
 
 const (
 	// istiodCACertPath is the ca volume mount file name for istio root ca.
 	istiodCACertPath = "/var/run/secrets/istio/root-cert.pem"
-
-	// K8sSAJwtFileName is the token volume mount file name for k8s jwt token.
-	K8sSAJwtFileName = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 )
 
 var (

@@ -19,22 +19,17 @@ import (
 	"strings"
 	"time"
 
+	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
+	"github.com/aeraki-mesh/client-go/pkg/apis/redis/v1alpha1"
+	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 	"google.golang.org/protobuf/types/known/durationpb"
-
+	networking "istio.io/api/networking/v1alpha3"
+	"istio.io/istio/pkg/config/schema/collections"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
-
-	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	networking "istio.io/api/networking/v1alpha3"
-	"istio.io/istio/pkg/config/schema/collections"
-
-	"github.com/aeraki-mesh/client-go/pkg/apis/redis/v1alpha1"
-
 	"github.com/aeraki-mesh/aeraki/internal/model"
-
-	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 )
 
 const (

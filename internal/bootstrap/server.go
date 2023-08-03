@@ -22,19 +22,20 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+
+	// nolint
+	_ "net/http/pprof" // pprof
+
 	"sync"
 	"sync/atomic"
 	"time"
 
-	//nolint: gosec
-	_ "net/http/pprof" // pprof
-
-	"istio.io/istio/pkg/config/mesh"
-
+	aerakischeme "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/scheme"
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
+	"istio.io/istio/pkg/config/mesh"
 	kubelib "istio.io/istio/pkg/kube"
 	"istio.io/pkg/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,8 +44,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubeconfig "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-
-	aerakischeme "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/scheme"
 
 	"github.com/aeraki-mesh/aeraki/internal/controller/istio"
 	"github.com/aeraki-mesh/aeraki/internal/controller/kube"

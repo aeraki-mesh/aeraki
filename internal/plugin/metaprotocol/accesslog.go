@@ -15,17 +15,16 @@
 package metaprotocol
 
 import (
-	"google.golang.org/protobuf/types/known/structpb"
-	"istio.io/istio/pkg/util/protomarshal"
-	"istio.io/pkg/log"
-
-	"github.com/aeraki-mesh/aeraki/internal/util/protoconv"
-
 	accesslog "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	envoyconfig "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	fileaccesslog "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	"google.golang.org/protobuf/types/known/structpb"
 	meshconfig "istio.io/api/mesh/v1alpha1"
+	"istio.io/istio/pkg/util/protomarshal"
+	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/internal/util/protoconv"
 )
 
 const (

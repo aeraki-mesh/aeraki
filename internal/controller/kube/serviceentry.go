@@ -20,14 +20,10 @@ import (
 	"reflect"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-
-	"github.com/aeraki-mesh/aeraki/internal/config/constants"
-	"github.com/aeraki-mesh/aeraki/internal/model"
-
 	istionapi "istio.io/api/networking/v1alpha3"
 	networking "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/pkg/log"
+	"k8s.io/apimachinery/pkg/api/errors"
 	controllerclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -36,6 +32,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/aeraki-mesh/aeraki/internal/config/constants"
+	"github.com/aeraki-mesh/aeraki/internal/model"
 )
 
 var serviceEntryLog = log.RegisterScope("service-entry-controller", "service-entry-controller debugging", 0)

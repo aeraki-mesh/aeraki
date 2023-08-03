@@ -21,15 +21,13 @@ import (
 	"path"
 	"time"
 
-	"istio.io/istio/security/pkg/pki/util"
-
 	"istio.io/istio/pilot/pkg/bootstrap"
-	"istio.io/istio/security/pkg/cmd"
-	"istio.io/pkg/env"
-
 	"istio.io/istio/pkg/security"
+	"istio.io/istio/security/pkg/cmd"
 	"istio.io/istio/security/pkg/pki/ca"
 	"istio.io/istio/security/pkg/pki/ra"
+	"istio.io/istio/security/pkg/pki/util"
+	"istio.io/pkg/env"
 	"istio.io/pkg/log"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )

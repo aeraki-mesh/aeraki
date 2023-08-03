@@ -22,10 +22,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
-	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 	"github.com/apache/thrift/lib/go/thrift"
 	"istio.io/pkg/log"
+
+	"github.com/aeraki-mesh/aeraki/test/e2e/metaprotocolgateway/gen-go/hello"
+	"github.com/aeraki-mesh/aeraki/test/e2e/util"
 )
 
 func TestMain(m *testing.M) {
