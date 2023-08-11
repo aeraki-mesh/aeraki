@@ -20,21 +20,18 @@ import (
 	"strings"
 	"time"
 
-	_struct "github.com/golang/protobuf/ptypes/struct"
-
-	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-
 	"github.com/aeraki-mesh/client-go/pkg/clientset/versioned"
 	redisv1alpha1 "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/redis/v1alpha1"
-
+	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
+	_struct "github.com/golang/protobuf/ptypes/struct"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/pkg/log"
+	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/rest"
 
 	"github.com/aeraki-mesh/aeraki/internal/envoyfilter"
 	"github.com/aeraki-mesh/aeraki/internal/model"

@@ -20,7 +20,11 @@ import (
 	"strconv"
 	"strings"
 
+	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
+	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	envoycore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
+	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/duration"
@@ -30,12 +34,6 @@ import (
 	"istio.io/istio/pilot/pkg/xds/filters"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-
-	spec "github.com/aeraki-mesh/api/redis/v1alpha1"
-
-	cluster "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
-	endpoint "github.com/envoyproxy/go-control-plane/envoy/config/endpoint/v3"
-	redis "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/redis_proxy/v3"
 
 	"github.com/aeraki-mesh/aeraki/internal/model"
 )

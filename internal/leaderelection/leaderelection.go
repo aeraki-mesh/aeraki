@@ -18,10 +18,9 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/atomic"
 	"istio.io/istio/pilot/pkg/leaderelection/k8sleaderelection"
 	"istio.io/istio/pilot/pkg/leaderelection/k8sleaderelection/k8sresourcelock"
-
-	"go.uber.org/atomic"
 	"istio.io/pkg/log"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

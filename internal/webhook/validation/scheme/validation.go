@@ -22,8 +22,6 @@ import (
 	"strconv"
 	"strings"
 
-	metaprotocol "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
-
 	"github.com/hashicorp/go-multierror"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pkg/config"
@@ -31,6 +29,8 @@ import (
 	"istio.io/istio/pkg/config/protocol"
 	"istio.io/istio/pkg/config/validation"
 	"istio.io/istio/pkg/config/visibility"
+
+	metaprotocol "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 )
 
 // Validation holds errors and warnings. They can be joined with additional errors by called appendValidation

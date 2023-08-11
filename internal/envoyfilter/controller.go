@@ -20,22 +20,20 @@ import (
 	"strings"
 	"time"
 
-	istioclient "istio.io/client-go/pkg/clientset/versioned"
-	"istio.io/istio/pkg/config"
-
+	"github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
+	metaprotocol "github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"github.com/zhaohuabing/debounce"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
+	istioclient "istio.io/client-go/pkg/clientset/versioned"
 	istiomodel "istio.io/istio/pilot/pkg/model"
+	"istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/mesh"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/pkg/log"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
-	metaprotocol "github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 
 	"github.com/aeraki-mesh/aeraki/internal/config/constants"
 	"github.com/aeraki-mesh/aeraki/internal/model"

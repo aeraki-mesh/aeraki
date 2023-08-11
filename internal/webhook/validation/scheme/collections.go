@@ -17,11 +17,11 @@ package scheme
 import (
 	"reflect"
 
-	githubcomaerakimeshaerakiapimetaprotocolv1alpha1 "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
-
 	istioioapimetav1alpha1 "istio.io/api/meta/v1alpha1"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/resource"
+
+	metaprotocolv1alpha1 "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 			Version: "v1alpha1",
 			Proto:   "aeraki.io.v1alpha1.ApplicationProtocol",
 			//StatusProto: "istio.meta.v1alpha1.IstioStatus",
-			ReflectType:  reflect.TypeOf(&githubcomaerakimeshaerakiapimetaprotocolv1alpha1.ApplicationProtocol{}).Elem(),
+			ReflectType:  reflect.TypeOf(&metaprotocolv1alpha1.ApplicationProtocol{}).Elem(),
 			StatusType:   reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
 			ProtoPackage: "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",
 			//StatusPackage: "istio.io/api/meta/v1alpha1",
@@ -59,7 +59,7 @@ var (
 			Version: "v1alpha1",
 			Proto:   "aeraki.io.v1alpha1.MetaRouter",
 			//StatusProto: "istio.meta.v1alpha1.IstioStatus",
-			ReflectType: reflect.TypeOf(&githubcomaerakimeshaerakiapimetaprotocolv1alpha1.MetaRouter{}).Elem(),
+			ReflectType: reflect.TypeOf(&metaprotocolv1alpha1.MetaRouter{}).Elem(),
 			//StatusType: reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
 			ProtoPackage: "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",
 			//StatusPackage: "istio.io/api/meta/v1alpha1",

@@ -17,6 +17,7 @@ package kube
 import (
 	"context"
 
+	"github.com/aeraki-mesh/client-go/pkg/apis/redis/v1alpha1"
 	"istio.io/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -25,8 +26,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"github.com/aeraki-mesh/client-go/pkg/apis/redis/v1alpha1"
 )
 
 var redisLog = log.RegisterScope("redis-controller", "redis-controller debugging", 0)

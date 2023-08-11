@@ -17,9 +17,9 @@ package kube
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
+	"github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"istio.io/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -27,8 +27,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-
-	"github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 )
 
 var metaRouterLog = log.RegisterScope("meta-router-controller", "meta-routerl-controller debugging", 0)

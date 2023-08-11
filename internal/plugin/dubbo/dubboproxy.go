@@ -15,11 +15,10 @@
 package dubbo
 
 import (
+	dubbov1alpha1 "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 	dubbo "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/dubbo_proxy/v3"
 	"istio.io/istio/pilot/pkg/security/trustdomain"
 	"istio.io/istio/pkg/spiffe"
-
-	dubbov1alpha1 "github.com/aeraki-mesh/client-go/pkg/clientset/versioned/typed/dubbo/v1alpha1"
 
 	"github.com/aeraki-mesh/aeraki/internal/model"
 	"github.com/aeraki-mesh/aeraki/internal/plugin/dubbo/authz/builder"

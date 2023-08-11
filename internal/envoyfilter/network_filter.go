@@ -19,9 +19,8 @@ import (
 	"strconv"
 	"strings"
 
-	_struct "github.com/golang/protobuf/ptypes/struct"
-
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
+	_struct "github.com/golang/protobuf/ptypes/struct"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	networking "istio.io/api/networking/v1alpha3"

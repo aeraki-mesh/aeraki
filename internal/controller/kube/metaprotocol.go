@@ -17,11 +17,9 @@ package kube
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	metaprotocolmodel "github.com/aeraki-mesh/aeraki/internal/model/metaprotocol"
-
+	"github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
 	"istio.io/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -30,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/aeraki-mesh/client-go/pkg/apis/metaprotocol/v1alpha1"
+	metaprotocolmodel "github.com/aeraki-mesh/aeraki/internal/model/metaprotocol"
 )
 
 var metaProtocolLog = log.RegisterScope("meta-protocol-controller", "meta-protocol-controller debugging", 0)

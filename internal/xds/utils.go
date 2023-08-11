@@ -18,19 +18,15 @@ import (
 	"strconv"
 	"time"
 
-	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
-	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-
 	httpcore "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-
-	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
-
-	userapi "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
-
 	httproute "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	matcher "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/v3"
+	"github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 
+	userapi "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 	metaroute "github.com/aeraki-mesh/meta-protocol-control-plane-api/aeraki/meta_protocol_proxy/config/route/v1alpha"
 )
 
