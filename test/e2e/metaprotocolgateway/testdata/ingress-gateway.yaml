@@ -149,7 +149,7 @@ spec:
                   fieldPath: metadata.labels['service.istio.io/canonical-revision']
             - name: ISTIO_META_ROUTER_MODE
               value: standard
-          image: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.3.1
+          image: ghcr.io/aeraki-mesh/meta-protocol-proxy-debug:1.4.0
           imagePullPolicy: IfNotPresent
           name: istio-proxy
           ports:
