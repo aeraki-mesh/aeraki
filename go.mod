@@ -27,7 +27,6 @@ require (
 	github.com/aeraki-mesh/api v1.4.1
 	github.com/aeraki-mesh/client-go v1.4.1
 	github.com/aeraki-mesh/meta-protocol-control-plane-api v1.4.1
-	github.com/apache/thrift v0.18.1
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4
 	github.com/envoyproxy/go-control-plane v0.11.2-0.20230811160418-a0dbac19f027
 	github.com/gogo/protobuf v1.3.2
@@ -45,7 +44,6 @@ require (
 	google.golang.org/protobuf v1.31.0
 	istio.io/api v1.19.0-alpha.1.0.20230810203008-3cdd517bf131
 	istio.io/client-go v1.19.0-alpha.1.0.20230810203904-45e85278e0fc
-	istio.io/gogo-genproto v0.0.0-20230705213215-8f59b5a7ddde
 	istio.io/istio v0.0.0-20230817160302-031c6b290e0b
 	istio.io/pkg v0.0.0-20230524020242-1015535057be
 	k8s.io/api v0.28.0

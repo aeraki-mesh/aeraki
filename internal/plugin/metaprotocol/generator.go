@@ -111,6 +111,6 @@ func trans2Port(server *istionetworking.Server) *istionetworking.ServicePort {
 		Number:     server.Port.Number,
 		Protocol:   server.Port.Protocol,
 		Name:       server.Port.Name,
-		TargetPort: server.Port.TargetPort,
+		TargetPort: server.Port.Number,
 	}
 }

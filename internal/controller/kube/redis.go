@@ -71,7 +71,8 @@ func AddRedisDestinationController(mgr manager.Manager, triggerPush func() error
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.RedisDestination{}), &handler.EnqueueRequestForObject{}, redisPredicates)
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.RedisDestination{}),
+		&handler.EnqueueRequestForObject{}, redisPredicates)
 	if err != nil {
 		return err
 	}
