@@ -17,55 +17,51 @@ package scheme
 import (
 	"reflect"
 
-	istioioapimetav1alpha1 "istio.io/api/meta/v1alpha1"
+	metaprotocolv1alpha1 "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/resource"
-
-	metaprotocolv1alpha1 "github.com/aeraki-mesh/api/metaprotocol/v1alpha1"
 )
 
 var (
 
 	// AerakiMetaprotocolV1Alpha1Applicationprotocols describes the collection
 	// aeraki/metaprotocol/v1alpha1/applicationprotocols
-	AerakiMetaprotocolV1Alpha1Applicationprotocols = collection.Builder{
-		Name:         "aeraki/metaprotocol/v1alpha1/applicationprotocols",
-		VariableName: "AerakiMetaprotocolV1Alpha1Applicationprotocols",
-		Resource: resource.Builder{
-			Group:   "metaprotocol.aeraki.io",
-			Kind:    "ApplicationProtocol",
-			Plural:  "applicationprotocols",
-			Version: "v1alpha1",
-			Proto:   "aeraki.io.v1alpha1.ApplicationProtocol",
-			//StatusProto: "istio.meta.v1alpha1.IstioStatus",
-			ReflectType:  reflect.TypeOf(&metaprotocolv1alpha1.ApplicationProtocol{}).Elem(),
-			StatusType:   reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
-			ProtoPackage: "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",
-			//StatusPackage: "istio.io/api/meta/v1alpha1",
-			ClusterScoped: false,
-			ValidateProto: ValidateApplicationProtocol,
-		}.MustBuild(),
+	AerakiMetaprotocolV1Alpha1Applicationprotocols = resource.Builder{
+		Identifier: "ApplicationProtocol",
+		Group:      "metaprotocol.aeraki.io",
+		Kind:       "ApplicationProtocol",
+		Plural:     "applicationprotocols",
+		Version:    "v1alpha1",
+		VersionAliases: []string{
+			"v1",
+		},
+		Proto:         "aeraki.io.v1alpha1.ApplicationProtocol",                           //StatusProto: "istio.meta.v1alpha1.IstioStatus",
+		ReflectType:   reflect.TypeOf(&metaprotocolv1alpha1.ApplicationProtocol{}).Elem(), //StatusType: reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
+		ProtoPackage:  "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",                 // StatusPackage: "istio.io/api/meta/v1alpha1",
+		ClusterScoped: false,
+		Synthetic:     false,
+		Builtin:       false,
+		ValidateProto: ValidateApplicationProtocol,
 	}.MustBuild()
 
 	// AerakiMetaprotocolV1Alpha1Metarouters describes the collection
 	// aeraki/metaprotocol/v1alpha1/metarouters
-	AerakiMetaprotocolV1Alpha1Metarouters = collection.Builder{
-		Name:         "aeraki/metaprotocol/v1alpha1/metarouters",
-		VariableName: "AerakiMetaprotocolV1Alpha1Metarouters",
-		Resource: resource.Builder{
-			Group:   "metaprotocol.aeraki.io",
-			Kind:    "MetaRouter",
-			Plural:  "metarouters",
-			Version: "v1alpha1",
-			Proto:   "aeraki.io.v1alpha1.MetaRouter",
-			//StatusProto: "istio.meta.v1alpha1.IstioStatus",
-			ReflectType: reflect.TypeOf(&metaprotocolv1alpha1.MetaRouter{}).Elem(),
-			//StatusType: reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
-			ProtoPackage: "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",
-			//StatusPackage: "istio.io/api/meta/v1alpha1",
-			ClusterScoped: false,
-			ValidateProto: ValidateMetaRouter,
-		}.MustBuild(),
+	AerakiMetaprotocolV1Alpha1Metarouters = resource.Builder{
+		Identifier: "MetaRouter",
+		Group:      "metaprotocol.aeraki.io",
+		Kind:       "MetaRouter",
+		Plural:     "metarouters",
+		Version:    "v1alpha1",
+		VersionAliases: []string{
+			"v1",
+		},
+		Proto:         "aeraki.io.v1alpha1.MetaRouter",                           //StatusProto: "istio.meta.v1alpha1.IstioStatus",
+		ReflectType:   reflect.TypeOf(&metaprotocolv1alpha1.MetaRouter{}).Elem(), //StatusType: reflect.TypeOf(&istioioapimetav1alpha1.IstioStatus{}).Elem(),
+		ProtoPackage:  "github.com/aeraki-mesh/api/metaprotocol/v1alpha1",        // StatusPackage: "istio.io/api/meta/v1alpha1",
+		ClusterScoped: false,
+		Synthetic:     false,
+		Builtin:       false,
+		ValidateProto: ValidateMetaRouter,
 	}.MustBuild()
 
 	// Aeraki contains Aeraki collections in the system.

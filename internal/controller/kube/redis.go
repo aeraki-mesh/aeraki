@@ -55,7 +55,7 @@ func AddRedisServiceController(mgr manager.Manager, triggerPush func() error) er
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.RedisService{}}, &handler.EnqueueRequestForObject{}, redisPredicates)
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.RedisService{}), &handler.EnqueueRequestForObject{}, redisPredicates)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func AddRedisDestinationController(mgr manager.Manager, triggerPush func() error
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.RedisDestination{}}, &handler.EnqueueRequestForObject{}, redisPredicates)
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.RedisDestination{}), &handler.EnqueueRequestForObject{}, redisPredicates)
 	if err != nil {
 		return err
 	}

@@ -106,7 +106,7 @@ func AddServiceEntryController(mgr manager.Manager) error {
 		return err
 	}
 	// Watch for changes on ServiceEntry CRD
-	err = c.Watch(&source.Kind{Type: &networking.ServiceEntry{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &networking.ServiceEntry{}), &handler.EnqueueRequestForObject{},
 		serviceEntryPredicates)
 	if err != nil {
 		return err

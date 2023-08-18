@@ -44,11 +44,11 @@ const (
 var (
 	controllerLog = log.RegisterScope("config-controller", "config-controller debugging", 0)
 	// We need serviceentry and virtualservice to generate the envoyfiters
-	configCollection = collection.NewSchemasBuilder().MustAdd(collections.IstioNetworkingV1Alpha3Serviceentries).
-				MustAdd(collections.IstioNetworkingV1Alpha3Virtualservices).
-				MustAdd(collections.IstioNetworkingV1Alpha3Destinationrules).
-				MustAdd(collections.IstioNetworkingV1Alpha3Envoyfilters).
-				MustAdd(collections.IstioNetworkingV1Alpha3Gateways).Build()
+	configCollection = collection.NewSchemasBuilder().MustAdd(collections.ServiceEntry).
+				MustAdd(collections.VirtualService).
+				MustAdd(collections.DestinationRule).
+				MustAdd(collections.EnvoyFilter).
+				MustAdd(collections.Gateway).Build()
 )
 
 // Options for config controller
@@ -149,7 +149,7 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 	requests := make([]*discovery.DiscoveryRequest, len(schemas))
 	for i, schema := range schemas {
 		requests[i] = &discovery.DiscoveryRequest{
-			TypeUrl: schema.Resource().GroupVersionKind().String(),
+			TypeUrl: schema.GroupVersionResource().String(),
 		}
 	}
 	return requests
@@ -167,22 +167,22 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 		// * DestinationRule: the Load balancing policy in set in the dr,
 		//   httpHeaderName is used to convey the metadata key for generating hash
 		switch curr.GroupVersionKind {
-		case collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind():
+		case collections.ServiceEntry.GroupVersionKind():
 			controllerLog.Infof("service entry changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleServiceEntryChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		case collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind():
+		case collections.VirtualService.GroupVersionKind():
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleVirtualServiceChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		case collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind():
+		case collections.DestinationRule.GroupVersionKind():
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleDestinationRuleChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		case collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind():
+		case collections.Gateway.GroupVersionKind():
 			controllerLog.Infof("Gateway changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleGatewayChange(&prev, &curr) {
 				handler(&prev, &curr, event)
@@ -192,7 +192,7 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 
 	schemas := configCollection.All()
 	for _, schema := range schemas {
-		c.configCache.RegisterEventHandler(schema.Resource().GroupVersionKind(), handlerWrapper)
+		c.configCache.RegisterEventHandler(schema.GroupVersionKind(), handlerWrapper)
 	}
 }
 
@@ -241,16 +241,12 @@ func (c *Controller) shouldHandleVirtualService(vsConfig *istioconfig.Config) bo
 		controllerLog.Errorf("failed in getting a virtual service: %v", vsConfig.Name)
 		return false
 	}
-	serviceEntries, err := c.Store.List(
-		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
-	if err != nil {
-		controllerLog.Errorf("failed to list configs: %v", err)
-		return false
-	}
+	serviceEntries := c.Store.List(
+		collections.ServiceEntry.GroupVersionKind(), "")
 	for i := range serviceEntries {
 		service, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			controllerLog.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
+			controllerLog.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name)
 			return false
 		}
 		if len(vs.Hosts) > 0 {
@@ -277,16 +273,12 @@ func (c *Controller) shouldHandleDestinationRule(drConfig *istioconfig.Config) b
 		controllerLog.Errorf("failed in getting a destination rule: %s", drConfig.Name)
 		return false
 	}
-	serviceEntries, err := c.Store.List(
-		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
-	if err != nil {
-		controllerLog.Errorf("failed to list configs: %v", err)
-		return false
-	}
+	serviceEntries := c.Store.List(
+		collections.ServiceEntry.GroupVersionKind(), "")
 	for i := range serviceEntries {
 		service, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			controllerLog.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
+			controllerLog.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name)
 			return false
 		}
 

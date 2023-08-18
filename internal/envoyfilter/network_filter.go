@@ -42,7 +42,7 @@ func GenerateInsertBeforeNetworkFilter(service *model.ServiceEntryWrapper, outbo
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified
 // proxy
-func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port,
+func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *networking.ServicePort,
 	outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string) []*model.EnvoyFilterWrapper {
 	return generateNetworkFilter(service, port, outboundProxy, inboundProxy, filterName, filterType,
@@ -51,7 +51,7 @@ func GenerateReplaceNetworkFilter(service *model.ServiceEntryWrapper, port *netw
 
 // GenerateReplaceNetworkFilter generates an EnvoyFilter that replaces the default tcp proxy with a protocol specified
 // proxy
-func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.Port, outboundProxy proto.Message,
+func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.ServicePort, outboundProxy proto.Message,
 	inboundProxy proto.Message, filterName string, filterType string,
 	operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	var envoyFilters []*model.EnvoyFilterWrapper
@@ -74,7 +74,7 @@ func generateNetworkFilter(service *model.ServiceEntryWrapper, port *networking.
 	return envoyFilters
 }
 
-func generateOutboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, port *networking.Port,
+func generateOutboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, port *networking.ServicePort,
 	outboundProxy proto.Message, filterName string, filterType string,
 	operation networking.EnvoyFilter_Patch_Operation) []*model.EnvoyFilterWrapper {
 	outboundProxyStruct, err := generateValue(outboundProxy, filterName, filterType)
@@ -118,7 +118,7 @@ func generateOutboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, po
 	return envoyFilters
 }
 
-func generateInboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, port *networking.Port,
+func generateInboundListenerEnvoyFilters(service *model.ServiceEntryWrapper, port *networking.ServicePort,
 	inboundProxy proto.Message, filterName string, filterType string,
 	operation networking.EnvoyFilter_Patch_Operation,
 	workloadSelector *networking.WorkloadSelector) []*model.EnvoyFilterWrapper {

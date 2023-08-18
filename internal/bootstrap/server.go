@@ -22,10 +22,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-
 	// nolint
 	_ "net/http/pprof" // pprof
-
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,6 +32,7 @@ import (
 	istioscheme "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/clientset/versioned"
 	"istio.io/istio/pilot/pkg/model"
+	"istio.io/istio/pkg/cluster"
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/mesh"
 	kubelib "istio.io/istio/pkg/kube"
@@ -402,7 +401,7 @@ func (s *Server) initKubeClient() error {
 	if err != nil {
 		return err
 	}
-	s.kubeClient, err = kubelib.NewClient(kubelib.NewClientConfigForRestConfig(kubeConfig))
+	s.kubeClient, err = kubelib.NewClient(kubelib.NewClientConfigForRestConfig(kubeConfig), cluster.ID(s.args.ClusterID))
 	return err
 }
 

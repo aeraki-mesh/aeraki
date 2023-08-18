@@ -96,7 +96,7 @@ func AddApplicationProtocolController(mgr manager.Manager, triggerPush func() er
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.ApplicationProtocol{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.ApplicationProtocol{}), &handler.EnqueueRequestForObject{},
 		metaProtocolPredicates)
 	if err != nil {
 		return err

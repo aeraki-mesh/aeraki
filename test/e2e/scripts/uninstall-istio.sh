@@ -25,7 +25,7 @@ if [ -z "$ISTIO_NAMESPACE" ]; then
 fi
 
 if [ -z "$ISTIO_VERSION" ]; then
-  export ISTIO_VERSION=1.18.2
+  export ISTIO_VERSION=1.18.1
 fi
 
 rm -rf ~/.aeraki/istio/istio-config.yaml

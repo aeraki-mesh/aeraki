@@ -129,8 +129,8 @@ func getIstioCA(client corev1.CoreV1Interface, namespace string) (*util.KeyCertB
 				selfSignedRootCertGracePeriodPercentile.Get(), selfSignedCACertTTL.Get(),
 				selfSignedRootCertCheckInterval.Get(), workloadCertTTL.Get(),
 				maxWorkloadCertTTL.Get(), opts.TrustDomain, true,
-				opts.Namespace, -1, client, rootCertFile,
-				enableJitterForRootCertRotator.Get(), caRSAKeySize.Get())
+				opts.Namespace, client, rootCertFile, enableJitterForRootCertRotator.Get(),
+				caRSAKeySize.Get())
 		} else {
 			log.Warnf(
 				"Use local self-signed CA certificate for testing. Will use in-memory root CA, no K8S access and no ca key file %s",

@@ -18,7 +18,7 @@ on:
     - "**/*.md"
 
 env:
-  ISTIO_VERSION: 1.18.2
+  ISTIO_VERSION: 1.18.1
   ISTIO_NAMESPACE: istio-system
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common

@@ -197,16 +197,12 @@ func (c *Controller) toEnvoyFilterCRD(newEf *model.EnvoyFilterWrapper,
 
 func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrapper, error) {
 	envoyFilters := make(map[string]*model.EnvoyFilterWrapper)
-	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
-		GroupVersionKind(), "")
-	if err != nil {
-		return envoyFilters, fmt.Errorf("failed to listconfigs: %v", err)
-	}
+	serviceEntries := c.configStore.List(collections.ServiceEntry.GroupVersionKind(), "")
 
 	for i := range serviceEntries {
 		service, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			return envoyFilters, fmt.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Labels, err)
+			return envoyFilters, fmt.Errorf("failed in getting a service entry: %s", serviceEntries[i].Labels)
 		}
 
 		if len(service.Hosts) == 0 {
@@ -248,21 +244,19 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 	}
 
 	// generate envoyFilters for gateway with tcp-metaprotocol server
-	err = c.generateGatewayEnvoyFilters(envoyFilters)
+	err := c.generateGatewayEnvoyFilters(envoyFilters)
 
 	return envoyFilters, err
 }
 
 func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.EnvoyFilterWrapper) error {
 	var envoyFilterContexts []*model.EnvoyFilterContext
-	gateways, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Gateways.Resource().GroupVersionKind(), "")
-	if err != nil {
-		log.Errorf("failed to listconfigs: %v", err)
-	}
+	gateways := c.configStore.List(collections.Gateway.GroupVersionKind(), "")
+
 	for i := range gateways {
 		gw, ok := gateways[i].Spec.(*networking.Gateway)
 		if !ok { // should never happen
-			log.Errorf("failed in getting a gateway: %s: %v", gateways[i].Labels, err)
+			log.Errorf("failed in getting a gateway: %s", gateways[i].Labels)
 		}
 		if gw.Servers == nil || len(gw.Servers) == 0 {
 			continue
@@ -472,16 +466,13 @@ func envoyFilterMapKey(name, ns string) string {
 }
 
 func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
-	virtualServices, err := c.configStore.List(
-		collections.IstioNetworkingV1Alpha3Virtualservices.Resource().GroupVersionKind(), "")
-	if err != nil {
-		return nil, fmt.Errorf("failed to list configs: %v", err)
-	}
+	virtualServices := c.configStore.List(
+		collections.VirtualService.GroupVersionKind(), "")
 
 	for i := range virtualServices {
 		vs, ok := virtualServices[i].Spec.(*networking.VirtualService)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a virtual service: %s: %v", virtualServices[i].Name, err)
+			return nil, fmt.Errorf("failed in getting a virtual service: %s", virtualServices[i].Name)
 		}
 
 		//Todo: we may need to deal with delegate Virtual services

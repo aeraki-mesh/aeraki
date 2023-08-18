@@ -14,6 +14,10 @@
 
 FROM alpine:3.17
 
+LABEL org.opencontainers.image.source="https://github.com/aeraki-mesh/aeraki"
+LABEL org.opencontainers.image.authors="zhaohuabing@gmail.com"
+LABEL org.opencontainers.image.documentation="https://aeraki.net"
+
 ARG AERAKI_ROOT_BIN_DIR
 ARG ARCH
 ARG OS

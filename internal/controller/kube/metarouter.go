@@ -86,7 +86,7 @@ func AddMetaRouterController(mgr manager.Manager, triggerPush func() error) erro
 		return err
 	}
 	// Watch for changes on MetaRouter CRD
-	err = c.Watch(&source.Kind{Type: &v1alpha1.MetaRouter{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.MetaRouter{}), &handler.EnqueueRequestForObject{},
 		metaRouterlPredicates)
 	if err != nil {
 		return err

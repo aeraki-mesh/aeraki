@@ -200,7 +200,7 @@ func (g *Generator) findTargetHostAndRedisService(ctx context.Context, ns string
 
 func (g *Generator) hostServices(ns string) (hostServices map[string]*networking.ServiceEntry) {
 	hostServices = map[string]*networking.ServiceEntry{}
-	entries, _ := g.store.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), ns)
+	entries := g.store.List(collections.ServiceEntry.GroupVersionKind(), ns)
 	for i := range entries {
 		se := entries[i].Spec.(*networking.ServiceEntry)
 		for _, host := range se.Hosts {
