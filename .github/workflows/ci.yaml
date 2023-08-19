@@ -59,7 +59,6 @@ jobs:
         uses: golangci/golangci-lint-action@v3.7.0
         with:
           args: --timeout=10m --tests="false"
-          version: v1.47.0
   style-check:
     name: style-check
     runs-on: ubuntu-latest
