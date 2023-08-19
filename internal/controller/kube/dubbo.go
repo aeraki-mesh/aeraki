@@ -36,7 +36,7 @@ type DubboController struct {
 }
 
 // Reconcile will try to trigger once mcp push.
-func (r *DubboController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *DubboController) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	dubboLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
 	if r.triggerPush != nil {
 		err := r.triggerPush()
@@ -77,12 +77,12 @@ var (
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			switch old := e.ObjectOld.(type) {
 			case *v1alpha1.DubboAuthorizationPolicy:
-				new, ok := e.ObjectNew.(*v1alpha1.DubboAuthorizationPolicy)
+				newDA, ok := e.ObjectNew.(*v1alpha1.DubboAuthorizationPolicy)
 				if !ok {
 					return false
 				}
-				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if old.GetDeletionTimestamp() != newDA.GetDeletionTimestamp() ||
+					old.GetGeneration() != newDA.GetGeneration() {
 					return true
 				}
 			default:

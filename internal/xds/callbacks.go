@@ -61,13 +61,13 @@ func (cb *callbacks) OnStreamResponse(_ context.Context, _ int64, request *disco
 	response *discovery.DiscoveryResponse) {
 	xdsLog.Debugf("send rds response to: %s :%v", request.Node.Id, response.Resources)
 }
-func (cb *callbacks) OnStreamDeltaResponse(id int64, req *discovery.DeltaDiscoveryRequest,
-	res *discovery.DeltaDiscoveryResponse) {
+func (cb *callbacks) OnStreamDeltaResponse(_ int64, _ *discovery.DeltaDiscoveryRequest,
+	_ *discovery.DeltaDiscoveryResponse) {
 }
-func (cb *callbacks) OnStreamDeltaRequest(id int64, req *discovery.DeltaDiscoveryRequest) error {
+func (cb *callbacks) OnStreamDeltaRequest(_ int64, _ *discovery.DeltaDiscoveryRequest) error {
 	return nil
 }
-func (cb *callbacks) OnFetchRequest(_ context.Context, req *discovery.DiscoveryRequest) error {
+func (cb *callbacks) OnFetchRequest(_ context.Context, _ *discovery.DiscoveryRequest) error {
 	return nil
 }
 func (cb *callbacks) OnFetchResponse(*discovery.DiscoveryRequest, *discovery.DiscoveryResponse) {}

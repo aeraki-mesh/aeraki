@@ -73,7 +73,7 @@ func (srcPrincipalGenerator) permission(_, _ string) (*rbacpb.Permission, error)
 	return nil, fmt.Errorf("unimplemented")
 }
 
-func (srcPrincipalGenerator) principal(key, value string) (*rbacpb.Principal, error) {
+func (srcPrincipalGenerator) principal(_, value string) (*rbacpb.Principal, error) {
 	m := matcher.StringMatcherWithPrefix(value, spiffe.URIPrefix)
 	return principalAuthenticated(m), nil
 }

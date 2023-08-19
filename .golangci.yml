@@ -15,13 +15,15 @@
 ---
 linters-settings:
   depguard:
-    list-type: blacklist
-    packages:
-      # logging is allowed only by logutils.Log, logrus
-      # is allowed to use only in logutils package
-      - github.com/sirupsen/logrus
-    packages-with-error-message:
-      - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
+    rules:
+      Main:
+        deny:
+          - pkg: github.com/gogo/protobuf
+            desc: "gogo/protobuf is deprecated, use golang/protobuf"
+          - pkg: gopkg.in/yaml.v2
+            desc: "use sigs.k8s.io/yaml instead"
+          - pkg: gopkg.in/yaml.v3
+            desc: "use sigs.k8s.io/yaml instead"
   dupl:
     threshold: 100
   funlen:
@@ -80,39 +82,18 @@ linters-settings:
 linters:
   disable-all: true
   enable:
+    - stylecheck
     - bodyclose
-    - deadcode
-    - depguard
-    - dogsled
-    - dupl
-    - errcheck
     - exportloopref
-    - funlen
-    - gochecknoinits
-    - goconst
-    - gocritic
-    - gocyclo
     - gofmt
     - goimports
-    - goprintffuncname
+    - goheader
+    - gocritic
     - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    - lll
     - misspell
-    - nakedret
-    - noctx
-    - nolintlint
-    - staticcheck
-    - structcheck
-    - stylecheck
-    - typecheck
+    - revive
     - unconvert
     - unparam
-    - unused
-    - varcheck
-    - whitespace
 
   # don't enable:
   # - asciicheck

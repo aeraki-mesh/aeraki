@@ -23,7 +23,7 @@ import (
 	"net"
 	"net/http"
 
-	// nolint
+	//nolint
 	_ "net/http/pprof" // pprof
 	"sync"
 	"sync/atomic"
@@ -304,7 +304,11 @@ func (s *Server) Start(stop <-chan struct{}) {
 
 	// pprof server
 	go func() {
-		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+		server := &http.Server{
+			Addr:              "localhost:6060",
+			ReadHeaderTimeout: 3 * time.Second,
+		}
+		if err := server.ListenAndServe(); err != nil {
 			aerakiLog.Errorf("failed to start pprof server")
 		}
 	}()

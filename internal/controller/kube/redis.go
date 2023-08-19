@@ -36,7 +36,7 @@ type RedisController struct {
 }
 
 // Reconcile will try to trigger once mcp push.
-func (r *RedisController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *RedisController) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	redisLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
 	if r.triggerPush != nil {
 		err := r.triggerPush()
@@ -55,7 +55,8 @@ func AddRedisServiceController(mgr manager.Manager, triggerPush func() error) er
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.RedisService{}), &handler.EnqueueRequestForObject{}, redisPredicates)
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.RedisService{}),
+		&handler.EnqueueRequestForObject{}, redisPredicates)
 	if err != nil {
 		return err
 	}
@@ -91,21 +92,21 @@ var (
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			switch old := e.ObjectOld.(type) {
 			case *v1alpha1.RedisService:
-				new, ok := e.ObjectNew.(*v1alpha1.RedisService)
+				newRS, ok := e.ObjectNew.(*v1alpha1.RedisService)
 				if !ok {
 					return false
 				}
-				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if old.GetDeletionTimestamp() != newRS.GetDeletionTimestamp() ||
+					old.GetGeneration() != newRS.GetGeneration() {
 					return true
 				}
 			case *v1alpha1.RedisDestination:
-				new, ok := e.ObjectNew.(*v1alpha1.RedisDestination)
+				newRD, ok := e.ObjectNew.(*v1alpha1.RedisDestination)
 				if !ok {
 					return false
 				}
-				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if old.GetDeletionTimestamp() != newRD.GetDeletionTimestamp() ||
+					old.GetGeneration() != newRD.GetGeneration() {
 					return true
 				}
 			default:

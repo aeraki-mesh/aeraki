@@ -378,7 +378,7 @@ func validateMetaRouteMatch(match *metaprotocol.MetaRouteMatch) (errs error) {
 
 // nolint: unparam
 func analyzeUnreachableMetaRules(routes []*metaprotocol.MetaRoute,
-	reportUnreachable func(ruleno, reason string), reportIneffective func(ruleno, matchno, dupno string)) {
+	reportUnreachable func(ruleno, reason string), _ func(ruleno, matchno, dupno string)) {
 	emptyMatchEncountered := -1
 	for rulen, route := range routes {
 		if route == nil {
