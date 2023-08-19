@@ -30,7 +30,7 @@ import (
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/mesh"
-	"istio.io/istio/pkg/config/schema/collections"
+	"istio.io/istio/pkg/config/schema/gvk"
 	"istio.io/pkg/log"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -98,6 +98,7 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 	const maxRetries = 3
 	retries := 0
 	callback := func() {
+		controllerLog.Debugf("create envoyfilter")
 		err := c.pushEnvoyFilters2APIServer()
 		if err != nil {
 			controllerLog.Errorf("failed to create envoyFilters: %v", err)
@@ -126,6 +127,7 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 
 func (c *Controller) pushEnvoyFilters2APIServer() error {
 	generatedEnvoyFilters, err := c.generateEnvoyFilters()
+	controllerLog.Debugf("create envoyfilter: %v", len(generatedEnvoyFilters))
 	if err != nil {
 		return fmt.Errorf("failed to generate EnvoyFilter: %v", err)
 	}
@@ -197,7 +199,7 @@ func (c *Controller) toEnvoyFilterCRD(newEf *model.EnvoyFilterWrapper,
 
 func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrapper, error) {
 	envoyFilters := make(map[string]*model.EnvoyFilterWrapper)
-	serviceEntries := c.configStore.List(collections.ServiceEntry.GroupVersionKind(), "")
+	serviceEntries := c.configStore.List(gvk.ServiceEntry, "")
 
 	for i := range serviceEntries {
 		service, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
@@ -251,7 +253,7 @@ func (c *Controller) generateEnvoyFilters() (map[string]*model.EnvoyFilterWrappe
 
 func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.EnvoyFilterWrapper) error {
 	var envoyFilterContexts []*model.EnvoyFilterContext
-	gateways := c.configStore.List(collections.Gateway.GroupVersionKind(), "")
+	gateways := c.configStore.List(gvk.Gateway, "")
 
 	for i := range gateways {
 		gw, ok := gateways[i].Spec.(*networking.Gateway)
@@ -466,8 +468,7 @@ func envoyFilterMapKey(name, ns string) string {
 }
 
 func (c *Controller) findRelatedVirtualService(service *networking.ServiceEntry) (*model.VirtualServiceWrapper, error) {
-	virtualServices := c.configStore.List(
-		collections.VirtualService.GroupVersionKind(), "")
+	virtualServices := c.configStore.List(gvk.VirtualService, "")
 
 	for i := range virtualServices {
 		vs, ok := virtualServices[i].Spec.(*networking.VirtualService)

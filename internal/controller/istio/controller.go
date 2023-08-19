@@ -27,6 +27,7 @@ import (
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
+	"istio.io/istio/pkg/config/schema/gvk"
 	"istio.io/istio/pkg/security"
 	"istio.io/istio/security/pkg/nodeagent/cache"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
@@ -44,7 +45,8 @@ const (
 var (
 	controllerLog = log.RegisterScope("config-controller", "config-controller debugging", 0)
 	// We need serviceentry and virtualservice to generate the envoyfiters
-	configCollection = collection.NewSchemasBuilder().MustAdd(collections.ServiceEntry).
+	configCollection = collection.NewSchemasBuilder().
+				MustAdd(collections.ServiceEntry).
 				MustAdd(collections.VirtualService).
 				MustAdd(collections.DestinationRule).
 				MustAdd(collections.EnvoyFilter).
@@ -149,7 +151,7 @@ func (c *Controller) configInitialRequests() []*discovery.DiscoveryRequest {
 	requests := make([]*discovery.DiscoveryRequest, len(schemas))
 	for i, schema := range schemas {
 		requests[i] = &discovery.DiscoveryRequest{
-			TypeUrl: schema.GroupVersionResource().String(),
+			TypeUrl: schema.GroupVersionKind().String(),
 		}
 	}
 	return requests
@@ -167,22 +169,22 @@ func (c *Controller) RegisterEventHandler(handler func(*istioconfig.Config, *ist
 		// * DestinationRule: the Load balancing policy in set in the dr,
 		//   httpHeaderName is used to convey the metadata key for generating hash
 		switch curr.GroupVersionKind {
-		case collections.ServiceEntry.GroupVersionKind():
+		case gvk.ServiceEntry:
 			controllerLog.Infof("service entry changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleServiceEntryChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		case collections.VirtualService.GroupVersionKind():
+		case gvk.VirtualService:
 			controllerLog.Infof("virtual service changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleVirtualServiceChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		case collections.DestinationRule.GroupVersionKind():
+		case gvk.DestinationRule:
 			controllerLog.Infof("Destination rules changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleDestinationRuleChange(&prev, &curr) {
 				handler(&prev, &curr, event)
 			}
-		case collections.Gateway.GroupVersionKind():
+		case gvk.Gateway:
 			controllerLog.Infof("Gateway changed: %s %s", event.String(), curr.Name)
 			if c.shouldHandleGatewayChange(&prev, &curr) {
 				handler(&prev, &curr, event)

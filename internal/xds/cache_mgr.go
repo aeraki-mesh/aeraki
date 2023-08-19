@@ -31,7 +31,7 @@ import (
 	networking "istio.io/api/networking/v1alpha3"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
-	"istio.io/istio/pkg/config/schema/collections"
+	"istio.io/istio/pkg/config/schema/gvk"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aeraki-mesh/aeraki/internal/model"
@@ -118,8 +118,7 @@ func (c *CacheMgr) updateRouteCache() error {
 		return nil
 	}
 
-	serviceEntries := c.configStore.List(
-		collections.ServiceEntry.GroupVersionKind(), "")
+	serviceEntries := c.configStore.List(gvk.ServiceEntry, "")
 
 	routes := c.generateMetaRoutes(serviceEntries)
 	snapshot, err := generateSnapshot(routes)
@@ -336,8 +335,7 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 }
 
 func (c *CacheMgr) findRelatedServiceEntry(dr *model.DestinationRuleWrapper) (*model.ServiceEntryWrapper, error) {
-	serviceEntries := c.configStore.List(
-		collections.ServiceEntry.GroupVersionKind(), "")
+	serviceEntries := c.configStore.List(gvk.ServiceEntry, "")
 
 	for i := range serviceEntries {
 		se, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
@@ -377,8 +375,7 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 
 func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper) (*model.DestinationRuleWrapper,
 	error) {
-	drs := c.configStore.List(
-		collections.DestinationRule.GroupVersionKind(), "")
+	drs := c.configStore.List(gvk.DestinationRule, "")
 
 	for i := range drs {
 		dr, ok := drs[i].Spec.(*networking.DestinationRule)
@@ -406,7 +403,7 @@ func (c *CacheMgr) ConfigUpdated(prev, curr *istioconfig.Config, event istiomode
 
 func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	var serviceEntry *networking.ServiceEntry
-	if config.GroupVersionKind == collections.ServiceEntry.GroupVersionKind() {
+	if config.GroupVersionKind == gvk.ServiceEntry {
 		service, ok := config.Spec.(*networking.ServiceEntry)
 		if !ok {
 			xdsLog.Errorf("Failed in getting a service entry: %v", config.Name)
@@ -416,7 +413,7 @@ func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	}
 
 	// Cache needs to be updated if dr changed, the hash policy in the dr is used to generate routes
-	if config.GroupVersionKind == collections.DestinationRule.GroupVersionKind() {
+	if config.GroupVersionKind == gvk.DestinationRule {
 		dr, ok := config.Spec.(*networking.DestinationRule)
 		if !ok {
 			xdsLog.Errorf("Failed in getting a destination rule: %v", config.Name)
