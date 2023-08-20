@@ -51,12 +51,12 @@ var (
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			switch old := e.ObjectOld.(type) {
 			case *networking.ServiceEntry:
-				new, ok := e.ObjectNew.(*networking.ServiceEntry)
+				newSE, ok := e.ObjectNew.(*networking.ServiceEntry)
 				if !ok {
 					return false
 				}
-				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if old.GetDeletionTimestamp() != newSE.GetDeletionTimestamp() ||
+					old.GetGeneration() != newSE.GetGeneration() {
 					return true
 				}
 			default:
@@ -106,7 +106,7 @@ func AddServiceEntryController(mgr manager.Manager) error {
 		return err
 	}
 	// Watch for changes on ServiceEntry CRD
-	err = c.Watch(&source.Kind{Type: &networking.ServiceEntry{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &networking.ServiceEntry{}), &handler.EnqueueRequestForObject{},
 		serviceEntryPredicates)
 	if err != nil {
 		return err

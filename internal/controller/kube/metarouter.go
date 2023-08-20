@@ -43,12 +43,12 @@ var (
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			switch old := e.ObjectOld.(type) {
 			case *v1alpha1.MetaRouter:
-				new, ok := e.ObjectNew.(*v1alpha1.MetaRouter)
+				newMR, ok := e.ObjectNew.(*v1alpha1.MetaRouter)
 				if !ok {
 					return false
 				}
-				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if old.GetDeletionTimestamp() != newMR.GetDeletionTimestamp() ||
+					old.GetGeneration() != newMR.GetGeneration() {
 					return true
 				}
 			default:
@@ -66,7 +66,7 @@ type MetaRouterController struct {
 }
 
 // Reconcile will try to trigger once mcp push.
-func (r *MetaRouterController) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *MetaRouterController) Reconcile(_ context.Context, request reconcile.Request) (reconcile.Result, error) {
 	metaRouterLog.Infof("reconcile: %s/%s", request.Namespace, request.Name)
 	if r.metaRouterCallback != nil {
 		err := r.metaRouterCallback()
@@ -86,7 +86,7 @@ func AddMetaRouterController(mgr manager.Manager, triggerPush func() error) erro
 		return err
 	}
 	// Watch for changes on MetaRouter CRD
-	err = c.Watch(&source.Kind{Type: &v1alpha1.MetaRouter{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.MetaRouter{}), &handler.EnqueueRequestForObject{},
 		metaRouterlPredicates)
 	if err != nil {
 		return err

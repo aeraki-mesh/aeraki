@@ -86,7 +86,7 @@ func AddNamespaceController(mgr manager.Manager, aerakiAddr, aerakiPort string) 
 		return err
 	}
 	// Watch for changes on Namespace CRD
-	err = c.Watch(&source.Kind{Type: &v1.Namespace{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1.Namespace{}), &handler.EnqueueRequestForObject{},
 		namespacePredicates)
 	if err != nil {
 		return err

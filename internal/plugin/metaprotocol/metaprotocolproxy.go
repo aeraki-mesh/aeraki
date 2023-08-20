@@ -31,7 +31,7 @@ const (
 )
 
 func buildOutboundProxy(context *model.EnvoyFilterContext,
-	port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+	port *istionetworking.ServicePort) (*metaprotocol.MetaProtocolProxy, error) {
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.Name)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func buildOutboundProxy(context *model.EnvoyFilterContext,
 }
 
 func buildInboundProxy(context *model.EnvoyFilterContext,
-	port *istionetworking.Port) (*metaprotocol.MetaProtocolProxy, error) {
+	port *istionetworking.ServicePort) (*metaprotocol.MetaProtocolProxy, error) {
 	route := buildInboundRouteConfig(context, port)
 	applicationProtocol, err := metaprotocolmodel.GetApplicationProtocolFromPortName(port.
 		Name)

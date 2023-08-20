@@ -45,12 +45,12 @@ var (
 		UpdateFunc: func(e event.UpdateEvent) bool {
 			switch old := e.ObjectOld.(type) {
 			case *v1alpha1.ApplicationProtocol:
-				new, ok := e.ObjectNew.(*v1alpha1.ApplicationProtocol)
+				newAP, ok := e.ObjectNew.(*v1alpha1.ApplicationProtocol)
 				if !ok {
 					return false
 				}
-				if old.GetDeletionTimestamp() != new.GetDeletionTimestamp() ||
-					old.GetGeneration() != new.GetGeneration() {
+				if old.GetDeletionTimestamp() != newAP.GetDeletionTimestamp() ||
+					old.GetGeneration() != newAP.GetGeneration() {
 					return true
 				}
 			default:
@@ -96,7 +96,7 @@ func AddApplicationProtocolController(mgr manager.Manager, triggerPush func() er
 		return err
 	}
 	// Watch for changes to primary resource IstioFilter
-	err = c.Watch(&source.Kind{Type: &v1alpha1.ApplicationProtocol{}}, &handler.EnqueueRequestForObject{},
+	err = c.Watch(source.Kind(mgr.GetCache(), &v1alpha1.ApplicationProtocol{}), &handler.EnqueueRequestForObject{},
 		metaProtocolPredicates)
 	if err != nil {
 		return err

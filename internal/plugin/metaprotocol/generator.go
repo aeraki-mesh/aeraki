@@ -106,11 +106,11 @@ func generateSidecarEnvoyFilters(context *model.EnvoyFilterContext) ([]*model.En
 	return envoyfilters, nil
 }
 
-func trans2Port(server *istionetworking.Server) *istionetworking.Port {
-	return &istionetworking.Port{
+func trans2Port(server *istionetworking.Server) *istionetworking.ServicePort {
+	return &istionetworking.ServicePort{
 		Number:     server.Port.Number,
 		Protocol:   server.Port.Protocol,
 		Name:       server.Port.Name,
-		TargetPort: server.Port.TargetPort,
+		TargetPort: server.Port.Number,
 	}
 }

@@ -87,14 +87,14 @@ func (g *Generator) Generate(filterContext *model.EnvoyFilterContext) (filters [
 }
 
 func (g *Generator) generate(ctx context.Context, filterContext *model.EnvoyFilterContext,
-	targetPort *networking.Port) []*model.EnvoyFilterWrapper {
+	targetPort *networking.ServicePort) []*model.EnvoyFilterWrapper {
 	port := targetPort.Number
 	portName := targetPort.Name
 	generatorLog.Debugf("generate %s/%s/%s", filterContext.ServiceEntry.Namespace,
 		filterContext.ServiceEntry.Name, portName)
 	// copy and replace ports
 	spec := *filterContext.ServiceEntry.Spec.DeepCopy()
-	spec.Ports = []*networking.Port{targetPort}
+	spec.Ports = []*networking.ServicePort{targetPort}
 	filters := envoyfilter.GenerateReplaceNetworkFilter(
 		filterContext.ServiceEntry,
 		filterContext.ServiceEntry.Spec.Ports[0],

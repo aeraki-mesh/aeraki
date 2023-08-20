@@ -18,7 +18,7 @@ on:
     - "**/*.md"
 
 env:
-  ISTIO_VERSION: 1.18.2
+  ISTIO_VERSION: 1.18.1
   ISTIO_NAMESPACE: istio-system
   SCRIPTS_DIR: test/e2e/scripts
   COMMON_DIR: test/e2e/common
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -65,7 +65,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -94,7 +94,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -123,7 +123,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -152,7 +152,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -181,7 +181,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -210,7 +210,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -239,7 +239,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version
@@ -268,7 +268,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: 1.19
+          go-version: '1.20'
       - name: Install dependencies
         run: |
           go version

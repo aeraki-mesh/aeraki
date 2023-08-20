@@ -55,7 +55,6 @@ demo-brpc:
 uninstall-demo-brpc:
 	bash demo/uninstall-demo.sh brpc
 test: style-check
-	$(GOMOD) tidy
 	$(GOTEST) -race  `go list ./internal/... | grep -v e2e`
 build: test
 	CGO_ENABLED=0 GOOS=$(IMAGE_OS) GOARCH=$(IMAGE_ARCH) $(GOBUILD) -o $(OUT)/$(IMAGE_ARCH)/$(IMAGE_OS)/$(IMAGE_NAME) $(MAIN_PATH)

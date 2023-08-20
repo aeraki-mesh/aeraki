@@ -22,7 +22,7 @@ import (
 )
 
 func buildInboundRouteConfig(context *model.EnvoyFilterContext,
-	port *istionetworking.Port) *metaroute.RouteConfiguration {
+	port *istionetworking.ServicePort) *metaroute.RouteConfiguration {
 	clusterName := model.BuildClusterName(model.TrafficDirectionInbound, "",
 		context.ServiceEntry.Spec.Hosts[0], int(port.Number))
 

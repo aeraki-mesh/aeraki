@@ -31,7 +31,7 @@ import (
 	networking "istio.io/api/networking/v1alpha3"
 	istiomodel "istio.io/istio/pilot/pkg/model"
 	istioconfig "istio.io/istio/pkg/config"
-	"istio.io/istio/pkg/config/schema/collections"
+	"istio.io/istio/pkg/config/schema/gvk"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/aeraki-mesh/aeraki/internal/model"
@@ -118,25 +118,21 @@ func (c *CacheMgr) updateRouteCache() error {
 		return nil
 	}
 
-	serviceEntries, err := c.configStore.List(collections.IstioNetworkingV1Alpha3Serviceentries.Resource().
-		GroupVersionKind(), "")
-	if err != nil {
-		return fmt.Errorf("failed to list service entries from the config store: %v", err)
-	}
+	serviceEntries := c.configStore.List(gvk.ServiceEntry, "")
 
 	routes := c.generateMetaRoutes(serviceEntries)
 	snapshot, err := generateSnapshot(routes)
 	if err != nil {
 		xdsLog.Errorf("failed to generate route cache: %v", err)
 		// We don't retry in this scenario
-		return nil
+		return err
 	}
 
 	for _, node := range c.routeCache.GetStatusKeys() {
 		xdsLog.Debugf("set route cahe for: %s", node)
 		if err := c.routeCache.SetSnapshot(context.TODO(), node, snapshot); err != nil {
 			xdsLog.Errorf("failed to set route cache: %v", err)
-			// We don't retry in this scenario
+			return err
 		}
 	}
 	return nil
@@ -209,7 +205,7 @@ func isMetaProtocolService(service *networking.ServiceEntry) bool {
 }
 
 func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
-	port *networking.Port, metaRouter *metaprotocol.MetaRouter, dr *model.DestinationRuleWrapper) *metaroute.
+	port *networking.ServicePort, metaRouter *metaprotocol.MetaRouter, dr *model.DestinationRuleWrapper) *metaroute.
 	RouteConfiguration {
 	var routes []*metaroute.Route
 	for _, route := range metaRouter.Spec.Routes {
@@ -232,7 +228,7 @@ func (c *CacheMgr) constructRoute(service *networking.ServiceEntry,
 	return &metaRoute
 }
 
-func (c *CacheMgr) constructAction(port *networking.Port,
+func (c *CacheMgr) constructAction(port *networking.ServicePort,
 	route *metaprotocolapi.MetaRoute, dr *model.DestinationRuleWrapper) *metaroute.RouteAction {
 	var routeAction = &metaroute.RouteAction{}
 
@@ -310,7 +306,7 @@ func (c *CacheMgr) constructAction(port *networking.Port,
 	return routeAction
 }
 
-func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.Port,
+func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networking.ServicePort,
 	dr *model.DestinationRuleWrapper) *metaroute.RouteConfiguration {
 	metaRoute := metaroute.RouteConfiguration{
 		Name: model.BuildMetaProtocolRouteName(service.Hosts[0], int(port.Number)),
@@ -339,16 +335,12 @@ func (c *CacheMgr) defaultRoute(service *networking.ServiceEntry, port *networki
 }
 
 func (c *CacheMgr) findRelatedServiceEntry(dr *model.DestinationRuleWrapper) (*model.ServiceEntryWrapper, error) {
-	serviceEntries, err := c.configStore.List(
-		collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind(), "")
-	if err != nil {
-		return nil, fmt.Errorf("failed to list configs: %v", err)
-	}
+	serviceEntries := c.configStore.List(gvk.ServiceEntry, "")
 
 	for i := range serviceEntries {
 		se, ok := serviceEntries[i].Spec.(*networking.ServiceEntry)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a service entry: %s: %v", serviceEntries[i].Name, err)
+			return nil, fmt.Errorf("failed in getting a service entry: %s", serviceEntries[i].Name)
 		}
 		if model.IsFQDNEquals(dr.Spec.Host, dr.Namespace, se.Hosts[0], serviceEntries[i].Namespace) {
 			return &model.ServiceEntryWrapper{
@@ -383,16 +375,12 @@ func (c *CacheMgr) findRelatedMetaRouter(service *networking.ServiceEntry) (*met
 
 func (c *CacheMgr) findRelatedDestinationRule(service *model.ServiceEntryWrapper) (*model.DestinationRuleWrapper,
 	error) {
-	drs, err := c.configStore.List(
-		collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind(), "")
-	if err != nil {
-		return nil, fmt.Errorf("failed to list configs: %v", err)
-	}
+	drs := c.configStore.List(gvk.DestinationRule, "")
 
 	for i := range drs {
 		dr, ok := drs[i].Spec.(*networking.DestinationRule)
 		if !ok { // should never happen
-			return nil, fmt.Errorf("failed in getting a destination rule: %s: %v", drs[i].Name, err)
+			return nil, fmt.Errorf("failed in getting a destination rule: %s", drs[i].Name)
 		}
 		if model.IsFQDNEquals(dr.Host, drs[i].Namespace, service.Spec.Hosts[0], service.Namespace) {
 			return &model.DestinationRuleWrapper{
@@ -415,7 +403,7 @@ func (c *CacheMgr) ConfigUpdated(prev, curr *istioconfig.Config, event istiomode
 
 func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	var serviceEntry *networking.ServiceEntry
-	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Serviceentries.Resource().GroupVersionKind() {
+	if config.GroupVersionKind == gvk.ServiceEntry {
 		service, ok := config.Spec.(*networking.ServiceEntry)
 		if !ok {
 			xdsLog.Errorf("Failed in getting a service entry: %v", config.Name)
@@ -425,7 +413,7 @@ func (c *CacheMgr) shouldUpdateCache(config *istioconfig.Config) bool {
 	}
 
 	// Cache needs to be updated if dr changed, the hash policy in the dr is used to generate routes
-	if config.GroupVersionKind == collections.IstioNetworkingV1Alpha3Destinationrules.Resource().GroupVersionKind() {
+	if config.GroupVersionKind == gvk.DestinationRule {
 		dr, ok := config.Spec.(*networking.DestinationRule)
 		if !ok {
 			xdsLog.Errorf("Failed in getting a destination rule: %v", config.Name)

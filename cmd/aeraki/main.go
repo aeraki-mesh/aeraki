@@ -83,7 +83,6 @@ func main() {
 	server, err := bootstrap.NewServer(args)
 	if err != nil {
 		log.Fatalf("Failed to init Aeraki :%v", err)
-		os.Exit(1)
 	}
 	server.Start(stopChan)
 
