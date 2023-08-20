@@ -1,4 +1,4 @@
-// Copyright Istio Authors
+// Copyright Aeraki Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ func CidrRange(v string) (*corepb.CidrRange, error) {
 	} else {
 		if ip := net.ParseIP(v); ip != nil {
 			address = ip.String()
+			// nolint gocritic
 			if strings.Contains(v, ".") {
 				// Set the prefixLen to 32 for ipv4 address.
 				prefixLen = 32

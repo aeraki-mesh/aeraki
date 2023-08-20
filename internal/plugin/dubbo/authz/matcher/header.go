@@ -1,4 +1,4 @@
-// Copyright Istio Authors
+// Copyright Aeraki Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import (
 func HeaderMatcher(k, v string) *routepb.HeaderMatcher {
 	// We must check "*" first to make sure we'll generate a non empty value in the prefix/suffix case.
 	// Empty prefix/suffix value is invalid in HeaderMatcher.
+	// nolint gocritic
 	if v == "*" {
 		return &routepb.HeaderMatcher{
 			Name: k,

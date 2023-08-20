@@ -179,11 +179,12 @@ func inboundEnvoyFilterWorkloadSelector(service *model.ServiceEntryWrapper) *net
 	if len(selector.Labels) == 0 {
 		label := strings.ReplaceAll(service.Annotations["workloadSelector"], " ", "")
 		labelSlice := strings.Split(label, ":")
-		if len(labelSlice) == 1 {
+		switch len(labelSlice) {
+		case 1:
 			selector.Labels["app"] = label
-		} else if len(labelSlice) == 2 {
+		case 2:
 			selector.Labels[labelSlice[0]] = labelSlice[1]
-		} else {
+		default:
 			log.Errorf("not support workloadselector")
 		}
 	}

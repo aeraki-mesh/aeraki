@@ -413,6 +413,7 @@ var ValidateApplicationProtocol = func(cfg config.Config) (validation.Warning, e
 }
 
 func routeName(route interface{}, routen int) string {
+	// nolint gocritic
 	switch r := route.(type) {
 	case *networking.HTTPRoute:
 		if r.Name != "" {

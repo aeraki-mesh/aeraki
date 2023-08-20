@@ -4,3 +4,37 @@ out
 .idea
 tmp
 .vscode
+
+.DS_Store
+bin/
+
+docs/html
+
+# Intellij
+*.iml
+.idea/
+.run/
+
+# Visual Studio Code
+.vscode/
+
+# Release artifacts
+release-artifacts/
+
+# Outputs
+coverage.xml
+cover.out
+
+# `go mod vendor`
+vendor/
+
+# TLS assets that may have been created for secure gateways.
+*.crt
+*.csr
+*.key
+
+# GitHub Codespaces
+.devcontainer/
+
+# values.yaml file is generated from its template counterpart.
+charts/aeraki-mesh-helm/values.yaml

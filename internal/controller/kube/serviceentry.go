@@ -136,6 +136,7 @@ func (c *serviceEntryController) autoAllocateIP(key controllerclient.ObjectKey, 
 			// update the vip if it's conflicted with an existing ServiceEntry
 			if !reflect.DeepEqual(existingKey, key) {
 				err := c.Get(context.TODO(), existingKey, &networking.ServiceEntry{})
+				// nolint gocritic
 				if err == nil {
 					serviceEntryLog.Infof("update conflicting vip for serviceEntry %s", s)
 					s.Spec.Addresses[0] = c.nextAvailableIP()

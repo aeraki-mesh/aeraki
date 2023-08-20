@@ -1,0 +1,76 @@
+run:
+  deadline: 10m
+  skip-dirs:
+    - api
+    - client-go
+    - test
+linters:
+  enable:
+    - stylecheck
+    - bodyclose
+    - depguard
+    - exportloopref
+    - gofmt
+    - goimports
+    - goheader
+    - gocritic
+    - gosec
+    - misspell
+    - revive
+    - unconvert
+    - unparam
+
+linters-settings:
+  depguard:
+    rules:
+      Main:
+        deny:
+          - pkg: github.com/gogo/protobuf
+            desc: "gogo/protobuf is deprecated, use golang/protobuf"
+          - pkg: gopkg.in/yaml.v2
+            desc: "use sigs.k8s.io/yaml instead"
+          - pkg: gopkg.in/yaml.v3
+            desc: "use sigs.k8s.io/yaml instead"
+  gci:
+    sections:
+      # Captures all standard packages if they do not match another section.
+      - standard
+      # Contains all imports that could not be matched to another section type.
+      - default
+      # Groups all imports with the specified Prefix.
+      - prefix(github.com/envoyproxy/gateway/)
+  goimports:
+    # put imports beginning with prefix after 3rd-party packages;
+    # it's a comma-separated list of prefixes
+    local-prefixes: github.com/envoyproxy/gateway/
+  gofmt:
+    simplify: true
+  unparam:
+    check-exported: false
+  revive:
+    rules:
+      # TODO: enable if-return check
+      - name: if-return
+        disabled: true
+  goheader:
+    # Note that because the format is different (this needs no comment markers),
+    # updating this text means also updating /tools/boilerplate.txt so that
+    # `make generate` will update the generated files correctly.
+    template: |-
+      Copyright Aeraki Authors
+      
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+      
+          http://www.apache.org/licenses/LICENSE-2.0
+      
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+  # Show the complete output
+  max-issues-per-linter: 0
+  max-same-issues: 0

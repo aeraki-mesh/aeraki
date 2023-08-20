@@ -1,4 +1,4 @@
-// Copyright 2017 Istio Authors
+// Copyright 2017 Aeraki Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@ package util
 
 import (
 	"context"
+	"fmt"
 	"time"
-
-	"istio.io/pkg/log"
 )
 
 const (
@@ -80,7 +79,7 @@ func (r Retrier) Retry(ctx context.Context, fn func(ctx context.Context, retryIn
 	var err error
 	var i int
 	if r.Retries <= 0 {
-		log.Warnf("retries must to be >= 1. Got %d, setting to 1", r.Retries)
+		fmt.Println(fmt.Sprintf("retries must to be >= 1. Got %d, setting to 1", r.Retries))
 		r.Retries = 1
 	}
 	for i = 1; i <= r.Retries; i++ {
