@@ -4,6 +4,7 @@ run:
     - api
     - client-go
     - test
+    - demo
 linters:
   enable:
     - stylecheck

@@ -117,7 +117,7 @@ func (c *Controller) mainLoop(stop <-chan struct{}) {
 	for {
 		select {
 		case e := <-c.pushChannel:
-			controllerLog.Debugf("receive event from push chanel : %v", e)
+			controllerLog.Debugf("receive event from push channel : %v", e)
 			debouncer.Bounce()
 		case <-stop:
 			break

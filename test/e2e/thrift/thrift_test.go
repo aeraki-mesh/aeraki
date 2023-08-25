@@ -53,7 +53,7 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"value\":{\n\"stat_prefix\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"route_config\":{\n\"name\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"outbound|9090||thrift-sample-server.thrift.svc.cluster.local\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find thrift proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find thrift proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -65,7 +65,7 @@ func TestSidecarInboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.thrift_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.thrift_proxy.v3.ThriftProxy\",\n\"value\":{\n\"stat_prefix\":\"inbound|9090||\",\n\"route_config\":{\n\"name\":\"inbound|9090||\",\n\"routes\":[\n{\n\"match\":{\n\"method_name\":\"\"\n},\n\"route\":{\n\"cluster\":\"inbound|9090||\"\n}\n}\n]\n},\n\"thrift_filters\":[\n{\n\"name\":\"envoy.filters.thrift.router\"\n}\n]\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find thrift proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find thrift proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 

@@ -43,7 +43,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -72,7 +72,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -101,7 +101,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -130,7 +130,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -159,7 +159,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -188,7 +188,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -217,7 +217,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -246,7 +246,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start
@@ -275,7 +275,7 @@ jobs:
           go install golang.org/x/tools/cmd/goimports@latest
       - name: build docker
         run: make docker-build-e2e
-      - name: Prepare envrionment
+      - name: Prepare environment
         run: bash ${SCRIPTS_DIR}/pre.sh
       - name: Install Minikube
         run: bash ${SCRIPTS_DIR}/minikube.sh start

@@ -104,7 +104,7 @@ func (c *CacheMgr) mainLoop(stop <-chan struct{}) {
 	for {
 		select {
 		case e := <-c.pushChannel:
-			xdsLog.Debugf("receive event from push chanel : %v", e)
+			xdsLog.Debugf("receive event from push channel : %v", e)
 			debouncer.Bounce()
 		case <-stop:
 			break

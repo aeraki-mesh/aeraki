@@ -5,7 +5,7 @@ ignore: |
   # are templated. Instead, we run the linter
   # after running `make generate-manifests` which creates
   # the Install YAML in bin/
-  charts/aeraki-mesh-helm/
+  demo
 
 rules:
   braces:

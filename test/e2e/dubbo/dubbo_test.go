@@ -56,7 +56,7 @@ func TestSidecarOutboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.dubbo_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy\",\n\"value\":{\n\"stat_prefix\":\"outbound|20880||org.apache.dubbo.samples.basic.api.demoservice\",\n\"route_config\":[\n{\n\"name\":\"outbound|20880||org.apache.dubbo.samples.basic.api.demoservice\",\n\"interface\":\"org.apache.dubbo.samples.basic.api.DemoService\",\n\"routes\":[\n{\n\"match\":{\n\"method\":{\n\"name\":{\n\"safe_regex\":{\n\"google_re2\":{},\n\"regex\":\".*\"\n}\n}\n}\n},\n\"route\":{\n\"cluster\":\"outbound|20880||org.apache.dubbo.samples.basic.api.demoservice\"\n}\n}\n]\n}\n],\n\"dubbo_filters\":[\n{\n\"name\":\"envoy.filters.dubbo.router\"\n}\n]\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find dubbo proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find dubbo proxy in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -70,7 +70,7 @@ func TestSidecarInboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.dubbo_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/envoy.extensions.filters.network.dubbo_proxy.v3.DubboProxy\",\n\"stat_prefix\":\"inbound|20880||\",\n\"route_config\":[\n{\n\"name\":\"inbound|20880||\",\n\"interface\":\"*\",\n\"routes\":[\n{\n\"match\":{\n\"method\":{\n\"name\":{\n\"safe_regex\":{\n\"google_re2\":{},\n\"regex\":\".*\"\n}\n}\n}\n},\n\"route\":{\n\"cluster\":\"inbound|20880||\"\n}\n}\n]\n}\n],\n\"dubbo_filters\":[\n{\n\"name\":\"envoy.filters.dubbo.router\"\n}\n]\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find dubbo proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find dubbo proxy in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 */

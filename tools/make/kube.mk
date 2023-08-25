@@ -10,6 +10,17 @@ FLUENT_BIT_CHART_VERSION ?= 0.30.4
 OTEL_COLLECTOR_CHART_VERSION ?= 0.60.0
 TEMPO_CHART_VERSION ?= 1.3.1
 
+##@ Kubernetes Development
+
+YEAR := $(shell date +%Y)
+CONTROLLERGEN_OBJECT_FLAGS :=  object:headerFile="$(ROOT_DIR)/tools/boilerplate/boilerplate.generatego.txt",year=$(YEAR)
+
+.PHONY: manifests
+manifests: $(tools/controller-gen) aeraki-crds ## Generate ClusterRole objects.
+	@$(LOG_TARGET)
+	$(tools/controller-gen) rbac:roleName=aeraki paths="./..." output:rbac:artifacts:config=charts/aeraki-helm/templates
+	mv charts/aeraki-helm/templates/role.yaml charts/aeraki-helm/templates/aeraki-role.yaml
+
 ##@ Kubernetes Deployment
 
 ifndef ignore-not-found
@@ -19,19 +30,19 @@ endif
 IMAGE_PULL_POLICY ?= Always
 
 .PHONY: aeraki-crds
-aeraki-crds: ## Generate GWAPI manifests and make it consistent with the go mod version.
+aeraki-crds: ## Download Aeraki CRDs from the Aeraki API repo.
 	@$(LOG_TARGET)
 	@mkdir -p $(OUTPUT_DIR)/
 	curl -sLo $(OUTPUT_DIR)/aeraki-crds.yaml ${AERAKI_API_URL}
-	mv $(OUTPUT_DIR)/aeraki-crds.yaml charts/aeraki-helm/template/aeraki-crds.yaml
+	mv $(OUTPUT_DIR)/aeraki-crds.yaml charts/aeraki-helm/crds/aeraki-crds.yaml
 
 .PHONY: kube-deploy
-kube-deploy: aeraki-crds ## Install Envoy Gateway into the Kubernetes cluster specified in ~/.kube/config.
+kube-deploy: manifests ## Install Aeraki into the Kubernetes cluster specified in ~/.kube/config.
 	@$(LOG_TARGET)
 	helm install aeraki charts/aeraki-helm --set deployment.aeraki.imagePullPolicy=$(IMAGE_PULL_POLICY) -n istio-system --debug --timeout='$(WAIT_TIMEOUT)' --wait --wait-for-jobs
 
 .PHONY: kube-undeploy
-kube-undeploy: manifests ## Uninstall the Envoy Gateway into the Kubernetes cluster specified in ~/.kube/config.
+kube-undeploy: manifests ## Uninstall the Aeraki into the Kubernetes cluster specified in ~/.kube/config.
 	@$(LOG_TARGET)
 	helm uninstall eg -n envoy-gateway-system
 
@@ -57,7 +68,7 @@ kube-demo-undeploy: ## Uninstall the Kubernetes resources installed from the `ma
 
 # Uncomment when https://github.com/envoyproxy/gateway/issues/256 is fixed.
 #.PHONY: run-kube-local
-#run-kube-local: build kube-install ## Run Envoy Gateway locally.
+#run-kube-local: build kube-install ## Run Aeraki locally.
 #	tools/hack/run-kube-local.sh
 
 .PHONY: conformance

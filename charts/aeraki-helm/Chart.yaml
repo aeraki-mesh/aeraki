@@ -1,0 +1,18 @@
+apiVersion: v2
+name: aeraki-helm
+description: The Helm chart for Aeraki Mesh - Manage Any Layer-7 Protocols in a Service Mesh
+type: application
+version: 1.4.1
+appVersion: "1.4.1"
+keywords:
+  - aeraki-mesh
+  - aeaki
+home: https://aeraki.net/
+sources:
+  - https://github.com/aeraki-mesh/aeraki
+  - https://github.com/aeraki-mesh/meta-protocol-proxy
+maintainers:
+  - name: Huabing Zhao
+    email: zhaohuabing@gmail.com
+    url: https://zhaohuabing.com
+icon: https://raw.githubusercontent.com/aeraki-mesh/aeraki/master/docs/aeraki-log.png

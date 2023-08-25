@@ -54,7 +54,7 @@ func TestKafkaSidecarOutboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.kafka_broker\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker\",\n\"value\":{\n\"stat_prefix\":\"outbound|9092||my-release-kafka.kafka.svc.cluster.local\"\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find kafaka filter in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find kafaka filter in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -67,7 +67,7 @@ func TestKafkaSidecarInboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.kafka_broker\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.kafka_broker.v3.KafkaBroker\",\n\"value\":{\n\"stat_prefix\":\"inbound|9092||\"\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find kafka filter in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find kafka filter in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestZookeeperSidecarOutboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.zookeeper_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy\",\n\"value\":{\n\"stat_prefix\":\"outbound|2181||my-release-zookeeper.kafka.svc.cluster.local\"\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find zookeeper filter in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find zookeeper filter in the outbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
 
@@ -91,6 +91,6 @@ func TestZookeeperSidecarInboundConfig(t *testing.T) {
 	want := "{\n\"name\":\"envoy.filters.network.zookeeper_proxy\",\n\"typed_config\":{\n\"@type\":\"type.googleapis.com/udpa.type.v1.TypedStruct\",\n\"type_url\":\"type.googleapis.com/envoy.extensions.filters.network.zookeeper_proxy.v3.ZooKeeperProxy\",\n\"value\":{\n\"stat_prefix\":\"inbound|2181||\"\n}\n}\n}"
 	want = strings.Join(strings.Fields(want), "")
 	if !strings.Contains(config, want) {
-		t.Errorf("cant't find zookeeper filter in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
+		t.Errorf("can't find zookeeper filter in the inbound listener of the envoy sidecar: conf \n %s, want \n %s", config, want)
 	}
 }
