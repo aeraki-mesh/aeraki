@@ -19,6 +19,7 @@ package kubernetes
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="networking.istio.io",resources=*,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="coordination.k8s.io",resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="admissionregistration.k8s.io",resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="metaprotocol.aeraki.io",resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="redis.aeraki.io",resources=*,verbs=get;list;watch;create;update;patch;delete

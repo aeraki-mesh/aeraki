@@ -44,7 +44,7 @@ kube-deploy: manifests ## Install Aeraki into the Kubernetes cluster specified i
 .PHONY: kube-undeploy
 kube-undeploy: manifests ## Uninstall the Aeraki into the Kubernetes cluster specified in ~/.kube/config.
 	@$(LOG_TARGET)
-	helm uninstall eg -n envoy-gateway-system
+	helm uninstall aeraki -n istio-system
 
 .PHONY: kube-demo-prepare
 kube-demo-prepare:
@@ -70,9 +70,6 @@ kube-demo-undeploy: ## Uninstall the Kubernetes resources installed from the `ma
 #.PHONY: run-kube-local
 #run-kube-local: build kube-install ## Run Aeraki locally.
 #	tools/hack/run-kube-local.sh
-
-.PHONY: conformance
-conformance: create-cluster kube-install-image kube-deploy run-conformance delete-cluster ## Create a kind cluster, deploy EG into it, run Gateway API conformance, and clean up.
 
 .PHONY: e2e
 e2e: create-cluster kube-install-image kube-deploy install-ratelimit run-e2e delete-cluster
@@ -133,23 +130,15 @@ install-otel-collector:
 	helm upgrade --install otel-collector open-telemetry/opentelemetry-collector -f examples/otel-collector/helm-values.yaml -n monitoring --create-namespace --version $(OTEL_COLLECTOR_CHART_VERSION)
 
 .PHONY: create-cluster
-create-cluster: $(tools/kind) ## Create a kind cluster suitable for running Gateway API conformance.
+create-cluster: $(tools/kind) ## Create a kind cluster.
 	@$(LOG_TARGET)
 	tools/hack/create-cluster.sh
 
 .PHONY: kube-install-image
-kube-install-image: image.build $(tools/kind) ## Install the EG image to a kind cluster using the provided $IMAGE and $TAG.
+kube-install-image: image.build $(tools/kind) ## Install the Aeraki image to a kind cluster using the provided $IMAGE and $TAG.
 	@$(LOG_TARGET)
 	tools/hack/kind-load-image.sh $(IMAGE) $(TAG)
 
-.PHONY: run-conformance
-run-conformance: ## Run Gateway API conformance.
-	@$(LOG_TARGET)
-	kubectl wait --timeout=$(WAIT_TIMEOUT) -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
-	kubectl wait --timeout=$(WAIT_TIMEOUT) -n envoy-gateway-system deployment/envoy-gateway --for=condition=Available
-	kubectl wait --timeout=$(WAIT_TIMEOUT) -n gateway-system job/gateway-api-admission --for=condition=Complete
-	kubectl apply -f test/config/gatewayclass.yaml
-	go test -v -tags conformance ./test/conformance --gateway-class=envoy-gateway --debug=true
 
 .PHONY: delete-cluster
 delete-cluster: $(tools/kind) ## Delete kind cluster.
