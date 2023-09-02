@@ -2,10 +2,11 @@
 #
 # All make targets related to golang are defined in this file.
 
-VERSION_PACKAGE := github.com/aeraki-mesh/aeraki/internal/cmd/version
+VERSION_PATH    := github.com/tetratelabs/run/pkg/version
+VERSION_STRING  := $(shell git describe --tags --long)
+GIT_BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 
-GO_LDFLAGS += -X $(VERSION_PACKAGE).AerakiVersion=$(shell cat VERSION) \  #TODO zhaohuabing
-	-X $(VERSION_PACKAGE).gitCommitID=$(GIT_COMMIT)
+GO_LDFLAGS += -X ${VERSION_PATH}.build=${VERSION_STRING}-${GIT_BRANCH_NAME}
 
 GIT_COMMIT:=$(shell git rev-parse HEAD)
 

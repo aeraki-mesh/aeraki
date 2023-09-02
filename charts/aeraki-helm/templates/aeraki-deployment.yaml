@@ -59,27 +59,25 @@ spec:
             successThreshold: 1
             timeoutSeconds: 5
           resources:
-            { { - toYaml .Values.resources | nindent 12 } }
+            {{- toYaml .Values.deployment.resources | nindent 12 }}
           env:
             - name: AERAKI_IS_MASTER
-              value: "${AERAKI_IS_MASTER}"
+              value: {{ .Values.AERAKI_ENV.AERAKI_IS_MASTER }}
             - name: AERAKI_ISTIOD_ADDR
-              value: ${AERAKI_ISTIOD_ADDR}
+              value: {{ .Values.AERAKI_ENV.AERAKI_ISTIOD_ADDR }}
+            - name: AERAKI_ISTIOD_CONFIGMAP_NAME
+              value: {{ .Values.AERAKI_ENV.AERAKI_ISTIOD_CONFIGMAP_NAME }}
             - name: AERAKI_CLUSTER_ID
-              value: ${AERAKI_CLUSTER_ID}
+              value: {{ .Values.AERAKI_ENV.AERAKI_CLUSTER_ID }}
             # In case of TCM, Istio config store can be a different k8s API server from the one Aeraki is running with
             - name: AERAKI_ISTIO_CONFIG_STORE_SECRET
-              value: ${AERAKI_ISTIO_CONFIG_STORE_SECRET}
+              value: {{ .Values.AERAKI_ENV.AERAKI_ISTIO_CONFIG_STORE_SECRET }}
             - name: AERAKI_XDS_ADDR
-              value: ${AERAKI_XDS_ADDR}
+              value: {{ .Values.AERAKI_ENV.AERAKI_XDS_ADDR }}
             - name: AERAKI_XDS_PORT
-              value: ${AERAKI_XDS_PORT}
-            - name: AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE
-              # False(Default): The generated envoyFilters will be placed under Istio root namespace
-              # True: The generated envoyFilters will be placed under the service namespace
-              value: "${AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE}"
+              value: {{ .Values.AERAKI_ENV.AERAKI_XDS_PORT }}
             - name: AERAKI_LOG_LEVEL
-              value: "all:debug"
+              value: {{ .Values.AERAKI_ENV.AERAKI_LOG_LEVEL }}
             - name: POD_NAME
               valueFrom:
                 fieldRef:

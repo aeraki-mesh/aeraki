@@ -29,3 +29,12 @@ deployment:
     requests:
       cpu: "250m"
       memory: "1Gi"
+AERAKI_ENV:
+  AERAKI_IS_MASTER:
+  AERAKI_ISTIOD_ADDR: "istiod.istio-system:15010"
+  AERAKI_CLUSTER_ID:
+  AERAKI_ISTIO_CONFIG_STORE_SECRET:
+  AERAKI_XDS_ADDR: "aeraki.istio-system"
+  AERAKI_XDS_PORT: ":15010"
+  AERAKI_LOG_LEVEL: "all:debug"
+  AERAKI_ISTIOD_CONFIGMAP_NAME: "istio"
