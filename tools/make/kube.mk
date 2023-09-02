@@ -66,11 +66,6 @@ kube-demo-undeploy: ## Uninstall the Kubernetes resources installed from the `ma
 	@$(LOG_TARGET)
 	kubectl delete -f examples/kubernetes/quickstart.yaml --ignore-not-found=$(ignore-not-found) -n default
 
-# Uncomment when https://github.com/envoyproxy/gateway/issues/256 is fixed.
-#.PHONY: run-kube-local
-#run-kube-local: build kube-install ## Run Aeraki locally.
-#	tools/hack/run-kube-local.sh
-
 .PHONY: e2e
 e2e: create-cluster kube-install-image kube-deploy install-ratelimit run-e2e delete-cluster
 
@@ -169,3 +164,13 @@ generate-egctl-releases: ## Generate egctl releases
 	curl -sSL https://github.com/envoyproxy/gateway/releases/download/latest/egctl_latest_darwin_arm64.tar.gz -o $(OUTPUT_DIR)/egctl_$(TAG)_darwin_arm64.tar.gz
 	curl -sSL https://github.com/envoyproxy/gateway/releases/download/latest/egctl_latest_linux_amd64.tar.gz -o $(OUTPUT_DIR)/egctl_$(TAG)_linux_amd64.tar.gz
 	curl -sSL https://github.com/envoyproxy/gateway/releases/download/latest/egctl_latest_linux_arm64.tar.gz -o $(OUTPUT_DIR)/egctl_$(TAG)_linux_arm64.tar.gz
+
+.PHONY: install-istio
+install-istio:
+	@$(LOG_TARGET)
+	tools/hack/istio/install-istio.sh
+
+.PHONY: uninstall-istio
+uninstall-istio:
+	@$(LOG_TARGET)
+	tools/hack/istio/uninstall-istio.sh

@@ -16,9 +16,7 @@
 
 set -ex
 
-BASEDIR=$(dirname "$0")/../../..
-
-COMMON_DIR=$BASEDIR/test/e2e/common
+SCRIPT_DIR=$(dirname "$0")
 
 if [ -z "$ISTIO_NAMESPACE" ]; then
   export ISTIO_NAMESPACE="istio-system"
@@ -32,8 +30,8 @@ kubectl create ns ${ISTIO_NAMESPACE} || true
 
 rm -rf ~/.aeraki/istio/istio-config.yaml
 mkdir -p ~/.aeraki/istio
-envsubst < "${COMMON_DIR}"/istio-config.yaml > ~/.aeraki/istio/istio-config.yaml
+envsubst < "$SCRIPT_DIR"/istio-config.yaml > ~/.aeraki/istio/istio-config.yaml
 
-[ -n "$(istioctl version --remote=false |grep $ISTIO_VERSION)" ] || (curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION  sh - && sudo mv $PWD/istio-$ISTIO_VERSION/bin/istioctl /usr/local/bin/)
+[ -n "$(~/.aeraki/istioctl version --remote=false |grep $ISTIO_VERSION)" ] || (curl -L https://istio.io/downloadIstio | ISTIO_VERSION=$ISTIO_VERSION  sh - && mv $PWD/istio-$ISTIO_VERSION/bin/istioctl ~/.aeraki/)
 
-/usr/local/bin/istioctl install -f ~/.aeraki/istio/istio-config.yaml -y
+~/.aeraki/istioctl install -f ~/.aeraki/istio/istio-config.yaml -y

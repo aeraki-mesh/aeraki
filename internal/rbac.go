@@ -15,9 +15,7 @@
 package kubernetes
 
 // RBAC for watched resources of TEG manager.
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces;configmaps;secrets;events,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="networking.istio.io",resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="coordination.k8s.io",resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="admissionregistration.k8s.io",resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete

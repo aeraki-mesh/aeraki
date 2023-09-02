@@ -75,13 +75,3 @@ gen-check: generate manifests go.testdata.complete
 		$(call errorlog, ERROR: Some files need to be updated, please run 'make generate' and 'make manifests' to include any changed files to your PR); \
 		git diff --exit-code; \
 	fi
-
-.PHONY: licensecheck
-licensecheck: ## Check license headers are present.
-	@$(LOG_TARGET)
-	tools/boilerplate/verify-boilerplate.sh
-
-.PHONY: latest-release-check
-latest-release-check: ## Check if latest release and tag are created properly.
-	@$(LOG_TARGET)
-	sh tools/hack/check-latest-release.sh
