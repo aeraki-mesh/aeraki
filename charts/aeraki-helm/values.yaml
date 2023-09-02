@@ -12,23 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Default values for aeraki.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    app: aeraki
-  name: aeraki
-  namespace: {{ .Release.Namespace }}
-spec:
-  ports:
-    - name: grpc-xds
-      port: 15010
-      protocol: TCP
-      targetPort: 15010
-    - name: https-validation
-      port: 443
-      protocol: TCP
-      targetPort: 15017
-  selector:
-    app: aeraki
+deployment:
+  replicas: 1
+  image:
+    repository: ghcr.io/aeraki-mesh/aeraki
+    pullPolicy: IfNotPresent
+    tag: 1.4.1
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "4Gi"
+    requests:
+      cpu: "250m"
+      memory: "1Gi"

@@ -17,14 +17,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: aeraki
-  namespace: ${AERAKI_NAMESPACE}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: aeraki
 spec:
   selector:
     matchLabels:
       app: aeraki
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   template:
     metadata:
       labels:
@@ -35,13 +35,12 @@ spec:
       serviceAccountName: aeraki
       containers:
         - name: aeraki
-          image: ${AERAKI_IMAGE}:${AERAKI_TAG}
+          image: {{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.deployment.image.pullPolicy }}
           args:
             - /usr/local/bin/aeraki
             - --master=true
             - --enable-envoy-filter-namespace-scope=false
-          # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
-          imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
           ports:
           - containerPort: 8080
             protocol: TCP
@@ -60,12 +59,7 @@ spec:
             successThreshold: 1
             timeoutSeconds: 5
           resources:
-            requests:
-              memory: "1Gi"
-              cpu: "250m"
-            limits:
-              memory: "4Gi"
-              cpu: "1000m"
+            { { - toYaml .Values.resources | nindent 12 } }
           env:
             - name: AERAKI_IS_MASTER
               value: "${AERAKI_IS_MASTER}"
