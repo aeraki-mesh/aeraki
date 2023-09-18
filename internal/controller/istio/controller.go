@@ -31,9 +31,9 @@ import (
 	"istio.io/istio/pkg/security"
 	"istio.io/istio/security/pkg/nodeagent/cache"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
-	"istio.io/pkg/log"
 	securityModel "istio.io/istio/pilot/pkg/security/model"
 	"istio.io/istio/security/pkg/credentialfetcher/plugin"
+	"istio.io/pkg/log"
 
 	"github.com/aeraki-mesh/aeraki/internal/model"
 	"github.com/aeraki-mesh/aeraki/internal/model/protocol"
