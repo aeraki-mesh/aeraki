@@ -32,7 +32,6 @@ AERAKI_ENV:
   AERAKI_ISTIO_CONFIG_STORE_SECRET:
   AERAKI_XDS_ADDR: "aeraki.istio-system"
   AERAKI_XDS_PORT: ":15010"
-  AERAKI_LOG_LEVEL: "all:debug"
   AERAKI_ISTIOD_CONFIGMAP_NAME: "istio"
 
 imagePullSecrets: []

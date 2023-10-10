@@ -84,8 +84,6 @@ spec:
               # False(Default): The generated envoyFilters will be placed under Istio root namespace
               # True: The generated envoyFilters will be placed under the service namespace
               value: "${AERAKI_ENABLE_ENVOY_FILTER_NS_SCOPE}"
-            - name: AERAKI_LOG_LEVEL
-              value: "all:debug"
             - name: POD_NAME
               valueFrom:
                 fieldRef:

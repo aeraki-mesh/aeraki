@@ -15,7 +15,6 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"os/signal"
 	"strings"
@@ -32,13 +31,13 @@ import (
 	"github.com/aeraki-mesh/aeraki/internal/plugin/metaprotocol"
 	"github.com/aeraki-mesh/aeraki/internal/plugin/thrift"
 	"github.com/aeraki-mesh/aeraki/internal/plugin/zookeeper"
+	flag "github.com/spf13/pflag"
 )
 
 const (
 	defaultIstiodAddr        = "istiod.istio-system:15010"
 	defaultRootNamespace     = "istio-system"
 	defaultElectionID        = "aeraki-controller"
-	defaultLogLevel          = "all:info"
 	defaultConfigStoreSecret = ""
 	defaultKubernetesDomain  = "cluster.local"
 	defaultMeshConfigMapName = "istio"
@@ -46,6 +45,7 @@ const (
 
 func main() {
 	args := bootstrap.NewAerakiArgs()
+	loggingOptions := log.DefaultOptions()
 	flag.BoolVar(&args.Master, "master", true, "Run as master")
 	flag.BoolVar(&args.EnableEnvoyFilterNSScope, "enable-envoy-filter-namespace-scope", false,
 		"Generate Envoy Filters in the service namespace")
@@ -59,11 +59,13 @@ func main() {
 		"The secret to store the Istio kube config store, use the in cluster API server if it's not specified")
 	flag.StringVar(&args.ElectionID, "election-id", defaultElectionID, "ElectionID to elect master controller")
 	flag.StringVar(&args.ServerID, "server-id", "", "Aeraki server id")
-	flag.StringVar(&args.LogLevel, "log-level", defaultLogLevel, "Component log level")
 	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
 	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
 	flag.StringVar(&args.HTTPAddr, "httpAddr", ":8080", "Aeraki readiness service HTTP address")
+	loggingOptions.AttachFlags(flag.StringArrayVar, flag.StringVar, flag.IntVar, flag.BoolVar)
 	flag.Parse()
+
+	log.Configure(loggingOptions)
 
 	flag.VisitAll(func(flag *flag.Flag) {
 		log.Infof("Aeraki parameter: %s: %v", flag.Name, flag.Value)
@@ -76,7 +78,6 @@ func main() {
 	initArgsWithEnv(args)
 	log.Infof("Aeraki bootstrap parameter: %v", args)
 
-	setLogLevels(args.LogLevel)
 	// Create the stop channel for all of the servers.
 	stopChan := make(chan struct{}, 1)
 	args.Protocols = initGenerators()
@@ -123,11 +124,6 @@ func initArgsWithEnv(args *bootstrap.AerakiArgs) {
 		args.ConfigStoreSecret = secret
 	}
 
-	logLevel := os.Getenv("AERAKI_LOG_LEVEL")
-	if logLevel != "" {
-		args.LogLevel = logLevel
-	}
-
 	podName := os.Getenv("POD_NAME")
 	if podName != "" {
 		args.PodName = os.Getenv("POD_NAME")
@@ -143,27 +139,4 @@ func initGenerators() map[protocol.Instance]envoyfilter.Generator {
 		protocol.Zookeeper:    zookeeper.NewGenerator(),
 		protocol.MetaProtocol: metaprotocol.NewGenerator(),
 	}
-}
-
-func setLogLevels(level string) {
-	logOpts := log.DefaultOptions()
-	levels := strings.Split(level, ",")
-	for _, l := range levels {
-		cl := strings.Split(l, ":")
-		if len(cl) != 2 {
-			continue
-		}
-		logOpts.SetOutputLevel(cl[0], stringToLevel[cl[1]])
-	}
-	_ = log.Configure(logOpts)
-}
-
-// this is the same as istio.io/pkg/log.stringToLevel
-var stringToLevel = map[string]log.Level{
-	"debug": log.DebugLevel,
-	"info":  log.InfoLevel,
-	"warn":  log.WarnLevel,
-	"error": log.ErrorLevel,
-	"fatal": log.FatalLevel,
-	"none":  log.NoneLevel,
 }

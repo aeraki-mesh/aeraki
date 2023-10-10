@@ -34,7 +34,6 @@ type AerakiArgs struct {
 	ConfigStoreSecret        string
 	ElectionID               string
 	ServerID                 string
-	LogLevel                 string
 	KubeDomainSuffix         string
 	EnableEnvoyFilterNSScope bool
 	Protocols                map[protocol.Instance]envoyfilter.Generator

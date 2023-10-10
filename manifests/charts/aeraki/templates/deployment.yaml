@@ -42,9 +42,9 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            - /usr/local/bin/aeraki
             - --master=true
             - --enable-envoy-filter-namespace-scope=false
+            - --log_output_level=all:info
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -77,8 +77,6 @@ spec:
               value: {{ .Values.AERAKI_ENV.AERAKI_XDS_ADDR }}
             - name: AERAKI_XDS_PORT
               value: { { .Values.AERAKI_ENV.AERAKI_XDS_PORT } }
-            - name: AERAKI_LOG_LEVEL
-              value: {{ .Values.AERAKI_ENV.AERAKI_LOG_LEVEL }}
             - name: AERAKI_NAMESPACE
               valueFrom:
                 fieldRef:
