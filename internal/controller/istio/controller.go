@@ -35,6 +35,8 @@ import (
 
 	"github.com/aeraki-mesh/aeraki/internal/model"
 	"github.com/aeraki-mesh/aeraki/internal/model/protocol"
+	securityModel "istio.io/istio/pilot/pkg/security/model"
+	"istio.io/istio/security/pkg/credentialfetcher/plugin"
 )
 
 const (
@@ -321,11 +323,13 @@ func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {
 	// rootCert may be nil - in which case the system roots are used, and the CA is expected to have public key
 	// Otherwise assume the injection has mounted /etc/certs/root-cert.pem
 	o := &security.Options{
-		CAEndpoint:        c.options.IstiodAddr,
-		ClusterID:         c.options.ClusterID,
-		WorkloadNamespace: c.options.NameSpace,
-		TrustDomain:       "cluster.local",
-		ServiceAccount:    "aeraki",
+		CAEndpoint:         c.options.IstiodAddr,
+		ClusterID:          c.options.ClusterID,
+		WorkloadNamespace:  c.options.NameSpace,
+		TrustDomain:        "cluster.local",
+		ServiceAccount:     "aeraki",
+		WorkloadRSAKeySize: 2048,
+		CredFetcher:        plugin.CreateTokenPlugin(securityModel.K8sSAJwtFileName),
 	}
 	tlsOpts := &citadel.TLSOptions{}
 	tlsOpts.RootCert = istiodCACertPath
