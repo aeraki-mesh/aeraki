@@ -84,10 +84,6 @@ func (c *Controller) Run(stop <-chan struct{}) {
 	go c.configCache.Run(stop)
 	go func() {
 		c.connectIstio()
-		for {
-			time.Sleep(30 * time.Minute)
-			c.reconnectIstio()
-		}
 	}()
 }
 
@@ -125,9 +121,10 @@ func (c *Controller) connectIstio() {
 			sm, err := c.newSecretManager()
 			if err != nil {
 				controllerLog.Errorf("failed to create SecretManager %s %v", c.options.IstiodAddr, err)
-			} else {
-				config.SecretManager = sm
+				time.Sleep(5 * time.Second)
+				continue
 			}
+			config.SecretManager = sm
 		}
 		c.xdsMCP, err = adsc.New(c.options.IstiodAddr, &config)
 		if err != nil {
@@ -139,6 +136,7 @@ func (c *Controller) connectIstio() {
 		c.xdsMCP.Store = configController
 		if err = c.xdsMCP.Run(); err != nil {
 			controllerLog.Errorf("adsc: failed running %v", err)
+			c.closeConnection()
 			time.Sleep(5 * time.Second)
 			continue
 		}
