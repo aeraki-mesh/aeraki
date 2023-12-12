@@ -23,12 +23,14 @@ import (
 	networking "istio.io/api/networking/v1alpha3"
 	"istio.io/istio/pilot/pkg/config/memory"
 	istiomodel "istio.io/istio/pilot/pkg/model"
+	securityModel "istio.io/istio/pilot/pkg/security/model"
 	"istio.io/istio/pkg/adsc"
 	istioconfig "istio.io/istio/pkg/config"
 	"istio.io/istio/pkg/config/schema/collection"
 	"istio.io/istio/pkg/config/schema/collections"
 	"istio.io/istio/pkg/config/schema/gvk"
 	"istio.io/istio/pkg/security"
+	"istio.io/istio/security/pkg/credentialfetcher/plugin"
 	"istio.io/istio/security/pkg/nodeagent/cache"
 	citadel "istio.io/istio/security/pkg/nodeagent/caclient/providers/citadel"
 	"istio.io/pkg/log"
@@ -319,11 +321,13 @@ func (c *Controller) newSecretManager() (*cache.SecretManagerClient, error) {
 	// rootCert may be nil - in which case the system roots are used, and the CA is expected to have public key
 	// Otherwise assume the injection has mounted /etc/certs/root-cert.pem
 	o := &security.Options{
-		CAEndpoint:        c.options.IstiodAddr,
-		ClusterID:         c.options.ClusterID,
-		WorkloadNamespace: c.options.NameSpace,
-		TrustDomain:       "cluster.local",
-		ServiceAccount:    "aeraki",
+		CAEndpoint:         c.options.IstiodAddr,
+		ClusterID:          c.options.ClusterID,
+		WorkloadNamespace:  c.options.NameSpace,
+		TrustDomain:        "cluster.local",
+		ServiceAccount:     "aeraki",
+		WorkloadRSAKeySize: 2048,
+		CredFetcher:        plugin.CreateTokenPlugin(securityModel.K8sSAJwtFileName),
 	}
 	tlsOpts := &citadel.TLSOptions{}
 	tlsOpts.RootCert = istiodCACertPath
