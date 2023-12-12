@@ -47,6 +47,7 @@ func (cb *callbacks) OnStreamOpen(_ context.Context, id int64, typ string) error
 }
 func (cb *callbacks) OnStreamClosed(id int64, node *core.Node) {
 	xdsLog.Infof("node %s stream %d closed\n", node.Id, id)
+	cb.cacheMgr.clearNode(node.Id)
 }
 
 func (cb *callbacks) OnDeltaStreamOpen(_ context.Context, id int64, typ string) error {

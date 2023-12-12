@@ -35,6 +35,7 @@ type cacheMgr interface {
 	initNode(node string)
 	hasNode(node string) bool
 	cache() cachev3.SnapshotCache
+	clearNode(node string)
 }
 
 // Server serves xDS resources to Envoy sidecars

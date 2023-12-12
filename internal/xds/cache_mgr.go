@@ -455,6 +455,10 @@ func (c *CacheMgr) initNode(_ string) {
 	c.pushChannel <- istiomodel.EventUpdate
 }
 
+func (c *CacheMgr) clearNode(node string) {
+	c.routeCache.ClearSnapshot(node)
+}
+
 func (c *CacheMgr) hasNode(node string) bool {
 	if _, err := c.routeCache.GetSnapshot(node); err != nil {
 		return false
