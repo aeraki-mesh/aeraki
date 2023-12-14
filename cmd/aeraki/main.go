@@ -15,7 +15,6 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"os/signal"
 	"strings"
@@ -23,6 +22,8 @@ import (
 
 	"github.com/google/uuid"
 	"istio.io/pkg/log"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/aeraki-mesh/aeraki/internal/bootstrap"
 	"github.com/aeraki-mesh/aeraki/internal/config/constants"
@@ -63,6 +64,8 @@ func main() {
 	flag.StringVar(&args.KubeDomainSuffix, "domain", defaultKubernetesDomain, "Kubernetes DNS domain suffix")
 	flag.StringVar(&args.HTTPSAddr, "httpsAddr", ":15017", "validation service HTTPS address")
 	flag.StringVar(&args.HTTPAddr, "httpAddr", ":8080", "Aeraki readiness service HTTP address")
+	loggingOptions := log.DefaultOptions()
+	loggingOptions.AttachFlags(flag.StringArrayVar, flag.StringVar, flag.IntVar, flag.BoolVar)
 	flag.Parse()
 
 	flag.VisitAll(func(flag *flag.Flag) {
@@ -77,6 +80,9 @@ func main() {
 	log.Infof("Aeraki bootstrap parameter: %v", args)
 
 	setLogLevels(args.LogLevel)
+	if err := log.Configure(loggingOptions); err != nil {
+		log.Error("Failed to init Aeraki log: %v", err)
+	}
 	// Create the stop channel for all of the servers.
 	stopChan := make(chan struct{}, 1)
 	args.Protocols = initGenerators()

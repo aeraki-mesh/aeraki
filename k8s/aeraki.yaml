@@ -37,9 +37,10 @@ spec:
         - name: aeraki
           image: ${AERAKI_IMAGE}:${AERAKI_TAG}
           args:
-            - /usr/local/bin/aeraki
             - --master=true
             - --enable-envoy-filter-namespace-scope=false
+            - --log_output_level=all:info
+            - --log_rotate=/home/aeraki_run.log
           # imagePullPolicy should be set to Never so Minikube can use local image for e2e testing
           imagePullPolicy: ${AERAKI_IMG_PULL_POLICY}
           ports:
