@@ -40,7 +40,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: dubbo-sample-provider
         version: v1
@@ -76,7 +76,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: dubbo-sample-provider
         version: v2
@@ -112,7 +112,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: dubbo-sample-second-provider
         version: v2
@@ -139,7 +139,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: dubbo-sample-consumer
     spec:
