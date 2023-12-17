@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
@@ -55,7 +55,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-server
@@ -82,7 +82,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.1
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
         sidecar.istio.io/rewriteAppHTTPProbers: "false"
       labels:
         app: thrift-sample-client

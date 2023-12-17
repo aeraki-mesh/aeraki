@@ -28,7 +28,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: trpc-sample-server
         version: v1
@@ -54,7 +54,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: trpc-sample-server
         version: v2
@@ -80,7 +80,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: trpc-sample-client-unary
     spec:
@@ -110,7 +110,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: trpc-sample-client-stream
     spec:
@@ -140,7 +140,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: trpc-sample-server-stream
     spec:
@@ -170,7 +170,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/bootstrapOverride: aeraki-bootstrap-config
-        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy-tcm-debug:1.2.2
+        sidecar.istio.io/proxyImage: ghcr.io/aeraki-mesh/meta-protocol-proxy:1.4.2
       labels:
         app: trpc-sample-client-bidirection-stream
     spec:
