@@ -18,10 +18,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"os"
 
 	//nolint
 	_ "net/http/pprof" // pprof
@@ -163,6 +165,9 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	if err := server.initRootCA(); err != nil {
 		return nil, fmt.Errorf("error initializing root ca: %v", err)
 	}
+	if err := server.initXdsServer(); err != nil {
+		return nil, fmt.Errorf("error initializing xds server: %v", err)
+	}
 	if err := server.initSecureWebhookServer(args); err != nil {
 		return nil, fmt.Errorf("error initializing webhook server: %v", err)
 	}
@@ -175,6 +180,25 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	envoyFilterController.InitMeshConfig(server.configMapWatcher)
 	server.initAerakiServer(args)
 	return server, err
+}
+
+func (s *Server) initXdsServer() error {
+	pool := x509.NewCertPool()
+	istiodCACertPath := "/var/run/secrets/istio/root-cert.pem"
+	caCrt, err := os.ReadFile(istiodCACertPath)
+	if err != nil {
+		return fmt.Errorf("failed to read istio ca cert file: %v", err)
+	}
+	pool.AppendCertsFromPEM(caCrt)
+
+	s.xdsServer.TLSConfig = tls.Config{
+		GetCertificate: s.getAerakiCertificate,
+		MinVersion:     tls.VersionTLS12,
+		ClientAuth:     tls.RequireAndVerifyClientCert,
+		ClientCAs:      pool,
+	}
+
+	return nil
 }
 
 func (s *Server) initAerakiServer(args *AerakiArgs) {

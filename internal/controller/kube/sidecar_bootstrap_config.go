@@ -72,6 +72,48 @@ var bootstrapConfig = `
                          ]
                       }
                    ]
+                },
+                "transport_socket": {
+                   "name": "envoy.transport_sockets.tls",
+                   "typed_config": {
+                      "@type": "type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext",
+                      "common_tls_context": {
+                         "validation_context_sds_secret_config": {
+                            "name": "ROOTCA",
+                            "sds_config": {
+                               "api_config_source": {
+                                  "api_type": "GRPC",
+                                  "grpc_services": [{
+                                     "envoy_grpc": {
+                                        "cluster_name": "sds-grpc"
+                                     }
+                                  }],
+                                  "set_node_on_first_message_only": true,
+                                  "transport_api_version": "V3"
+                               },
+                               "initial_fetch_timeout": "0s",
+                               "resource_api_version": "V3"
+                            }
+                         },
+                         "tls_certificate_sds_secret_configs": [{
+                            "name": "default",
+                            "sds_config": {
+                               "api_config_source": {
+                                  "api_type": "GRPC",
+                                  "grpc_services": [{
+                                     "envoy_grpc": {
+                                        "cluster_name": "sds-grpc"
+                                     }
+                                  }],
+                                  "set_node_on_first_message_only": true,
+                                  "transport_api_version": "V3"
+                               },
+                               "initial_fetch_timeout": "0s",
+                               "resource_api_version": "V3"
+                            }
+                         }]
+                      }
+                   }
                 }
              }
           ]

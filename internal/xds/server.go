@@ -16,7 +16,10 @@ package xds
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
+
+	"google.golang.org/grpc/credentials"
 
 	routeservice "github.com/envoyproxy/go-control-plane/envoy/service/route/v3"
 	cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
@@ -40,8 +43,9 @@ type cacheMgr interface {
 
 // Server serves xDS resources to Envoy sidecars
 type Server struct {
-	addr     string
-	cacheMgr cacheMgr
+	addr      string
+	cacheMgr  cacheMgr
+	TLSConfig tls.Config
 }
 
 // NewServer creates a xDS server
@@ -60,6 +64,8 @@ func (s *Server) Run(stopCh <-chan struct{}) {
 	// availability problems.
 	var grpcOptions []grpc.ServerOption
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
+	tlsCreds := credentials.NewTLS(&s.TLSConfig)
+	grpcOptions = append(grpcOptions, grpc.Creds(tlsCreds))
 	grpcServer := grpc.NewServer(grpcOptions...)
 
 	lis, err := net.Listen("tcp", s.addr)
