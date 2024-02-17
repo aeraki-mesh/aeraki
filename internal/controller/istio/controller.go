@@ -134,8 +134,14 @@ func (c *Controller) connectIstio() {
 			time.Sleep(5 * time.Second)
 			continue
 		}
-		configController := memory.NewController(c.Store)
-		c.xdsMCP.Store = configController
+
+		if c.configCache == nil {
+			controllerLog.Warn("configCache is nil")
+			c.xdsMCP.Store = memory.NewController(c.Store)
+		} else {
+			c.xdsMCP.Store = c.configCache
+		}
+
 		if err = c.xdsMCP.Run(); err != nil {
 			controllerLog.Errorf("adsc: failed running %v", err)
 			c.closeConnection()
