@@ -60,7 +60,7 @@ spec:
             periodSeconds: 3
             timeoutSeconds: 5
           resources:
-            { { - toYaml .Values.resources | nindent 12 } }
+            {{ - toYaml .Values.resources | nindent 12 }}
           env:
             - name: AERAKI_IS_MASTER
               value: {{ .Values.AERAKI_ENV.AERAKI_IS_MASTER }}
@@ -76,7 +76,7 @@ spec:
             - name: AERAKI_XDS_ADDR
               value: {{ .Values.AERAKI_ENV.AERAKI_XDS_ADDR }}
             - name: AERAKI_XDS_PORT
-              value: { { .Values.AERAKI_ENV.AERAKI_XDS_PORT } }
+              value: {{ .Values.AERAKI_ENV.AERAKI_XDS_PORT }}
             - name: AERAKI_LOG_LEVEL
               value: {{ .Values.AERAKI_ENV.AERAKI_LOG_LEVEL }}
             - name: AERAKI_NAMESPACE
