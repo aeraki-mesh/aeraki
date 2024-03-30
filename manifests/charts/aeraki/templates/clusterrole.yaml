@@ -63,3 +63,9 @@ rules:
       - patch
       - create
       - delete
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - '*'
