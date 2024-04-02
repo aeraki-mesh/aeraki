@@ -60,7 +60,7 @@ spec:
             periodSeconds: 3
             timeoutSeconds: 5
           resources:
-            {{ - toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: AERAKI_IS_MASTER
               value: {{ .Values.AERAKI_ENV.AERAKI_IS_MASTER }}
