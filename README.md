@@ -184,7 +184,7 @@ We follow the [CNCF Code of Conduct](CODE_OF_CONDUCT.md)
 ## Landscapes
 
 <p align="center">
-<img src="https://landscape.cncf.io/images/left-logo.svg" width="150"/>&nbsp;&nbsp;<img src="https://landscape.cncf.io/images/right-logo.svg" width="200"/>
+<img src="https://landscape.cncf.io/images/cncf-landscape-horizontal-color.svg" width="300"/>
 <br/><br/>
-Aeraki Mesh is a <a href="https://landscape.cncf.io/?selected=aeraki-mesh">CNCF sandbox project.</a>
+Aeraki Mesh is a <a href="https://landscape.cncf.io/?selected=aeraki-mesh&item=orchestration-management--service-mesh--aeraki-mesh">CNCF sandbox project.</a>
 </p>
