@@ -1,6 +1,6 @@
 module github.com/aeraki-mesh/aeraki
 
-go 1.20
+go 1.24
 
 // https://github.com/containerd/containerd/issues/5781
 exclude k8s.io/kubernetes v1.13.0
