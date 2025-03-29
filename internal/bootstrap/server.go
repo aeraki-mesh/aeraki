@@ -119,7 +119,7 @@ func NewServer(args *AerakiArgs) (*Server, error) {
 	// envoyFilterController watches changes on config and create/update corresponding EnvoyFilters
 	envoyFilterController := envoyfilter.NewController(client, configController.Store, args.Protocols,
 		args.EnableEnvoyFilterNSScope, args.RootNamespace)
-	configController.RegisterEventHandler(func(_, curr *istioconfig.Config, event model.Event) {
+	configController.RegisterEventHandler(func(_, _ *istioconfig.Config, event model.Event) {
 		envoyFilterController.ConfigUpdated(event)
 	})
 	// routeCacheMgr watches service entry and generate the routes for meta protocol services
@@ -344,7 +344,7 @@ func (s *Server) Start(stop <-chan struct{}) {
 			leaderelection.
 				NewLeaderElection(s.args.RootNamespace, s.args.ServerID, leaderelection.EnvoyFilterController,
 					s.kubeClient.Kube()).
-				AddRunFunction(func(leaderStop <-chan struct{}) {
+				AddRunFunction(func(_ <-chan struct{}) {
 					aerakiLog.Infof("starting EnvoyFilter creation controller")
 					s.envoyFilterController.Run(stop)
 				}).Run(stop)

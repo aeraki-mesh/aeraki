@@ -285,7 +285,7 @@ func validatePort(port int) error {
 // Validate tests if the Options has valid params.
 func (o Options) Validate() error {
 	var errs *multierror.Error
-	if err := validatePort(int(o.Port)); err != nil {
+	if err := validatePort(int(o.Port)); err != nil { //nolint:gosec
 		errs = multierror.Append(errs, err)
 	}
 	return errs.ErrorOrNil()

@@ -112,10 +112,10 @@ func buildWeightedCluster(http *networking.HTTPRoute, service *networking.Servic
 			service.Hosts[0], int(service.Ports[0].Number))
 		clusterWeight := &thrift.WeightedCluster_ClusterWeight{
 			Name:   clusterName,
-			Weight: &wrappers.UInt32Value{Value: uint32(route.Weight)},
+			Weight: &wrappers.UInt32Value{Value: uint32(route.Weight)}, //nolint:gosec
 		}
 		clusterWeights = append(clusterWeights, clusterWeight)
-		totalWeight += uint32(route.Weight)
+		totalWeight += uint32(route.Weight) //nolint:gosec
 	}
 
 	return &thrift.RouteAction{

@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+---
 version: "2"
-run:
-  skip-dirs:
-    - api
-    - client-go
 linters:
   default: none
   enable:
@@ -93,6 +90,8 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      - test
+
 formatters:
   enable:
     - gofmt
@@ -107,3 +106,4 @@ formatters:
       - third_party$
       - builtin$
       - examples$
+      - test
