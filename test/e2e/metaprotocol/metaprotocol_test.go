@@ -211,7 +211,20 @@ func TestGlobalRateLimit(t *testing.T) {
 	log.Info("Waiting for rules to propagate ...")
 	time.Sleep(1 * time.Minute)
 	consumerPod, _ := util.GetPodName("metaprotocol", "app=dubbo-sample-consumer", "")
+
 	success := 0
+	for {
+		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
+			"curl -s 127.0.0.1:9009/hello", false, "")
+		response := "response from dubbo-sample-provider"
+		log.Info(dubboResponse)
+		if strings.Contains(dubboResponse, response) {
+			success++
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
 	for i := 0; i < 10; i++ {
 		dubboResponse, _ := util.PodExec("metaprotocol", consumerPod, "dubbo-sample-consumer",
 			"curl -s 127.0.0.1:9009/hello", false, "")
@@ -222,8 +235,8 @@ func TestGlobalRateLimit(t *testing.T) {
 		}
 	}
 
-	if success != 2 {
-		t.Errorf("global rate limit failed, want: %v got:%v ", 2, success)
+	if success != 5 {
+		t.Errorf("global rate limit failed, want: %v got:%v ", 5, success)
 	} else {
 		t.Logf("%v requests have been sent to server", success)
 	}
