@@ -36,10 +36,10 @@ var metaProtocolLog = log.RegisterScope("meta-protocol-controller", "meta-protoc
 // nolint: dupl
 var (
 	metaProtocolPredicates = predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
+		CreateFunc: func(_ event.CreateEvent) bool {
 			return true
 		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
+		DeleteFunc: func(_ event.DeleteEvent) bool {
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {

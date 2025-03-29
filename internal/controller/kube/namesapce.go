@@ -37,10 +37,10 @@ var namespaceLog = log.RegisterScope("namespace-controller", "namespace-controll
 
 var (
 	namespacePredicates = predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
+		CreateFunc: func(_ event.CreateEvent) bool {
 			return true
 		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
+		UpdateFunc: func(_ event.UpdateEvent) bool {
 			return true
 		},
 	}
@@ -103,7 +103,7 @@ func (c *namespaceController) createBootstrapConfigMap(ns string) {
 	cm.Data = map[string]string{
 		"custom_bootstrap.json": GetBootstrapConfig(c.AerakiAddr, c.AerakiPort),
 	}
-	if err := c.Client.Create(context.TODO(), cm, &controllerclient.CreateOptions{
+	if err := c.Create(context.TODO(), cm, &controllerclient.CreateOptions{
 		FieldManager: constants.AerakiFieldManager,
 	}); err != nil {
 		if !errors.IsAlreadyExists(err) {

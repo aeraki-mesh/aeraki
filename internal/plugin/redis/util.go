@@ -162,12 +162,12 @@ func setKeepAliveSettings(cluster *cluster.Cluster,
 
 	if keepalive.Time != nil {
 		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveTime =
-			&wrappers.UInt32Value{Value: uint32(keepalive.Time.Seconds)}
+			&wrappers.UInt32Value{Value: uint32(keepalive.Time.Seconds)} //nolint:gosec
 	}
 
 	if keepalive.Interval != nil {
 		cluster.UpstreamConnectionOptions.TcpKeepalive.KeepaliveInterval =
-			&wrappers.UInt32Value{Value: uint32(keepalive.Interval.Seconds)}
+			&wrappers.UInt32Value{Value: uint32(keepalive.Interval.Seconds)} //nolint:gosec
 	}
 }
 

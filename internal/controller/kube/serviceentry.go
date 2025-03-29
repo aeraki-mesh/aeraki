@@ -42,10 +42,10 @@ var serviceEntryLog = log.RegisterScope("service-entry-controller", "service-ent
 // nolint: dupl
 var (
 	serviceEntryPredicates = predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
+		CreateFunc: func(_ event.CreateEvent) bool {
 			return true
 		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
+		DeleteFunc: func(_ event.DeleteEvent) bool {
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {
@@ -157,7 +157,7 @@ func (c *serviceEntryController) autoAllocateIP(key controllerclient.ObjectKey, 
 }
 
 func (c *serviceEntryController) updateServiceEntry(s *networking.ServiceEntry, key controllerclient.ObjectKey) {
-	err := c.Client.Update(context.TODO(), s,
+	err := c.Update(context.TODO(), s,
 		&controllerclient.UpdateOptions{
 			FieldManager: constants.AerakiFieldManager,
 		})

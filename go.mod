@@ -1,6 +1,6 @@
 module github.com/aeraki-mesh/aeraki
 
-go 1.20
+go 1.24
 
 // https://github.com/containerd/containerd/issues/5781
 exclude k8s.io/kubernetes v1.13.0
@@ -30,7 +30,6 @@ require (
 	github.com/apache/thrift v0.18.1
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4
 	github.com/envoyproxy/go-control-plane v0.11.2-0.20230811160418-a0dbac19f027
-	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.3
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-github v17.0.0+incompatible
@@ -46,7 +45,6 @@ require (
 	google.golang.org/protobuf v1.31.0
 	istio.io/api v1.19.0-alpha.1.0.20230810203008-3cdd517bf131
 	istio.io/client-go v1.19.0-alpha.1.0.20230810203904-45e85278e0fc
-	istio.io/gogo-genproto v0.0.0-20230705213215-8f59b5a7ddde
 	istio.io/istio v0.0.0-20230817160302-031c6b290e0b
 	istio.io/pkg v0.0.0-20230524020242-1015535057be
 	k8s.io/api v0.28.0
@@ -104,6 +102,7 @@ require (
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/cel-go v0.16.0 // indirect

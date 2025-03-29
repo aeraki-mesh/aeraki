@@ -114,7 +114,7 @@ L:
 					} else {
 						hp.Host = host
 						p, _ := strconv.Atoi(port)
-						hp.Port = uint32(p)
+						hp.Port = uint32(p) //nolint:gosec
 					}
 					hostports = append(hostports, hp)
 				}
@@ -155,7 +155,7 @@ L:
 			cl.ConnectTimeout = timeout
 		}
 		if connPool.Tcp.MaxConnections > 0 {
-			threshold.MaxConnections = &wrappers.UInt32Value{Value: uint32(connPool.Tcp.MaxConnections)}
+			threshold.MaxConnections = &wrappers.UInt32Value{Value: uint32(connPool.Tcp.MaxConnections)} //nolint:gosec
 			cl.CircuitBreakers = &cluster.CircuitBreakers{
 				Thresholds: []*cluster.CircuitBreakers_Thresholds{threshold},
 			}

@@ -83,10 +83,10 @@ func AddRedisDestinationController(mgr manager.Manager, triggerPush func() error
 
 var (
 	redisPredicates = predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
+		CreateFunc: func(_ event.CreateEvent) bool {
 			return true
 		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
+		DeleteFunc: func(_ event.DeleteEvent) bool {
 			return true
 		},
 		UpdateFunc: func(e event.UpdateEvent) bool {

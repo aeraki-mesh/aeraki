@@ -260,7 +260,7 @@ func (c *Controller) generateGatewayEnvoyFilters(envoyFilters map[string]*model.
 		if !ok { // should never happen
 			log.Errorf("failed in getting a gateway: %s", gateways[i].Labels)
 		}
-		if gw.Servers == nil || len(gw.Servers) == 0 {
+		if len(gw.Servers) == 0 {
 			continue
 		}
 		for _, server := range gw.Servers {
@@ -320,11 +320,13 @@ func (c *Controller) createEnvoyFiltersOnExportNSs(ctx *model.EnvoyFilterContext
 	} else {
 		// create an envoyfilter in each exported NS
 		for _, exportNS := range exportNSs {
-			if exportNS == "." {
+			switch exportNS {
+			case ".":
 				exportNS = ctx.MetaRouter.Namespace
-			} else if exportNS == "*" {
+			case "*":
 				exportNS = c.namespace
 			}
+
 			wrapperClone := &model.EnvoyFilterWrapper{
 				Name:        wrapper.Name,
 				Namespace:   exportNS,

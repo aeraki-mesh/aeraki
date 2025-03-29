@@ -55,6 +55,6 @@ func CidrRange(v string) (*corepb.CidrRange, error) {
 
 	return &corepb.CidrRange{
 		AddressPrefix: address,
-		PrefixLen:     &wrappers.UInt32Value{Value: uint32(prefixLen)},
+		PrefixLen:     &wrappers.UInt32Value{Value: uint32(prefixLen)}, //nolint:gosec
 	}, nil
 }

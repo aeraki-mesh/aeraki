@@ -107,7 +107,7 @@ func httpRouteAction(route *metaroute.Route) *httproute.RouteAction {
 			RuntimeFraction: mirrorPolicy.RuntimeFraction,
 		}
 	}
-	if route.Route.HashPolicy != nil && len(route.Route.HashPolicy) > 0 {
+	if len(route.Route.HashPolicy) > 0 {
 		for _, hashPolicy := range route.Route.HashPolicy {
 			routeAction.HashPolicy = append(routeAction.HashPolicy, &httproute.RouteAction_HashPolicy{
 				PolicySpecifier: &httproute.RouteAction_HashPolicy_Header_{
