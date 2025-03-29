@@ -243,7 +243,7 @@ func TestExportToNS(t *testing.T) {
 	checkNS("default", 1, t)
 	checkNS("metaprotocol", 1, t)
 	checkNS("istio-system", 0, t)
-	t.Logf(output)
+	t.Log(output)
 }
 
 func checkNS(ns string, num int, t *testing.T) {
