@@ -29,3 +29,5 @@ Aeraki Mesh Maintainers are given in the list below, in no particular order.
 | <img width="30px" src="https://avatars.githubusercontent.com/u/28644213"> | [Sad-polar-bear](https://github.com/Sad-polar-bear) |  BOSS Zhipin  |           aeraki            |
 | <img width="30px" src="https://avatars.githubusercontent.com/u/48784001"> |        [Xunzhuo](https://github.com/Xunzhuo)        |    Tencent    |           aeraki            |
 | <img width="30px" src="https://avatars.githubusercontent.com/u/19339970"> |     [tanjunchen](https://github.com/tanjunchen)     |     Bdidu     |           aeraki            |
+| <img width="30px" src="https://avatars.githubusercontent.com/u/48590464"> |     [Chenrujie-85](https://github.com/Chenrujie-85)     |     Huawei     |           meta-protocol-proxy            |
+
