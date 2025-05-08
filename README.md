@@ -76,7 +76,7 @@ As this diagram shows, Aeraki Mesh consists of the following components:
 , [bRPC](https://github.com/aeraki-mesh/meta-protocol-proxy/tree/master/src/application_protocols/brpc)
 and [a number of other protocols](https://github.com/aeraki-mesh/aeraki/issues/105) have been implemented based on MetaProtocol. More protocols are on the way. 
 If you're using a close-source, proprietary protocol, you can also manage it in your service mesh simply by 
-[writing a MetaProtocol codec](https://www.aeraki.net/docs/v1.1/tutorials/implement-a-custom-protocol/) for it.
+[writing a MetaProtocol codec](https://www.aeraki.net/docs/v1.x/tutorials/implement-a-custom-protocol/) for it.
 
 Most request/response style, stateless protocols can be built on top of the MetaProtocol Proxy. However, some protocols' routing policies are too "special" to be normalized in MetaProtocol. For example, the Redis proxy uses a slot number to map a client query to a specific Redis server node, and the slot number is computed by the key in the request. Aeraki can still manage those protocols as long as there's an available Envoy Filter in the Envoy proxy side. Currently, for protocols in this category, [Redis](https://github.com/aeraki-mesh/aeraki/blob/master/docs/zh/redis.md) and Kafka are supported in Aeraki.
 
